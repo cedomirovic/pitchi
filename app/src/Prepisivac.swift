@@ -72,6 +72,13 @@ final class Prepisivac {
         postaviUcitan(false)
     }
 
+    /// Jezik koji je Whisper prepoznao u poslednjem prepisu ("sr", "en"…).
+    private var zadnjiJezik = "auto"
+
+    func jezikZadnjegPrepisa() -> String {
+        red.sync { zadnjiJezik }
+    }
+
     private func postaviUcitan(_ vrednost: Bool) {
         bravaStanja.lock()
         uMemoriji = vrednost
@@ -103,7 +110,10 @@ final class Prepisivac {
             p.temperature_inc = 0.2
             p.beam_search.beam_size = 5
             p.greedy.best_of = 5
-            p.detect_language = (jezik == "auto")
+            // "auto" u polju language pokreće detekciju i odmah nastavlja prepis.
+            // detect_language u whisper.cpp 1.9.5 služi samo za detekciju jezika
+            // (vraća se pre dekodiranja), pa ga ovde ne uključujemo.
+            p.detect_language = false
 
             let prompt = recnik.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -124,6 +134,16 @@ final class Prepisivac {
             }
 
             guard rezultat == 0 else { throw GreskaPrepisaa.dekodiranje }
+
+            let jezID = whisper_full_lang_id_from_state(stanje)
+            if jezID >= 0, let kod = whisper_lang_str(jezID) {
+                let prepoznat = String(cString: kod)
+                // Whisper srpski često označi kao hrvatski ili bosanski;
+                // za nas je to isti jezik (latinica, isti rečnik).
+                zadnjiJezik = ["hr", "bs"].contains(prepoznat) ? "sr" : prepoznat
+            } else {
+                zadnjiJezik = jezik
+            }
 
             var delovi: [String] = []
             let broj = whisper_full_n_segments_from_state(stanje)

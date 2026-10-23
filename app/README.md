@@ -1,7 +1,8 @@
 # Pitchi
 
-Diktiranje na srpskom, lokalno, na macOS-u. Držiš `Fn`, izgovoriš rečenicu,
-pustiš — tekst se prepiše i zalepi tamo gde pišeš.
+Diktiranje na srpskom i engleskom, lokalno, na macOS-u. Držiš `Fn`, izgovoriš
+rečenicu, pustiš — tekst se prepiše i zalepi tamo gde pišeš. Jezik se prepoznaje
+automatski, pa možeš da menjaš srpski i engleski bez podešavanja.
 
 Sve ostaje na Macu: snimak se obrađuje whisper.cpp modelom u samoj aplikaciji,
 bez servera i bez naloga. Jedini mrežni izlaz je preuzimanje modela (1 GB) i
@@ -14,7 +15,8 @@ opciono DeepSeek doterivanje teksta, koje sam uključuješ.
 - **Fn kao prečica** — radi i kada je druga aplikacija u fokusu.
 - **Automatsko lepljenje** — posle prepisa pošalje `Cmd+V` u aplikaciju u kojoj
   si bio. Ako dozvola nije data, tekst čeka u klipbordu.
-- **Latinica** — whisper za srpski ume da vrati ćirilicu; Pitchi je prevodi.
+- **Srpski i engleski** — jezik se prepoznaje automatski; srpski izlaz se
+  prevodi ćirilica → latinica.
 - **Rečnik** — imena i pojmovi koje model pogrešno piše (Nemanja Čedomirović,
   Tamara Pandža, nazivi projekata…).
 - **Istorija** — zadnjih 200 prepisa, pretraga i kopiranje.

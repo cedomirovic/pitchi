@@ -79,7 +79,11 @@ struct PitchiMain {
             print("GRESKA: nema modela")
             return
         }
-        let fajlURL = URL(fileURLWithPath: "/tmp/sr.wav")
+        let argumenti = CommandLine.arguments
+        let indeks = argumenti.firstIndex(of: "--test-whisper") ?? 0
+        let sledeci = indeks + 1 < argumenti.count ? argumenti[indeks + 1] : nil
+        let putanja = (sledeci?.hasPrefix("--") == false ? sledeci : nil) ?? "/tmp/sr.wav"
+        let fajlURL = URL(fileURLWithPath: putanja)
         do {
             let fajl = try AVAudioFile(
                 forReading: fajlURL,
@@ -107,11 +111,12 @@ struct PitchiMain {
             let ucitan = Date()
             let sirovo = try prepisivac.prepisi(
                 uzorci: uzorci,
-                jezik: "sr",
+                jezik: "auto",
                 recnik: Recnik.kaoPrompt(Recnik.ucitaj())
             )
             let kraj = Date()
             print("MODEL:", model.path)
+            print("JEZIK:      \(prepisivac.jezikZadnjegPrepisa())")
             print("UCITAVANJE: \(String(format: "%.2f", ucitan.timeIntervalSince(pocetak))) s")
             print("PREPIS:     \(String(format: "%.2f", kraj.timeIntervalSince(ucitan))) s")
             print("SIROVO:     \(sirovo)")

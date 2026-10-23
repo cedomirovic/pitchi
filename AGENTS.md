@@ -100,6 +100,15 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   `com.johnny.pichi.plist` i sam bundle; novi rečnik je već bio identičan.
   `--test-whisper` sada čita novu putanju i daje isti srpski tekst za ~3,2 s.
   Na mašini je ostala samo nova aplikacija, ušteda ~730 MB.
+- **23.10.2026. (jezici)** — diktat sada automatski prepoznaje **srpski i
+  engleski**; podrazumevano je `auto` umesto `sr`. Bitna zamka: u whisper.cpp
+  1.9.5 polje `detect_language` služi **samo za detekciju** i vraća se pre
+  dekodiranja (prazan tekst). Zato se detekcija pokreće vrednošću `"auto"` u
+  `params.language`, a `detect_language` ostaje `false`. Prepoznati jezik se
+  pamti uz zapis; `hr`/`bs` se prikazuju kao `sr` jer je izlaz isti. DeepSeek
+  dobija uputstvo na prepoznatom jeziku. Provereno TTS snimcima: srpski daje
+  isti tekst, engleski „Pitchi, Test, My name is Nemanja Čedomirović…”; auto
+  detekcija dodaje ~1,5 s (prepis ~4,5 s umesto ~3 s).
 - Sledeći korak: korisnik da dozvole (mikrofon, nadzor unosa, pristupačnost),
   probni diktat uživo i doterivanje po potrebi; zatim eventualno prelazak
   `diktator` repoa na ovu aplikaciju.

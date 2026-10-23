@@ -46,7 +46,7 @@ struct Zapis: Identifiable, Codable, Equatable {
     var tekst: String
     var datum = Date()
     var trajanje: Double = 0
-    var jezik: String = "sr"
+    var jezik: String = "auto"
 }
 
 struct Dozvole: Equatable {
@@ -58,7 +58,7 @@ struct Dozvole: Equatable {
 }
 
 struct Podesavanja: Codable, Equatable {
-    var jezik = "sr"
+    var jezik = "auto"
     var automatskoLepljenje = true
     var zvuk = true
     var doterivanje = false

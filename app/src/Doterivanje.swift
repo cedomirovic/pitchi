@@ -17,7 +17,7 @@ enum GreskaDoterivanja: LocalizedError {
 }
 
 struct Doterivac {
-    static func doteraj(_ tekst: String, kljuc: String) async throws -> String {
+    static func doteraj(_ tekst: String, kljuc: String, jezik: String = "sr") async throws -> String {
         guard !kljuc.isEmpty else { throw GreskaDoterivanja.nemaKljuca }
         guard let url = URL(string: "https://api.deepseek.com/chat/completions") else {
             throw GreskaDoterivanja.odgovor
@@ -29,13 +29,24 @@ struct Doterivac {
         zahtev.setValue("application/json", forHTTPHeaderField: "Content-Type")
         zahtev.setValue("Bearer \(kljuc)", forHTTPHeaderField: "Authorization")
 
-        let uputstvo = """
-        Ti si lektor za srpski jezik. Ispravi samo interpunkciju, velika slova i \
-        očigledne greške u prepoznavanju govora. Ne menjaj smisao, ne dodaj nove \
-        rečenice i ne prevodi. Vrati isključivo ispravljen tekst, bez objašnjenja \
-        i bez navodnika. Imena i pojmovi koje treba poštovati: Nemanja Čedomirović, \
-        Tamara Pandža, Pitchi, Diktator, Beograd.
-        """
+        let uputstvo: String
+        if jezik == "en" {
+            uputstvo = """
+            You are an English proofreader. Fix only punctuation, capitalization, \
+            and obvious speech-recognition errors. Do not change the meaning, add \
+            sentences, or translate. Return only the corrected text, without \
+            explanations or quotation marks. Preserve these names and terms: \
+            Nemanja Čedomirović, Tamara Pandža, Pitchi, Diktator, Beograd.
+            """
+        } else {
+            uputstvo = """
+            Ti si lektor za srpski jezik. Ispravi samo interpunkciju, velika slova i \
+            očigledne greške u prepoznavanju govora. Ne menjaj smisao, ne dodaj nove \
+            rečenice i ne prevodi. Vrati isključivo ispravljen tekst, bez objašnjenja \
+            i bez navodnika. Imena i pojmovi koje treba poštovati: Nemanja Čedomirović, \
+            Tamara Pandža, Pitchi, Diktator, Beograd.
+            """
+        }
 
         let telo: [String: Any] = [
             "model": "deepseek-chat",

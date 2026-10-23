@@ -300,6 +300,7 @@ final class AppStanje: NSObject, ObservableObject {
                     jezik: jezik,
                     recnik: prompt
                 )
+                let jezikTeksta = self.prepisivac.jezikZadnjegPrepisa()
                 let sredjeno = Tekst.sredi(sirovo)
 
                 guard !sredjeno.isEmpty else {
@@ -314,15 +315,25 @@ final class AppStanje: NSObject, ObservableObject {
                     Task { [weak self] in
                         guard let self else { return }
                         do {
-                            let doteran = try await Doterivac.doteraj(sredjeno, kljuc: kljuc)
+                            let doteran = try await Doterivac.doteraj(
+                                sredjeno,
+                                kljuc: kljuc,
+                                jezik: jezikTeksta
+                            )
                             DispatchQueue.main.async {
-                                self.dovrsi(doteran, trajanje: trajanje, napomena: nil)
+                                self.dovrsi(
+                                    doteran,
+                                    trajanje: trajanje,
+                                    jezik: jezikTeksta,
+                                    napomena: nil
+                                )
                             }
                         } catch {
                             DispatchQueue.main.async {
                                 self.dovrsi(
                                     sredjeno,
                                     trajanje: trajanje,
+                                    jezik: jezikTeksta,
                                     napomena: "Doterivanje nije uspelo — ostavljen je sirov prepis."
                                 )
                             }
@@ -330,7 +341,12 @@ final class AppStanje: NSObject, ObservableObject {
                     }
                 } else {
                     DispatchQueue.main.async {
-                        self.dovrsi(sredjeno, trajanje: trajanje, napomena: nil)
+                        self.dovrsi(
+                            sredjeno,
+                            trajanje: trajanje,
+                            jezik: jezikTeksta,
+                            napomena: nil
+                        )
                     }
                 }
             } catch {
@@ -342,11 +358,11 @@ final class AppStanje: NSObject, ObservableObject {
         }
     }
 
-    private func dovrsi(_ tekst: String, trajanje: Double, napomena: String?) {
+    private func dovrsi(_ tekst: String, trajanje: Double, jezik: String, napomena: String?) {
         poslednjiTekst = tekst
         stanje = .mirno
         if podesavanja.cuvajIstoriju {
-            istorija.insert(Zapis(tekst: tekst, trajanje: trajanje, jezik: podesavanja.jezik), at: 0)
+            istorija.insert(Zapis(tekst: tekst, trajanje: trajanje, jezik: jezik), at: 0)
             if istorija.count > 200 { istorija = Array(istorija.prefix(200)) }
             IstorijaSkladiste.sacuvaj(istorija)
         }

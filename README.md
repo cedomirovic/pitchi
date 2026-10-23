@@ -1,8 +1,9 @@
-# Pitchi — diktiranje na srpskom (macOS)
+# Pitchi — diktiranje na srpskom i engleskom (macOS)
 
 Pitchi je macOS aplikacija za dikiranje: držiš `Fn`, izgovoriš rečenicu, pusti
 — tekst se prepiše **lokalno** (whisper.cpp) i zalepi u aplikaciju u kojoj
-pišeš. Snimak ne napušta Mac.
+pišeš. Jezik se prepoznaje automatski, pa srpski i engleski mogu da se smenjuju
+bez podešavanja. Snimak ne napušta Mac.
 
 Aplikacija ima prozor sa stanjem, istorijom, rečnikom i podešavanjima; radi i
 iz menu bara. Model se učitava samo tokom diktiranja i oslobađa posle 5 minuta,
@@ -15,7 +16,8 @@ pa i 8 GB Mac ostaje upotrebljiv.
 - **Fn kao prečica** — drži i govori, pusti kada završiš; radi i van Pitchi-ja.
 - **Automatsko lepljenje** — pošalje `Cmd+V` u aplikaciju u kojoj si bio; ako
   dozvola nije data, tekst čeka u klipbordu.
-- **Latinica** — whisper za srpski ume da vrati ćirilicu; Pitchi prevodi.
+- **Srpski i engleski** — jezik se prepoznaje automatski; srpski izlaz ide u
+  latinicu.
 - **Rečnik** — imena i pojmovi koje model pogrešno piše.
 - **Istorija** — zadnjih 200 prepisa, pretraga i kopiranje.
 - **Opciono DeepSeek doterivanje** — popravi interpunkciju i imena; isključeno

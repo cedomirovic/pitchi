@@ -31,7 +31,7 @@ struct PogledPodesavanja: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Jezik").font(.callout.weight(.medium))
-                    Text("Srpski daje latinicu; automatski pušta Whisper-u da prepozna jezik.")
+                    Text("Automatski prepoznaje srpski i engleski; srpski ispisuje latinicom.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
