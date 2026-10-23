@@ -5,9 +5,10 @@ Pitchi je macOS aplikacija za dikiranje: držiš `Fn`, izgovoriš rečenicu, pus
 pišeš. Jezik se prepoznaje automatski, pa srpski i engleski mogu da se smenjuju
 bez podešavanja. Snimak ne napušta Mac.
 
-Aplikacija ima prozor sa stanjem, istorijom, rečnikom i podešavanjima; radi i
-iz menu bara. Model se učitava samo tokom diktiranja i oslobađa posle 5 minuta,
-pa i 8 GB Mac ostaje upotrebljiv.
+Aplikacija ima prozor sa stanjem, istorijom, rečnikom i podešavanjima, ikonu u
+Docku i u menu baru. Model se učitava samo tokom diktiranja i oslobađa posle
+5 minuta, pa i 8 GB Mac ostaje upotrebljiv. Koji model se koristi biraš sam, a
+lakši modeli se preuzimaju direktno iz aplikacije.
 
 | Početak | Podešavanja |
 |---|---|
@@ -22,6 +23,11 @@ pa i 8 GB Mac ostaje upotrebljiv.
   latinicu.
 - **Rečnik** — imena i pojmovi koje model pogrešno piše.
 - **Istorija** — zadnjih 200 prepisa, pretraga i kopiranje.
+- **Izbor modela** — Tiny, Base, Small, Large v3 Turbo i Large v3; lakši modeli
+  se preuzimaju iz same aplikacije, bez terminala.
+- **Pokretanje pri prijavi** — opciono u Podešavanjima, preko macOS Login Items.
+- **Dock i menu bar** — ikonica je vidljiva na oba mesta; klik na Dock ponovo
+  otvara prozor.
 - **Opciono DeepSeek doterivanje** — popravi interpunkciju i imena; isključeno
   po defaultu, šalje se samo tekst, nikada zvuk.
 
@@ -29,7 +35,7 @@ pa i 8 GB Mac ostaje upotrebljiv.
 
 ### Gotova aplikacija
 
-1. Preuzmi `Pitchi-0.1.0-macOS-arm64.zip` sa
+1. Preuzmi `Pitchi-0.2.0-macOS-arm64.zip` sa
    [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
 2. Otpakuj i prevuci `Pitchi.app` u `/Applications`.
 3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
@@ -56,30 +62,42 @@ kompajliraju jednokratno. Skripta napravi `Pitchi.app`, potpiše ga lokalno
 
 ### Prvo pokretanje
 
-1. Otvori Pitchi — prozor se pojavi sam, ikona ostaje u menu baru.
+1. Otvori Pitchi — prozor se pojavi sam, a ikona je u Docku i u menu baru.
 2. Daj tri dozvole iz prozora:
    - **Mikrofon** — da čuje govor.
    - **Nadzor unosa** — da prepozna `Fn` i van Pitchi-ja. Posle ove dozvole
      zatvori i ponovo otvori aplikaciju.
    - **Pristupačnost** — da pošalje `Cmd+V` posle prepisa.
-3. Ako model nije tu, klikni **Preuzmi model (1 GB)**.
+3. U Podešavanjima → **Model** izaberi model. Preporučeni Large v3 Turbo ima
+   547 MB; ako želiš najmanji, izaberi Tiny (74 MB).
 
 Ako `Fn` otvara emoji birač: Podešavanja → Tastatura → „Pritisni 🌐 key za” →
 **Ne radi ništa**.
 
 ## Model i memorija
 
-Podrazumevani model je `large-v3 q5_0` (1 GB) — najbolji kompromis za 8 GB.
-Model se čuva u:
+Preporučeni model je **Large v3 Turbo q5_0** (547 MB): brz je, troši manje
+memorije i kvalitetom je blizu Large v3. U Podešavanjima → **Model** možeš
+izabrati i drugi model; svi se preuzimaju jednokratno sa Hugging Face-a.
+
+| Model | Veličina | Kada ga izabrati |
+|---|---|---|
+| Tiny | 74 MB | najbrži, za probe; češće greši imena |
+| Base | 141 MB | mali i brz, osnovni kvalitet |
+| Small | 465 MB | kada je malo RAM-a, solidan kvalitet |
+| Large v3 Turbo | 547 MB | **preporučeno za 8 GB** |
+| Large v3 | 1,0 GB | najbolji kvalitet, traži više RAM-a |
+
+Modeli se čuvaju u:
 
 ```
-~/Library/Application Support/Pitchi/models/ggml-large-v3-q5_0.bin
+~/Library/Application Support/Pitchi/models/
 ```
 
-Ako postoji stari Pichi model, Pitchi ga preuzima bez ponovnog skidanja.
-Dok je model učitan, aplikacija drži ~1,4 GB; posle 5 minuta mirovanja se
-oslobađa. Prvi prepis posle novog builda je sporiji jer se kompajliraju Metal
-šejderi; sledeći su ~4–5 s za kraću rečenicu (uključujući detekciju jezika).
+Dok je model učitan, aplikacija drži ~0,2–1,4 GB, zavisno od izbora; posle
+5 minuta mirovanja se oslobađa. Prvi prepis posle novog builda je sporiji jer
+se kompajliraju Metal šejderi; sledeći su nekoliko sekundi za kraću rečenicu
+(uključujući detekciju jezika).
 
 ## Privatnost
 
@@ -92,7 +110,7 @@ oslobađa. Prvi prepis posle novog builda je sporiji jer se kompajliraju Metal
 ```
 app/
   src/                 Swift izvori (AppKit + SwiftUI)
-  Info.plist           bundle, dozvole, LSUIElement
+  Info.plist           bundle, dozvole, Dock i menu bar
   build.sh             građenje + potpisivanje
   pripremi-whisper.sh  jednokratno građenje statičkog whisper.cpp-a
   instaliraj.sh        build + /Applications
@@ -122,4 +140,4 @@ npm test
 ## Zahvalnost
 
 - [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT)
-- OpenAI Whisper model `large-v3` (MIT), q5_0 kvantizacija
+- OpenAI Whisper modeli Tiny, Base, Small, Large v3 Turbo i Large v3 (MIT)

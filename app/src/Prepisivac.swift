@@ -10,7 +10,7 @@ enum GreskaPrepisaa: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .modelNijePreuzet:
-            return "Model još nije preuzet. Otvori Podešavanja i preuzmi ga (1 GB)."
+            return "Model još nije preuzet. Otvori Podešavanja i izaberi ili preuzmi model."
         case .modelNeMoeDaSeUcita:
             return "Model nije mogao da se učita. Proveri da li je fajl kompletan."
         case .dekodiranje:
@@ -60,6 +60,14 @@ final class Prepisivac {
     func oslobodi() {
         red.async { [weak self] in
             self?.oslobodiBezReda()
+        }
+    }
+
+    /// Oslobađa model odmah i čeka da se posao završi. Koristi se pri izlasku
+    /// iz aplikacije, da Metal ne bi ostao sa nedovršenim resursima.
+    func oslobodiSada() {
+        red.sync {
+            oslobodiBezReda()
         }
     }
 

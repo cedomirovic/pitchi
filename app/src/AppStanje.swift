@@ -5,9 +5,6 @@ import Combine
 import Foundation
 
 final class AppStanje: NSObject, ObservableObject {
-    static let modelURL = URL(string: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-q5_0.bin")!
-    static let modelVelicina: Int64 = 1_081_140_203
-
     @Published var stanje: StanjeAplikacije = .mirno
     @Published var nivo: Float = 0
     @Published var sekunde: Int = 0
@@ -19,7 +16,10 @@ final class AppStanje: NSObject, ObservableObject {
     @Published var modelPutanja: URL?
     @Published var modelUcitan = false
     @Published var preuzimaModel = false
+    @Published var modelPreuzimanja: String?
     @Published var napredakModela: Double = 0
+    @Published var prijavaUkljucena = false
+    @Published var prijavaZahtevaOdobrenje = false
     @Published var poslednjiTekst = ""
     @Published var greska: String?
     @Published var info: String?
@@ -49,6 +49,7 @@ final class AppStanje: NSObject, ObservableObject {
         Prepisivac.utisajLog()
         osveziModel()
         osveziDozvole()
+        osveziPrijavu()
 
         snimac.naNivo = { [weak self] vrednost in
             self?.nivo = vrednost
@@ -59,11 +60,13 @@ final class AppStanje: NSObject, ObservableObject {
         }
         preuzimac.naKraj = { [weak self] rezultat in
             guard let self else { return }
+            let naziv = Modeli.nadji(self.modelPreuzimanja ?? "")?.naziv ?? "Model"
             self.preuzimaModel = false
+            self.modelPreuzimanja = nil
             switch rezultat {
             case .success:
                 self.osveziModel()
-                self.postaviInfo("Model je preuzet. Možeš da diktiraš.")
+                self.postaviInfo("\(naziv) je preuzet. Možeš da diktiraš.")
             case .failure(let error):
                 self.greska = "Preuzimanje nije uspelo: \(error.localizedDescription)"
             }
@@ -130,6 +133,34 @@ final class AppStanje: NSObject, ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in self?.osveziDozvole() }
     }
 
+    // MARK: - Prijava pri pokretanju
+
+    func osveziPrijavu() {
+        prijavaUkljucena = Prijava.ukljucena
+        prijavaZahtevaOdobrenje = Prijava.zahtevaOdobrenje
+    }
+
+    func postaviPrijavu(_ zeljeno: Bool) {
+        do {
+            try Prijava.postavi(zeljeno)
+        } catch {
+            greska = "Pokretanje pri prijavi nije promenjeno: \(error.localizedDescription)"
+        }
+
+        osveziPrijavu()
+        if prijavaZahtevaOdobrenje {
+            postaviInfo("Odobri Pitchi u System Settings → General → Login Items.")
+        } else if prijavaUkljucena {
+            postaviInfo("Pitchi će se pokretati pri prijavi računara.")
+        } else {
+            postaviInfo("Pokretanje pri prijavi je isključeno.")
+        }
+    }
+
+    func otvoriPrijavuPodesavanja() {
+        Prijava.otvoriPodesavanja()
+    }
+
     // MARK: - Precica
 
     func pokreniTastaturu() {
@@ -140,30 +171,57 @@ final class AppStanje: NSObject, ObservableObject {
 
     // MARK: - Model
 
+    var izabraniModel: PonudaModela {
+        Modeli.nadji(podesavanja.model) ?? Modeli.podrazumevani
+    }
+
     func osveziModel() {
-        modelPutanja = Putanje.nadjiPostojeciModel()
+        modelPutanja = izabraniModel.preuzet ? izabraniModel.putanja : nil
     }
 
     var modelSpreman: Bool { modelPutanja != nil }
 
     var opisModela: String {
-        guard let modelPutanja else { return "nije preuzet" }
-        let velicina = Putanje.velicina(modelPutanja)
-        let naziv = Putanje.poznatiModeli[velicina] ?? "nepoznat"
-        let gb = Double(velicina) / 1_073_741_824
-        return String(format: "%@ · %.1f GB", naziv, gb)
+        "\(izabraniModel.naziv) · \(izabraniModel.velicinaTekst)"
+    }
+
+    func izaberiModel(_ id: String) {
+        guard id != podesavanja.model, let model = Modeli.nadji(id) else { return }
+        guard !stanje.jeZauzet, !preuzimaModel else {
+            postaviInfo("Sačekaj da završi trenutni prepis ili preuzimanje.")
+            return
+        }
+
+        prepisivac.oslobodi()
+        modelUcitan = false
+        podesavanja.model = id
+        SkladistePodesavanja.sacuvaj(podesavanja)
+        osveziModel()
+
+        if model.preuzet {
+            postaviInfo("Izabran je model \(model.naziv).")
+        } else {
+            postaviInfo("Model \(model.naziv) još nije preuzet.")
+        }
     }
 
     func preuzmiModel() {
         guard !preuzimaModel else { return }
+        let model = izabraniModel
+        guard !model.preuzet else {
+            osveziModel()
+            return
+        }
         preuzimaModel = true
+        modelPreuzimanja = model.id
         napredakModela = 0
-        preuzimac.pocni(od: Self.modelURL, u: Putanje.model, velicina: Self.modelVelicina)
+        preuzimac.pocni(od: model.url, u: model.putanja, velicina: model.velicina)
     }
 
     func otkaziPreuzimanje() {
         preuzimac.otkazi()
         preuzimaModel = false
+        modelPreuzimanja = nil
     }
 
     func oslobodiMemoriju() {
@@ -184,6 +242,11 @@ final class AppStanje: NSObject, ObservableObject {
 
     func pocniSnimanje() {
         guard !stanje.jeSnimanje, !stanje.jeZauzet else { return }
+        guard modelSpreman else {
+            greska = GreskaPrepisaa.modelNijePreuzet.localizedDescription
+            izabranTab = 2
+            return
+        }
 
         switch AVCaptureDevice.authorizationStatus(for: .audio) {
         case .authorized:
@@ -269,7 +332,7 @@ final class AppStanje: NSObject, ObservableObject {
     // MARK: - Prepis
 
     private func obradi(_ uzorci: [Float], trajanje: Double) {
-        guard let putanja = modelPutanja ?? Putanje.nadjiPostojeciModel() else {
+        guard let putanja = modelPutanja else {
             stanje = .mirno
             greska = GreskaPrepisaa.modelNijePreuzet.localizedDescription
             izabranTab = 2

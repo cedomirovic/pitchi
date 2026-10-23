@@ -25,7 +25,7 @@ npm test
 
 ```
 app/src/          Swift izvori (PitchiApp, AppStanje, Snimac, Prepisivac…)
-app/Info.plist    bundle, dozvole, LSUIElement
+app/Info.plist    bundle, dozvole, Dock i menu bar
 app/build.sh      građenje + potpisivanje (swiftc, bez Xcode-a)
 app/pripremi-whisper.sh  statički whisper.cpp (Metal + BLAS)
 app/instaliraj.sh build + /Applications
@@ -117,6 +117,28 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   tekst. Napravljen je i release `v0.1.0` sa `Pitchi-0.1.0-macOS-arm64.zip`
   (2,9 MB, ad-hoc potpis, bez modela). Aplikacija nije notarizovana — u
   uputstvu piše desni klik → Open ili `xattr -dr com.apple.quarantine`.
-- Sledeći korak: korisnik da dozvole (mikrofon, nadzor unosa, pristupačnost),
-  probni diktat uživo i doterivanje po potrebi; zatim eventualno prelazak
-  `diktator` repoa na ovu aplikaciju.
+- **23.10.2026. (modeli, prijava, Dock)** — dodato je biranje modela sa
+  preuzimanjem u aplikaciji, opciono pokretanje pri prijavi i ikonica u Docku.
+  Odluke:
+  - katalog `PonudaModela.swift`: Tiny (77.691.713 B), Base (147.951.465 B),
+    Small (487.601.967 B), Large v3 Turbo (574.041.195 B) i Large v3
+    (1.081.140.203 B); model je „preuzet” samo ako veličina tačno odgovara;
+  - novi korisnici dobijaju Turbo kao preporučeni model, a stara podešavanja
+    bez polja `model` automatski biraju najbolji model koji već postoji na
+    disku (kod korisnika je to Large v3);
+  - `Prijava.swift` koristi `SMAppService.mainApp` (macOS 13+), bez
+    LaunchAgenta; u Podešavanjima postoji i dugme za Login Items ako macOS
+    traži odobrenje;
+  - `LSUIElement` je uklonjen, aplikacija je `.regular` pa se vidi u Docku i
+    Cmd+Tab-u; `applicationShouldHandleReopen` ponovo otvara prozor klikom na
+    Dock, a `applicationWillTerminate` sinhrono oslobađa whisper model
+    (`oslobodiSada`) da Metal ne bi pucao pri izlasku.
+  Provereno na živoj aplikaciji: picker nudi svih pet modela, Tiny je preuzet
+  kroz UI (74 MB, tačna veličina), prepis Tiny modelom radi (~0,4 s) ali je
+  kvalitet slabiji; posle probe je Tiny obrisan i vraćen je Large v3. Login
+  item je uključen i isključen kroz UI (`sfltool dumpbtm` potvrdio), a
+  aplikacija je posle zatvaranja prozora ponovo otvorena preko Docka. Verzija
+  je podignuta na `0.2.0`.
+- Sledeći korak: probni diktat uživo sa Large v3, zatim po potrebi brisanje
+  modela koje korisnik ne želi (sada se samo biraju/preuzimaju) i eventualni
+  prelazak `diktator` repoa na ovu aplikaciju.

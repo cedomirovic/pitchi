@@ -1,6 +1,6 @@
 {
   "name": "pitchi",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Pitchi — lokalni alat za diktiranje: snimi govor, pretvori u tekst i zalepi ga gde treba.",

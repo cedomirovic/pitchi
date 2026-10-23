@@ -158,7 +158,7 @@ struct PogledPregled: View {
                 HStack(spacing: 10) {
                     Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Model je spreman").font(.callout.weight(.medium))
+                        Text("\(app.izabraniModel.naziv) je spreman").font(.callout.weight(.medium))
                         Text(app.opisModela).font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -167,13 +167,15 @@ struct PogledPregled: View {
                             .buttonStyle(.bordered)
                             .controlSize(.small)
                     }
+                    izborModelaMeni
                 }
                 Text("Model se učitava samo kada diktiraš i sam se oslobađa posle 5 minuta mirovanja — da ne guši Mac.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else if app.preuzimaModel {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Preuzimam model (1 GB)…").font(.callout.weight(.medium))
+                    Text("Preuzimam \(Modeli.nadji(app.modelPreuzimanja ?? "")?.naziv ?? "model")…")
+                        .font(.callout.weight(.medium))
                     ProgressView(value: app.napredakModela)
                         .tint(Izgled.akcenat)
                     HStack {
@@ -187,18 +189,42 @@ struct PogledPregled: View {
                     }
                 }
             } else {
-                Text("Za dobar prepis srpskog i engleskog potreban je whisper `large-v3` model od 1 GB. Skida se jednokratno, direktno sa Hugging Face-a.")
+                Text("Izabran je model \(app.izabraniModel.naziv) (\(app.izabraniModel.velicinaTekst)). Preuzima se jednokratno, direktno sa Hugging Face-a.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
-                Button {
-                    app.preuzmiModel()
-                } label: {
-                    Label("Preuzmi model (1 GB)", systemImage: "arrow.down.circle")
+                HStack {
+                    Button {
+                        app.preuzmiModel()
+                    } label: {
+                        Label("Preuzmi \(app.izabraniModel.velicinaTekst)", systemImage: "arrow.down.circle")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Izgled.akcenat)
+
+                    izborModelaMeni
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Izgled.akcenat)
             }
         }
+    }
+
+    private var izborModelaMeni: some View {
+        Menu {
+            ForEach(Modeli.svi) { model in
+                Button {
+                    app.izaberiModel(model.id)
+                } label: {
+                    if model.id == app.podesavanja.model {
+                        Label("\(model.naziv) · \(model.velicinaTekst)", systemImage: "checkmark")
+                    } else {
+                        Text("\(model.naziv) · \(model.velicinaTekst)")
+                    }
+                }
+            }
+        } label: {
+            Label("Promeni model", systemImage: "slider.horizontal.3")
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
     }
 
     private var poslednjiTekstKartica: some View {

@@ -9,6 +9,7 @@ struct PogledPodesavanja: View {
         ScrollView {
             VStack(spacing: 16) {
                 diktiranje
+                sistem
                 doterivanje
                 recnikKartica
                 modelKartica
@@ -83,6 +84,58 @@ struct PogledPodesavanja: View {
         }
     }
 
+    private var sistem: some View {
+        Kartica(naslov: "Sistem", ikona: "gearshape.2") {
+            Toggle(
+                isOn: Binding(
+                    get: { app.prijavaUkljucena || app.prijavaZahtevaOdobrenje },
+                    set: { app.postaviPrijavu($0) }
+                )
+            ) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Pokreni pri prijavi računara").font(.callout.weight(.medium))
+                    Text("Pitchi se pokrene odmah posle prijave, pa je Fn spreman za diktiranje.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .toggleStyle(.switch)
+
+            if app.prijavaZahtevaOdobrenje {
+                Divider()
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("macOS traži odobrenje")
+                            .font(.callout.weight(.medium))
+                        Text("Odobri Pitchi u System Settings → General → Login Items.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Button("Otvori Login Items") { app.otvoriPrijavuPodesavanja() }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                    }
+                    Spacer()
+                }
+            }
+
+            Divider()
+
+            HStack(spacing: 10) {
+                Image(systemName: "dock.rectangle")
+                    .foregroundStyle(Izgled.akcenat)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Ikona u Docku").font(.callout.weight(.medium))
+                    Text("Pitchi je vidljiv u Docku i Cmd+Tab-u, pored ikone u menu baru.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+        }
+    }
+
     private var doterivanje: some View {
         Kartica(naslov: "Doterivanje teksta (opciono)", ikona: "wand.and.stars") {
             Toggle(isOn: $app.podesavanja.doterivanje) {
@@ -154,25 +207,53 @@ struct PogledPodesavanja: View {
 
     private var modelKartica: some View {
         Kartica(naslov: "Model", ikona: "brain") {
+            Text("Lakši modeli se brže učitavaju i troše manje RAM-a; veći modeli su tačniji.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(app.modelSpreman ? "Model je spreman" : "Model nije preuzet")
-                        .font(.callout.weight(.medium))
-                    Text(app.modelSpreman ? app.opisModela : "Potreban je large-v3 q5_0, 1 GB.")
-                        .font(.caption)
+                Text("Model").font(.callout.weight(.medium))
+                Spacer()
+                Picker("", selection: izborModela) {
+                    ForEach(Modeli.svi) { model in
+                        Text("\(model.naziv) · \(model.velicinaTekst)\(model.preporucen ? " — preporučeno" : "")")
+                            .tag(model.id)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 300)
+                .disabled(app.preuzimaModel || app.stanje.jeZauzet)
+            }
+
+            Text(app.izabraniModel.opis)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 10) {
+                if app.izabraniModel.preuzet {
+                    Label("Preuzet", systemImage: "checkmark.circle.fill")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.green)
+                } else {
+                    Label("Nije preuzet", systemImage: "arrow.down.circle")
+                        .font(.caption.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
+
                 Spacer()
-                if app.modelSpreman {
-                    if app.modelUcitan {
-                        Button("Oslobodi memoriju") { app.oslobodiMemoriju() }
-                            .buttonStyle(.bordered)
-                            .controlSize(.small)
-                    }
-                } else if !app.preuzimaModel {
-                    Button("Preuzmi (1 GB)") { app.preuzmiModel() }
+
+                if !app.izabraniModel.preuzet && !app.preuzimaModel {
+                    Button("Preuzmi \(app.izabraniModel.velicinaTekst)") { app.preuzmiModel() }
                         .buttonStyle(.borderedProminent)
                         .tint(Izgled.akcenat)
+                        .controlSize(.small)
+                }
+
+                if app.modelUcitan {
+                    Button("Oslobodi memoriju") { app.oslobodiMemoriju() }
+                        .buttonStyle(.bordered)
                         .controlSize(.small)
                 }
             }
@@ -181,10 +262,13 @@ struct PogledPodesavanja: View {
                 ProgressView(value: app.napredakModela)
                     .tint(Izgled.akcenat)
                 HStack {
+                    Text("Preuzimam \(Modeli.nadji(app.modelPreuzimanja ?? "")?.naziv ?? "model")…")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
                     Text("\(Int(app.napredakModela * 100))%")
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
-                    Spacer()
                     Button("Otkaži") { app.otkaziPreuzimanje() }
                         .buttonStyle(.borderless)
                         .controlSize(.small)
@@ -203,6 +287,13 @@ struct PogledPodesavanja: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    private var izborModela: Binding<String> {
+        Binding(
+            get: { app.podesavanja.model },
+            set: { app.izaberiModel($0) }
+        )
     }
 
     private var dozvoleKartica: some View {

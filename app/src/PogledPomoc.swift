@@ -35,7 +35,7 @@ struct PogledPomoc: View {
                     Divider()
                     problem(
                         "Mac se guši",
-                        "Model od 1 GB se drži u memoriji samo dok diktiraš. Ako ne diktiraš, u Podešavanjima klikni „Oslobodi memoriju”."
+                        "Model se drži u memoriji samo dok diktiraš. U Podešavanjima izaberi lakši model (Tiny, Base ili Small) ili klikni „Oslobodi memoriju”."
                     )
                 }
 
@@ -48,9 +48,9 @@ struct PogledPomoc: View {
 
                 Kartica(naslov: "Tehnički podaci", ikona: "cpu") {
                     red("Motor", "whisper.cpp (statički ugrađen)")
-                    red("Model", "large-v3 q5_0, 1 GB")
+                    red("Model", "Tiny, Base, Small, Turbo ili Large v3 — po izboru")
                     red("Jezik", "srpski i engleski, automatski; srpski latinica")
-                    red("Memorija", "~1,4 GB samo tokom diktiranja")
+                    red("Memorija", "~0,2–1,4 GB samo tokom diktiranja")
                     red("Sistemski zahtev", "macOS 13+, Apple Silicon")
                 }
             }

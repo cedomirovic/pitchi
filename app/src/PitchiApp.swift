@@ -24,12 +24,13 @@ struct PitchiMain {
         }
 
         if CommandLine.arguments.contains("--test-whisper") {
+            app.setActivationPolicy(.prohibited)
             testWhisper()
             exit(0)
         }
 
         app.delegate = delegate
-        app.setActivationPolicy(.accessory)
+        app.setActivationPolicy(.regular)
         app.run()
     }
 
@@ -75,7 +76,7 @@ struct PitchiMain {
         if !CommandLine.arguments.contains("--log") {
             Prepisivac.utisajLog()
         }
-        guard let model = Putanje.nadjiPostojeciModel() else {
+        guard let model = Modeli.nadjiPostojeci() else {
             print("GRESKA: nema modela")
             return
         }
@@ -107,7 +108,7 @@ struct PitchiMain {
 
             let prepisivac = Prepisivac()
             let pocetak = Date()
-            try prepisivac.ucitaj(putanja: model.path)
+            try prepisivac.ucitaj(putanja: model.putanja.path)
             let ucitan = Date()
             let sirovo = try prepisivac.prepisi(
                 uzorci: uzorci,
@@ -115,7 +116,7 @@ struct PitchiMain {
                 recnik: Recnik.kaoPrompt(Recnik.ucitaj())
             )
             let kraj = Date()
-            print("MODEL:", model.path)
+            print("MODEL:", model.putanja.path)
             print("JEZIK:      \(prepisivac.jezikZadnjegPrepisa())")
             print("UCITAVANJE: \(String(format: "%.2f", ucitan.timeIntervalSince(pocetak))) s")
             print("PREPIS:     \(String(format: "%.2f", kraj.timeIntervalSince(ucitan))) s")
@@ -127,7 +128,7 @@ struct PitchiMain {
                 Thread.sleep(forTimeInterval: 20)
             }
 
-            prepisivac.oslobodi()
+            prepisivac.oslobodiSada()
         } catch {
             print("GRESKA: \(error.localizedDescription)")
         }
@@ -150,8 +151,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         prikaziProzor()
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        stanje.prepisivac.oslobodiSada()
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         false
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag {
+            prikaziProzor()
+        }
+        return true
     }
 
     // MARK: - Menu bar

@@ -63,4 +63,30 @@ struct Podesavanja: Codable, Equatable {
     var zvuk = true
     var doterivanje = false
     var cuvajIstoriju = true
+    var model = Modeli.podrazumevani.id
+
+    init() {}
+
+    private enum CodingKeys: String, CodingKey {
+        case jezik
+        case automatskoLepljenje
+        case zvuk
+        case doterivanje
+        case cuvajIstoriju
+        case model
+    }
+
+    /// Rucno dekodiranje da stara podesavanja (bez polja `model`) ne puknu
+    /// i da automatski izaberu model koji vec postoji na disku.
+    init(from decoder: Decoder) throws {
+        let kontejner = try decoder.container(keyedBy: CodingKeys.self)
+        jezik = try kontejner.decodeIfPresent(String.self, forKey: .jezik) ?? "auto"
+        automatskoLepljenje = try kontejner.decodeIfPresent(Bool.self, forKey: .automatskoLepljenje) ?? true
+        zvuk = try kontejner.decodeIfPresent(Bool.self, forKey: .zvuk) ?? true
+        doterivanje = try kontejner.decodeIfPresent(Bool.self, forKey: .doterivanje) ?? false
+        cuvajIstoriju = try kontejner.decodeIfPresent(Bool.self, forKey: .cuvajIstoriju) ?? true
+        model = try kontejner.decodeIfPresent(String.self, forKey: .model)
+            ?? Modeli.nadjiPostojeci()?.id
+            ?? Modeli.podrazumevani.id
+    }
 }
