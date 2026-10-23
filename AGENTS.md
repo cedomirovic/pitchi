@@ -163,7 +163,9 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   Anthropic i Ollama odgovore, HTTP 401, prazan tekst i nedostajući ključ;
   kroz UI su prošli „Test veze“ (uspeh i greška) i prebacivanje servisa sa
   čuvanjem/ucitavanjem ključa po servisu. Živi pozivi nisu probani jer nema
-  API ključeva. Verzija je podignuta na `0.3.0`.
+  API ključeva. Verzija je podignuta na `0.3.0` i objavljen je release
+  `v0.3.0` sa `Pitchi-0.3.0-macOS-arm64.zip` (3,0 MB, SHA-256
+  `bbb3aea0cefa7d298750a104efefed2305218d5da90f6c47cdc1f66f47530e92`).
 - Sledeći korak: probni diktat uživo sa Large v3 i stvarnim API ključem za
   izabrani servis, zatim po potrebi brisanje modela koje korisnik ne želi i
   eventualni prelazak `diktator` repoa na ovu aplikaciju.
