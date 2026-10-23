@@ -602,6 +602,13 @@ struct PogledPodesavanja: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 4) {
+                Text("Inspirisano aplikacijom")
+                Link("Pichi", destination: URL(string: "https://github.com/ndjerma/pichi-release")!)
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
     }
 

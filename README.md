@@ -40,7 +40,7 @@ lakši modeli se preuzimaju direktno iz aplikacije.
 
 ### Gotova aplikacija
 
-1. Preuzmi `Diktator-0.6.0-macOS-arm64.zip` sa
+1. Preuzmi `Diktator-0.6.1-macOS-arm64.zip` sa
    [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
 2. Otpakuj i prevuci `Diktator.app` u `/Applications`.
 3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
@@ -251,5 +251,6 @@ npm test
 
 ## Zahvalnost
 
+- [Pichi](https://github.com/ndjerma/pichi-release) — inspiracija za Diktator.
 - [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT)
 - OpenAI Whisper modeli Tiny, Base, Small, Large v3 Turbo i Large v3 (MIT)

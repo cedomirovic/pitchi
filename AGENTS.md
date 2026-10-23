@@ -257,6 +257,16 @@ današnje ime aplikacije.)*
   `/Applications/Diktator.app`; objavljen je release `v0.6.0` sa
   `Diktator-0.6.0-macOS-arm64.zip` (3,0 MB, SHA-256
   `de8569f72317790e6c248f2d1718dd1e7b2e83eb54bcae4b41327759946488b4`).
+- **23.10.2026. (zahvalnica)** — dodata je zahvalnica da je Diktator inspirisan
+  aplikacijom **Pichi** (<https://github.com/ndjerma/pichi-release>). U README-u
+  je prva stavka u „Zahvalnost“, a u Podešavanjima → **O aplikaciji** stoji
+  link „Inspirisano aplikacijom Pichi“. Verzija je podignuta na `0.6.1`
+  (build 7), `package.json` na `0.6.1`; `--slika` i `docs/pocetak.png` /
+  `docs/podesavanja.png` su ponovo nacrtani. Provereno: `node --check`,
+  `npm test` (11/11), `--dozvole`, `--test-whisper` daje isti srpski tekst;
+  instalirano u `/Applications/Diktator.app`. Objavljen je release `v0.6.1`
+  sa `Diktator-0.6.1-macOS-arm64.zip` (3,0 MB, SHA-256
+  `0b62ea24e8a1d80217c560031ed08c6638ac428c0f367a7ca9ba4bfce1d37ba6`).
 - Sledeći korak: probni diktat uživo sa Large v3 i stvarnim API ključem za
   izabrani servis, probati desni modifikator kao prečicu na tastaturi koja ga
   ima, zatim po potrebi brisanje modela koje korisnik ne želi i eventualni
