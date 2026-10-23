@@ -138,7 +138,9 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   kvalitet slabiji; posle probe je Tiny obrisan i vraćen je Large v3. Login
   item je uključen i isključen kroz UI (`sfltool dumpbtm` potvrdio), a
   aplikacija je posle zatvaranja prozora ponovo otvorena preko Docka. Verzija
-  je podignuta na `0.2.0`.
+  je podignuta na `0.2.0` i objavljen je release `v0.2.0` sa
+  `Pitchi-0.2.0-macOS-arm64.zip` (2,9 MB, SHA-256
+  `6f47d7f8d8453dfdb69da092aec9482566cff583f7271c1f7a085d573c7b02b3`).
 - Sledeći korak: probni diktat uživo sa Large v3, zatim po potrebi brisanje
   modela koje korisnik ne želi (sada se samo biraju/preuzimaju) i eventualni
   prelazak `diktator` repoa na ovu aplikaciju.
