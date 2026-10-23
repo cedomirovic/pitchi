@@ -1,0 +1,16 @@
+# zavisnosti (ne koristimo ih, ali da se ne pojave slučajno)
+node_modules/
+
+# snimci, izlazi i rezerve korisnika — ne idu u git
+snimci/
+izlaz/
+modeli/
+*.wav
+*.bak
+*.tmp
+
+# macOS
+.DS_Store
+
+# probni fajlovi
+.probe/
