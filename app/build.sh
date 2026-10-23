@@ -37,6 +37,7 @@ swiftc -O -swift-version 5 -parse-as-library \
   -framework ApplicationServices \
   -framework Security \
   -framework ServiceManagement \
+  -framework UserNotifications \
   -framework Metal \
   -framework MetalKit \
   -framework Accelerate \

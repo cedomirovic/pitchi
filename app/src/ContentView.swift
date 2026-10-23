@@ -26,6 +26,17 @@ struct ContentView: View {
                     .padding(.bottom, 10)
             }
 
+            if let izdanje = app.azuriranje, !app.sakrijTrakuAzuriranja {
+                AzuriranjeTraka(
+                    verzija: izdanje.verzija,
+                    trenutna: app.trenutnaVerzija,
+                    preuzmi: { app.otvoriAzuriranje() },
+                    kasnije: { app.kasnijeAzuriranje() }
+                )
+                .padding(.horizontal, 24)
+                .padding(.bottom, 10)
+            }
+
             ZStack {
                 switch app.izabranTab {
                 case 0: PogledPregled()

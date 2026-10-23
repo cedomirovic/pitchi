@@ -63,6 +63,8 @@ struct Podesavanja: Codable, Equatable {
     var zvuk = true
     var doterivanje = false
     var cuvajIstoriju = true
+    /// Dnevna provera novih izdanja na GitHub-u (samo čitanje javnog spiska).
+    var proveravajAzuriranja = true
     var model = Modeli.podrazumevani.id
     var provajderDoterivanja = ProvajderiDoterivanja.podrazumevani.id
     /// Model se pamti po servisu da promena servisa ne bi poslala pogrešan naziv.
@@ -78,6 +80,7 @@ struct Podesavanja: Codable, Equatable {
         case zvuk
         case doterivanje
         case cuvajIstoriju
+        case proveravajAzuriranja
         case model
         case provajderDoterivanja
         case modeliDoterivanja
@@ -93,6 +96,7 @@ struct Podesavanja: Codable, Equatable {
         zvuk = try kontejner.decodeIfPresent(Bool.self, forKey: .zvuk) ?? true
         doterivanje = try kontejner.decodeIfPresent(Bool.self, forKey: .doterivanje) ?? false
         cuvajIstoriju = try kontejner.decodeIfPresent(Bool.self, forKey: .cuvajIstoriju) ?? true
+        proveravajAzuriranja = try kontejner.decodeIfPresent(Bool.self, forKey: .proveravajAzuriranja) ?? true
         model = try kontejner.decodeIfPresent(String.self, forKey: .model)
             ?? Modeli.nadjiPostojeci()?.id
             ?? Modeli.podrazumevani.id

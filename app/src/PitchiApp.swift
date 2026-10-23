@@ -3,6 +3,7 @@ import AppKit
 import AVFoundation
 import Combine
 import SwiftUI
+import UserNotifications
 
 @main
 struct PitchiMain {
@@ -45,6 +46,22 @@ struct PitchiMain {
         ]
         stanje.dozvole = Dozvole(mikrofon: true, pristupacnost: true, nadzorUnosa: true)
         stanje.precicaRadi = true
+
+        // Razvojna provera: nacrtaj traku i karticu ažuriranja bez mreže.
+        if ProcessInfo.processInfo.environment["PITCHI_SLIKA_AZURIRANJE"] != nil {
+            stanje.azuriranje = Izdanje(
+                tag_name: "v0.5.0",
+                name: "Pitchi 0.5.0",
+                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v0.5.0")!,
+                assets: [
+                    Izdanje.Fajl(
+                        name: "Pitchi-0.5.0-macOS-arm64.zip",
+                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v0.5.0/Pitchi-0.5.0-macOS-arm64.zip")!
+                    )
+                ]
+            )
+            stanje.zadnjaProveraAzuriranja = Date()
+        }
 
         let prozor = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 820, height: 700),
@@ -141,9 +158,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow?
     private var hud: NSPanel?
     private var stavkaSnimi: NSMenuItem?
+    private var stavkaAzuriranja: NSMenuItem?
     private var pretplate = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        UNUserNotificationCenter.current().delegate = DelegateObavestenja.zajednicki
         postaviGlavniMeni()
         postaviStatusItem()
         postaviHud()
@@ -238,6 +257,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         meni.addItem(.separator())
 
+        let azuriranja = NSMenuItem(
+            title: "Proveri ažuriranja…",
+            action: #selector(proveriAzuriranja),
+            keyEquivalent: ""
+        )
+        azuriranja.target = self
+        meni.addItem(azuriranja)
+        stavkaAzuriranja = azuriranja
+
         let podesavanja = NSMenuItem(title: "Podešavanja…", action: #selector(otvoriPodesavanja), keyEquivalent: ",")
         podesavanja.target = self
         meni.addItem(podesavanja)
@@ -267,6 +295,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         stanje.$sekunde
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.osveziIkonu(self?.stanje.stanje ?? .mirno) }
+            .store(in: &pretplate)
+
+        stanje.$azuriranje
+            .receive(on: RunLoop.main)
+            .sink { [weak self] izdanje in
+                self?.stavkaAzuriranja?.title = izdanje.map { "Ažuriranje \($0.verzija)…" }
+                    ?? "Proveri ažuriranja…"
+            }
             .store(in: &pretplate)
     }
 
@@ -387,6 +423,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func otvoriPodesavanja() {
         stanje.izabranTab = 2
         prikaziProzor()
+    }
+
+    @objc private func proveriAzuriranja() {
+        stanje.izabranTab = 2
+        prikaziProzor()
+        if stanje.azuriranje == nil {
+            stanje.proveriAzuriranja(rucno: true)
+        }
     }
 
     @objc private func otvoriDozvole() {

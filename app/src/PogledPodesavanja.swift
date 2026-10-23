@@ -15,6 +15,7 @@ struct PogledPodesavanja: View {
                 recnikKartica
                 modelKartica
                 dozvoleKartica
+                azuriranjaKartica
                 oAplikaciji
             }
             .padding(.horizontal, 24)
@@ -453,6 +454,110 @@ struct PogledPodesavanja: View {
         }
     }
 
+    private var azuriranjaKartica: some View {
+        Kartica(naslov: "Ažuriranja", ikona: "arrow.down.circle") {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Verzija \(app.trenutnaVerzija)")
+                        .font(.callout.weight(.medium))
+                    Text(statusAzuriranja)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                Button {
+                    app.proveriAzuriranja(rucno: true)
+                } label: {
+                    if app.proveravaAzuriranja {
+                        HStack(spacing: 6) {
+                            ProgressView().controlSize(.small)
+                            Text("Proveravam…")
+                        }
+                    } else {
+                        Label("Proveri ažuriranja", systemImage: "arrow.triangle.2.circlepath")
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(app.proveravaAzuriranja)
+            }
+
+            if let izdanje = app.azuriranje {
+                Divider()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("Dostupna je verzija \(izdanje.verzija)", systemImage: "sparkles")
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(Izgled.akcenat)
+
+                    if let napomena = izdanje.name?.trimmingCharacters(in: .whitespacesAndNewlines),
+                       !napomena.isEmpty,
+                       napomena != izdanje.verzija,
+                       napomena != "v\(izdanje.verzija)" {
+                        Text(napomena)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(3)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    HStack(spacing: 8) {
+                        Button("Preuzmi \(izdanje.verzija)") { app.otvoriAzuriranje() }
+                            .buttonStyle(.borderedProminent)
+                            .tint(Izgled.akcenat)
+                            .controlSize(.small)
+
+                        Button("Stranica izdanja") { app.otvoriStranicuIzdanja() }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+
+                        Spacer()
+
+                        Button("Preskoči ovu verziju") { app.preskociAzuriranje() }
+                            .buttonStyle(.borderless)
+                            .controlSize(.small)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            Divider()
+
+            Toggle(isOn: $app.podesavanja.proveravajAzuriranja) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Proveravaj automatski").font(.callout.weight(.medium))
+                    Text("Jednom dnevno pita GitHub da li postoji novije izdanje. Ne šalje se nikakav tekst ni podaci o računaru.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .toggleStyle(.switch)
+            .onChange(of: app.podesavanja.proveravajAzuriranja) { ukljuceno in
+                if ukljuceno { app.proveriAzuriranja(rucno: true) }
+            }
+        }
+    }
+
+    private var statusAzuriranja: String {
+        if app.proveravaAzuriranja { return "Proveravam GitHub…" }
+        if app.azuriranje != nil { return "Dostupno je novije izdanje." }
+        if let datum = app.zadnjaProveraAzuriranja {
+            return "Poslednja provera: \(Self.formatDatuma.string(from: datum))."
+        }
+        return "Još nije provereno."
+    }
+
+    private static let formatDatuma: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
     private var oAplikaciji: some View {
         Kartica(naslov: "O aplikaciji", ikona: "info.circle") {
             HStack {
@@ -466,7 +571,7 @@ struct PogledPodesavanja: View {
                     .font(.caption2.monospaced())
                     .foregroundStyle(.tertiary)
             }
-            Text("Snimak i tekst ne napuštaju Mac. Nema naloga, nema telemetrije. Jedini izlaz u mrežu je preuzimanje modela — i izabrani servis za doterivanje, ako ga sam uključiš.")
+            Text("Snimak i tekst ne napuštaju Mac. Nema naloga, nema telemetrije. Mreža se koristi samo za preuzimanje modela, proveru novih izdanja na GitHub-u — i izabrani servis za doterivanje, ako ga sam uključiš.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

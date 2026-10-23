@@ -185,6 +185,44 @@ struct GreskaKartica: View {
     }
 }
 
+struct AzuriranjeTraka: View {
+    let verzija: String
+    let trenutna: String
+    let preuzmi: () -> Void
+    let kasnije: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(Izgled.akcenat)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Dostupna je verzija \(verzija)")
+                    .font(.callout.weight(.semibold))
+                Text("Imaš \(trenutna). Preuzmi novo izdanje sa GitHub-a.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button("Preuzmi", action: preuzmi)
+                .buttonStyle(.borderedProminent)
+                .tint(Izgled.akcenat)
+                .controlSize(.small)
+
+            Button("Kasnije", action: kasnije)
+                .buttonStyle(.borderless)
+                .controlSize(.small)
+                .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Izgled.akcenat.opacity(0.09)))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Izgled.akcenat.opacity(0.2), lineWidth: 1))
+    }
+}
+
 struct DugmeKopiraj: View {
     let tekst: String
     let akcija: () -> Void

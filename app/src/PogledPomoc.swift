@@ -57,8 +57,21 @@ struct PogledPomoc: View {
                     servis("Drugi OpenAI-kompatibilni", "OpenRouter, Groq, LM Studio, vLLM… Unesi adresu koja se završava sa /chat/completions i tačan naziv modela.")
                 }
 
+                Kartica(naslov: "Ažuriranja", ikona: "arrow.down.circle") {
+                    Text("Pitchi jednom dnevno proveri da li na GitHub-u postoji novije izdanje. Kada postoji, prikaže sistemsko obaveštenje i traku u prozoru sa dugmetom „Preuzmi“. Aplikacija se ne menja sama — preuzmeš novi paket i zameniš staru kopiju.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Divider()
+                    Text("Proveru možeš isključiti u Podešavanjima → Ažuriranja, a ručno je pokrenuti dugmetom „Proveri ažuriranja“ ili iz menija u menu baru.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
                 Kartica(naslov: "Privatnost", ikona: "hand.raised") {
-                    Text("Snimak se obrađuje lokalno, whisper.cpp modelom na ovom Macu. Nigde se ne šalje. Jedina mrežna radnja je preuzimanje modela. Ako uključiš doterivanje, samo gotov tekst ide izabranom servisu — nikada zvuk. Ollama radi lokalno i tada tekst ne napušta Mac.")
+                    Text("Snimak se obrađuje lokalno, whisper.cpp modelom na ovom Macu. Nigde se ne šalje. Mreža se koristi za preuzimanje modela i za proveru novih izdanja na GitHub-u. Ako uključiš doterivanje, samo gotov tekst ide izabranom servisu — nikada zvuk. Ollama radi lokalno i tada tekst ne napušta Mac.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)

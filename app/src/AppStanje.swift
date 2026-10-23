@@ -26,6 +26,10 @@ final class AppStanje: NSObject, ObservableObject {
     @Published var izabranTab = 0
     @Published var kljucDoterivanja = ""
     @Published var testiraDoterivanje = false
+    @Published var azuriranje: Izdanje?
+    @Published var proveravaAzuriranja = false
+    @Published var sakrijTrakuAzuriranja = false
+    @Published var zadnjaProveraAzuriranja: Date?
 
     let snimac = Snimac()
     let prepisivac = Prepisivac()
@@ -34,6 +38,7 @@ final class AppStanje: NSObject, ObservableObject {
 
     private var tajmerOslobadjanja: Timer?
     private var tajmerSekundi: Timer?
+    private var tajmerAzuriranja: Timer?
     private var pocetakSnimanja = Date()
     private var aplikacijaPreSnimanja: NSRunningApplication?
     private var zadnjaSpoljnaAplikacija: NSRunningApplication?
@@ -52,6 +57,9 @@ final class AppStanje: NSObject, ObservableObject {
         osveziModel()
         osveziDozvole()
         osveziPrijavu()
+        zadnjaProveraAzuriranja = SkladisteAzuriranja.zadnjaProvera
+        vratiPoznatoAzuriranje()
+        pokreniProveruAzuriranja()
 
         snimac.naNivo = { [weak self] vrednost in
             self?.nivo = vrednost
@@ -86,6 +94,7 @@ final class AppStanje: NSObject, ObservableObject {
 
     deinit {
         tastatura.zaustavi()
+        tajmerAzuriranja?.invalidate()
     }
 
     // MARK: - Dozvole
@@ -611,6 +620,129 @@ final class AppStanje: NSObject, ObservableObject {
                 }
             }
         }
+    }
+
+    // MARK: - Ažuriranja
+
+    var trenutnaVerzija: String { Azuriranja.trenutnaVerzija }
+
+    var azuriranjeDostupno: Bool { azuriranje != nil }
+
+    var dostupnaVerzija: String? { azuriranje?.verzija }
+
+    /// Posle pokretanja odmah pokaži poznato novije izdanje, dok dnevna
+    /// provera ne stigne sa svežim podacima (link, zip, napomena).
+    private func vratiPoznatoAzuriranje() {
+        guard let verzija = SkladisteAzuriranja.zadnjaVerzija,
+              Verzija.jeNovija(verzija, od: trenutnaVerzija),
+              SkladisteAzuriranja.preskocenaVerzija != verzija else { return }
+
+        let stranica = URL(string: "https://github.com/\(Azuriranja.repozitorij)/releases/tag/v\(verzija)")
+            ?? Azuriranja.stranicaIzdanja
+        azuriranje = Izdanje(
+            tag_name: "v\(verzija)",
+            name: nil,
+            html_url: stranica,
+            assets: []
+        )
+    }
+
+    /// Prva provera ide par sekundi posle pokretanja, pa na svakih šest sati
+    /// proveravamo da li je prošlo dvadeset četiri. Tako se propuštena
+    /// provera (spavanje, prekid mreže) nadoknadi bez stalnog saobraćaja.
+    private func pokreniProveruAzuriranja() {
+        tajmerAzuriranja?.invalidate()
+        tajmerAzuriranja = Timer.scheduledTimer(withTimeInterval: 6 * 3600, repeats: true) { [weak self] _ in
+            self?.proveriAzuriranjaAkoTreba()
+        }
+        guard podesavanja.proveravajAzuriranja, SkladisteAzuriranja.trebaProveriti() else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+            self?.proveriAzuriranjaAkoTreba()
+        }
+    }
+
+    private func proveriAzuriranjaAkoTreba() {
+        guard podesavanja.proveravajAzuriranja,
+              !proveravaAzuriranja,
+              SkladisteAzuriranja.trebaProveriti() else { return }
+        proveriAzuriranja(rucno: false)
+    }
+
+    func proveriAzuriranja(rucno: Bool = false) {
+        guard !proveravaAzuriranja else { return }
+        proveravaAzuriranja = true
+        if rucno {
+            greska = nil
+            // Ručna provera je nova odluka — i preskočena verzija se ponovo nudi.
+            SkladisteAzuriranja.preskocenaVerzija = nil
+        }
+
+        Azuriranja.proveri { [weak self] rezultat in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.proveravaAzuriranja = false
+                switch rezultat {
+                case .success(let izdanje):
+                    self.obradiIzdanje(izdanje, rucno: rucno)
+                case .failure(let error):
+                    if rucno {
+                        self.greska = "Provera ažuriranja nije uspela: \(error.localizedDescription)"
+                    }
+                }
+            }
+        }
+    }
+
+    private func obradiIzdanje(_ izdanje: Izdanje, rucno: Bool) {
+        let sada = Date()
+        SkladisteAzuriranja.zadnjaProvera = sada
+        SkladisteAzuriranja.zadnjaVerzija = izdanje.verzija
+        zadnjaProveraAzuriranja = sada
+
+        let novija = Verzija.jeNovija(izdanje.verzija, od: trenutnaVerzija)
+        let preskocena = SkladisteAzuriranja.preskocenaVerzija == izdanje.verzija
+
+        if novija, !preskocena {
+            azuriranje = izdanje
+            sakrijTrakuAzuriranja = false
+            if !rucno, SkladisteAzuriranja.obavestenaVerzija != izdanje.verzija {
+                SkladisteAzuriranja.obavestenaVerzija = izdanje.verzija
+                ObavestenjaAzuriranja.prikazi(
+                    verzija: izdanje.verzija,
+                    adresa: izdanje.adresaPreuzimanja
+                )
+            }
+            if rucno {
+                postaviInfo("Dostupna je verzija \(izdanje.verzija).")
+            }
+        } else {
+            azuriranje = nil
+            if rucno {
+                postaviInfo("Pitchi je ažuran (verzija \(trenutnaVerzija)).")
+            }
+        }
+    }
+
+    func otvoriAzuriranje() {
+        guard let izdanje = azuriranje else { return }
+        NSWorkspace.shared.open(izdanje.adresaPreuzimanja)
+        sakrijTrakuAzuriranja = true
+    }
+
+    func otvoriStranicuIzdanja() {
+        NSWorkspace.shared.open(azuriranje?.html_url ?? Azuriranja.stranicaIzdanja)
+    }
+
+    func kasnijeAzuriranje() {
+        sakrijTrakuAzuriranja = true
+    }
+
+    func preskociAzuriranje() {
+        guard let izdanje = azuriranje else { return }
+        SkladisteAzuriranja.preskocenaVerzija = izdanje.verzija
+        azuriranje = nil
+        sakrijTrakuAzuriranja = false
+        postaviInfo("Neću više podsećati na verziju \(izdanje.verzija).")
     }
 
     // MARK: - Pomoćno

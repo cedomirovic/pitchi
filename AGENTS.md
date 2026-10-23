@@ -166,6 +166,32 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   API ključeva. Verzija je podignuta na `0.3.0` i objavljen je release
   `v0.3.0` sa `Pitchi-0.3.0-macOS-arm64.zip` (3,0 MB, SHA-256
   `bbb3aea0cefa7d298750a104efefed2305218d5da90f6c47cdc1f66f47530e92`).
+- **23.10.2026. (ažuriranja)** — dodata je provera novih izdanja i obaveštenje.
+  Odluke:
+  - `Azuriranje.swift` čita `releases/latest` sa GitHub-a; poređenje verzija je
+    brojevno (`0.10.0` ide posle `0.9.0`, `v` prefiks se ignoriše);
+  - provera ide 4 s posle pokretanja i najviše jednom dnevno; timer na 6 h
+    nadoknađuje propuštenu proveru posle spavanja ili prekida mreže;
+  - `UNUserNotificationCenter` prikaže sistemsko obaveštenje (prvi put traži
+    dozvolu), a klik otvara zip asset; ako obaveštenja nisu dozvoljena, radi
+    traka u prozoru i naslov u menu baru;
+  - u Podešavanjima → **Ažuriranja** su trenutna verzija, „Proveri ažuriranja“,
+    dugmad „Preuzmi“ i „Stranica izdanja“, „Preskoči ovu verziju“ i prekidač
+    `proveravajAzuriranja` (podrazumevano uključen; stara podešavanja se
+    dekodiraju sa `true`);
+  - poznata novija verzija se pamti u `UserDefaults` i vraća odmah pri sledećem
+    pokretanju, dok dnevna provera ne stigne sa svežim linkom; ista verzija se
+    obaveštava samo jednom, a preskočena se nudi ponovo tek posle ručne provere
+    ili nove verzije;
+  - aplikacija se ne menja sama — „Preuzmi“ otvara zip u browseru, pa korisnik
+    zameni `Pitchi.app` u `/Applications`.
+  Provereno: test poređenja verzija i dekodiranja GitHub odgovora protiv
+  lokalnog mock servera; živa aplikacija je sa mock izdanjem `0.4.0`/`0.5.0`
+  upisala `zadnjaVerzija` i `obavestenaVerzija`, a pravi GitHub je vratio
+  `0.3.0` i aplikacija je ispravno zaključila da je `0.4.0` ažurna. Tabovi su
+  nacrtani kroz `--slika` sa lažnim izdanjem (`PITCHI_SLIKA_AZURIRANJE=1`);
+  `--test-whisper` i dalje daje isti srpski tekst. Verzija je podignuta na
+  `0.4.0` (build 4) i instalirana u `/Applications`.
 - Sledeći korak: probni diktat uživo sa Large v3 i stvarnim API ključem za
   izabrani servis, zatim po potrebi brisanje modela koje korisnik ne želi i
   eventualni prelazak `diktator` repoa na ovu aplikaciju.

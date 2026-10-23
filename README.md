@@ -28,6 +28,8 @@ lakši modeli se preuzimaju direktno iz aplikacije.
 - **Pokretanje pri prijavi** — opciono u Podešavanjima, preko macOS Login Items.
 - **Dock i menu bar** — ikonica je vidljiva na oba mesta; klik na Dock ponovo
   otvara prozor.
+- **Ažuriranja** — jednom dnevno proveri GitHub; kada postoji novije izdanje,
+  prikaže obaveštenje i traku sa dugmetom za preuzimanje.
 - **Opciono doterivanje teksta** — izaberi DeepSeek, OpenAI, Anthropic Claude,
   lokalni Ollama ili drugi OpenAI-kompatibilni servis; popravlja interpunkciju
   i imena. Isključeno po defaultu, šalje se samo tekst, nikada zvuk.
@@ -36,7 +38,7 @@ lakši modeli se preuzimaju direktno iz aplikacije.
 
 ### Gotova aplikacija
 
-1. Preuzmi `Pitchi-0.3.0-macOS-arm64.zip` sa
+1. Preuzmi `Pitchi-0.4.0-macOS-arm64.zip` sa
    [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
 2. Otpakuj i prevuci `Pitchi.app` u `/Applications`.
 3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
@@ -171,6 +173,24 @@ Ako **Test veze** prijavi HTTP 401, ključ nije ispravan. HTTP 404 obično znač
 pogrešnu adresu ili naziv modela. Ključevi se čuvaju u macOS Keychain-u, po
 servisu odvojeno; ne upisuju se u istoriju ni u fajl sa podešavanjima.
 
+## Ažuriranja
+
+Pitchi pri pokretanju i najviše jednom dnevno pita GitHub za najnovije izdanje
+(`api.github.com/repos/cedomirovic/pitchi/releases/latest`). Ako je verzija
+novija od instalirane:
+
+- prikaže sistemsko obaveštenje (prvi put traži dozvolu za obaveštenja),
+- prikaže traku u prozoru sa dugmetom **Preuzmi**,
+- u menu baru stavi **Ažuriranje X…**.
+
+Aplikacija se ne menja sama. **Preuzmi** otvara zip paket u browseru, a
+**Stranica izdanja** vodi na GitHub. Posle preuzimanja zameni `Pitchi.app` u
+`/Applications` (stara kopija može u `.bak`).
+
+Proveru možeš isključiti u Podešavanjima → **Ažuriranja**, a ručno je pokrenuti
+dugmetom **Proveri ažuriranja** ili iz menija u menu baru. Preskočena verzija
+se ne nudi ponovo dok ne izađe novija.
+
 ## Privatnost
 
 - Snimak se ne čuva i ne šalje nigde.
@@ -178,6 +198,8 @@ servisu odvojeno; ne upisuju se u istoriju ni u fajl sa podešavanjima.
 - Doterivanje je opciono i šalje samo gotov tekst, nikada zvuk. Kod Ollama
   servisa i tekst ostaje na Macu; kod ostalih ide izabranom provajderu.
 - API ključevi su u macOS Keychain-u, odvojeno po servisu.
+- Provera ažuriranja šalje samo običan HTTPS zahtev GitHub-u za javni spisak
+  izdanja. Ne šalju se tekst, snimak ni podaci o računaru.
 
 ## Razvoj
 
@@ -199,7 +221,9 @@ open app/build/Pitchi.app
 
 Whisper je **statički** ugrađen (Metal + BLAS), pa aplikacija ne zavisi od
 Homebrew-a na ciljnom Macu. Skrivene razvojne opcije: `--slika` (nacrta tabove
-u PNG), `--test-whisper` (prepiše `/tmp/sr.wav` kroz isti kod).
+u PNG), `--test-whisper` (prepiše `/tmp/sr.wav` kroz isti kod). Za proveru
+ažuriranja bez objave: `PITCHI_AZURIRANJE_API` menja GitHub adresu, a
+`PITCHI_SLIKA_AZURIRANJE=1` ubacuje lažno izdanje u `--slika`.
 
 ## Stariji CLI
 
