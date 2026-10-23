@@ -10,7 +10,7 @@ enum GreskaSnimka: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .nemaMikrofona: return "Nema dostupnog mikrofona."
-        case .nemaDozvole: return "Pitchi nema dozvolu za mikrofon. Otvori Podešavanja → Privatnost → Mikrofon."
+        case .nemaDozvole: return "Diktator nema dozvolu za mikrofon. Otvori Podešavanja → Privatnost → Mikrofon."
         case .pretvaranje: return "Snimak nije mogao da se pripremi za prepis."
         }
     }

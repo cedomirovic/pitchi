@@ -1,4 +1,4 @@
-// Mali plutajući prozor koji pokazuje da Pitchi snima — i van glavnog prozora.
+// Mali plutajući prozor koji pokazuje da Diktator snima — i van glavnog prozora.
 import SwiftUI
 
 struct HudPogled: View {
@@ -75,7 +75,7 @@ struct HudPogled: View {
         case .snima: return "Pusti Fn kada završiš"
         case .priprema: return "Učitavam model…"
         case .prepisuje: return "Pretvaram govor u tekst…"
-        default: return "Pitchi"
+        default: return "Diktator"
         }
     }
 }

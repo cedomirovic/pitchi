@@ -21,7 +21,7 @@ enum GreskaPrepisaa: LocalizedError {
 
 final class Prepisivac {
     private var kontekst: OpaquePointer?
-    private let red = DispatchQueue(label: "com.cedomirovic.pitchi.whisper")
+    private let red = DispatchQueue(label: "com.cedomirovic.diktator.whisper")
     private let bravaStanja = NSLock()
     private var uMemoriji = false
 

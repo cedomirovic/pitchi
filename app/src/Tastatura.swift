@@ -1,4 +1,4 @@
-// Globalna precica: drzi se Fn i govori. Radi i kada Pitchi nije u fokusu,
+// Globalna precica: drzi se Fn i govori. Radi i kada Diktator nije u fokusu,
 // ali trazi dozvolu "Nadzor unosa" (Input Monitoring).
 import ApplicationServices
 import Foundation

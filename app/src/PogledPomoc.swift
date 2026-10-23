@@ -6,16 +6,16 @@ struct PogledPomoc: View {
         ScrollView {
             VStack(spacing: 16) {
                 Kartica(naslov: "Kako se koristi", ikona: "questionmark.circle") {
-                    korak(1, "Drži Fn", "Dok god držiš Fn, Pitchi snima. Pusti kada završiš rečenicu.")
+                    korak(1, "Drži Fn", "Dok god držiš Fn, Diktator snima. Pusti kada završiš rečenicu.")
                     korak(2, "Sačekaj trenutak", "Prvi prepis učitava model (2–3 s). Sledeći su brži dok je model u memoriji.")
-                    korak(3, "Tekst se sam zalepi", "Pitchi pošalje Cmd+V aplikaciji u kojoj si pisao. Ako ne može, tekst čeka u klipbordu.")
+                    korak(3, "Tekst se sam zalepi", "Diktator pošalje Cmd+V aplikaciji u kojoj si pisao. Ako ne može, tekst čeka u klipbordu.")
                     korak(4, "Bez Fn? Klikni dugme", "Na ekranu „Početak” veliko dugme radi isto — klik za početak, klik za kraj.")
                 }
 
                 Kartica(naslov: "Ako nešto ne radi", ikona: "wrench.and.screwdriver") {
                     problem(
                         "Fn ne reaguje",
-                        "Dozvoli „Nadzor unosa” u Podešavanjima → Privatnost. Posle promene dozvole zatvori i otvori Pitchi."
+                        "Dozvoli „Nadzor unosa” u Podešavanjima → Privatnost. Posle promene dozvole zatvori i otvori Diktator."
                     )
                     Divider()
                     problem(
@@ -25,7 +25,7 @@ struct PogledPomoc: View {
                     Divider()
                     problem(
                         "Tekst se ne lepi sam",
-                        "Dozvoli „Pristupačnost”. Pitchi tada može da pošalje Cmd+V. Bez toga tekst i dalje završi u klipbordu."
+                        "Dozvoli „Pristupačnost”. Diktator tada može da pošalje Cmd+V. Bez toga tekst i dalje završi u klipbordu."
                     )
                     Divider()
                     problem(
@@ -58,7 +58,7 @@ struct PogledPomoc: View {
                 }
 
                 Kartica(naslov: "Ažuriranja", ikona: "arrow.down.circle") {
-                    Text("Pitchi jednom dnevno proveri da li na GitHub-u postoji novije izdanje. Kada postoji, prikaže sistemsko obaveštenje i traku u prozoru sa dugmetom „Preuzmi“. Aplikacija se ne menja sama — preuzmeš novi paket i zameniš staru kopiju.")
+                    Text("Diktator jednom dnevno proveri da li na GitHub-u postoji novije izdanje. Kada postoji, prikaže sistemsko obaveštenje i traku u prozoru sa dugmetom „Preuzmi“. Aplikacija se ne menja sama — preuzmeš novi paket i zameniš staru kopiju.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)

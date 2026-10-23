@@ -1,11 +1,11 @@
 #!/bin/bash
-# Gradi Pitchi.app bez Xcode-a (Command Line Tools + statički whisper.cpp).
+# Gradi Diktator.app bez Xcode-a (Command Line Tools + statički whisper.cpp).
 set -euo pipefail
 cd "$(dirname "$0")"
 
-CERT="${PITCHI_CERT:-Pichi Local Dev}"
-APP="build/Pitchi.app"
-BIN="$APP/Contents/MacOS/Pitchi"
+CERT="${DIKTATOR_CERT:-Pichi Local Dev}"
+APP="build/Diktator.app"
+BIN="$APP/Contents/MacOS/Diktator"
 
 if [ ! -f vendor/whisper/lib/libwhisper.a ]; then
   echo "Nedostaje whisper.cpp — pripremam ga (jednokratno, traje par minuta)…"
@@ -21,7 +21,7 @@ echo "Kompajliram ${#FILES[@]} Swift fajlova…"
 swiftc -O -swift-version 5 -parse-as-library \
   -target arm64-apple-macos13.0 \
   -I vendor/whisper/include \
-  -import-objc-header src/Pitchi-Bridging-Header.h \
+  -import-objc-header src/Diktator-Bridging-Header.h \
   -o "$BIN" \
   "${FILES[@]}" \
   -Xlinker -force_load -Xlinker vendor/whisper/lib/libggml-metal.a \

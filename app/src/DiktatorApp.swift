@@ -6,7 +6,7 @@ import SwiftUI
 import UserNotifications
 
 @main
-struct PitchiMain {
+struct DiktatorMain {
     // NSApplication.delegate je slaba referenca — bez ovoga bi delegat nestao
     // pre nego što stigne da napravi prozor i menu bar.
     private static let delegate = AppDelegate()
@@ -30,6 +30,31 @@ struct PitchiMain {
             exit(0)
         }
 
+        // Razvojna pomoć: ispiši stvarne macOS dozvole bez otvaranja prozora.
+        if CommandLine.arguments.contains("--dozvole") {
+            app.setActivationPolicy(.prohibited)
+            print("mikrofon: \(Snimac.dozvola == .authorized ? "dozvoljen" : "nije dozvoljen")")
+            print("pristupacnost: \(Lepak.dozvola ? "dozvoljena" : "nije dozvoljena")")
+            print("nadzor unosa: \(Tastatura.dozvola ? "dozvoljen" : "nije dozvoljen")")
+            exit(0)
+        }
+
+        // Razvojna pomoć: uključi pokretanje pri prijavi bez otvaranja prozora.
+        if CommandLine.arguments.contains("--prijava") {
+            app.setActivationPolicy(.prohibited)
+            do {
+                try Prijava.postavi(true)
+                if Prijava.zahtevaOdobrenje {
+                    print("prijava: čeka odobrenje u System Settings → General → Login Items")
+                } else {
+                    print("prijava: \(Prijava.ukljucena ? "uključena" : "isključena")")
+                }
+            } catch {
+                print("GRESKA: \(error.localizedDescription)")
+            }
+            exit(0)
+        }
+
         app.delegate = delegate
         app.setActivationPolicy(.regular)
         app.run()
@@ -48,15 +73,15 @@ struct PitchiMain {
         stanje.precicaRadi = true
 
         // Razvojna provera: nacrtaj traku i karticu ažuriranja bez mreže.
-        if ProcessInfo.processInfo.environment["PITCHI_SLIKA_AZURIRANJE"] != nil {
+        if ProcessInfo.processInfo.environment["DIKTATOR_SLIKA_AZURIRANJE"] != nil {
             stanje.azuriranje = Izdanje(
-                tag_name: "v0.5.0",
-                name: "Pitchi 0.5.0",
-                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v0.5.0")!,
+                tag_name: "v0.6.0",
+                name: "Diktator 0.6.0",
+                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v0.6.0")!,
                 assets: [
                     Izdanje.Fajl(
-                        name: "Pitchi-0.5.0-macOS-arm64.zip",
-                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v0.5.0/Pitchi-0.5.0-macOS-arm64.zip")!
+                        name: "Diktator-0.6.0-macOS-arm64.zip",
+                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v0.6.0/Diktator-0.6.0-macOS-arm64.zip")!
                     )
                 ]
             )
@@ -81,7 +106,7 @@ struct PitchiMain {
             guard let rep = pogled.bitmapImageRepForCachingDisplay(in: pogled.bounds) else { continue }
             pogled.cacheDisplay(in: pogled.bounds, to: rep)
             guard let png = rep.representation(using: .png, properties: [:]) else { continue }
-            let putanja = "/tmp/pitchi-tab\(tab).png"
+            let putanja = "/tmp/diktator-tab\(tab).png"
             try? png.write(to: URL(fileURLWithPath: putanja))
             print(putanja)
         }
@@ -194,19 +219,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         glavni.addItem(aplikacijaStavka)
         let aplikacijaMeni = NSMenu()
         aplikacijaMeni.addItem(
-            withTitle: "O aplikaciji Pitchi",
+            withTitle: "O aplikaciji Diktator",
             action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
             keyEquivalent: ""
         )
         aplikacijaMeni.addItem(.separator())
         aplikacijaMeni.addItem(
-            withTitle: "Sakrij Pitchi",
+            withTitle: "Sakrij Diktator",
             action: #selector(NSApplication.hide(_:)),
             keyEquivalent: "h"
         )
         aplikacijaMeni.addItem(.separator())
         aplikacijaMeni.addItem(
-            withTitle: "Izađi iz Pitchi-ja",
+            withTitle: "Izađi iz Diktatora",
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         )
@@ -231,14 +256,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func postaviStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let dugme = item.button {
-            dugme.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Pitchi")
+            dugme.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Diktator")
             dugme.image?.isTemplate = true
-            dugme.toolTip = "Pitchi — drži Fn i govori"
+            dugme.toolTip = "Diktator — drži Fn i govori"
         }
 
         let meni = NSMenu()
 
-        let pokazi = NSMenuItem(title: "Prikaži Pitchi", action: #selector(prikaziProzor), keyEquivalent: "o")
+        let pokazi = NSMenuItem(title: "Prikaži Diktator", action: #selector(prikaziProzor), keyEquivalent: "o")
         pokazi.target = self
         meni.addItem(pokazi)
 
@@ -314,7 +339,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case .priprema, .prepisuje: ime = "hourglass"
         case .greska: ime = "exclamationmark.triangle.fill"
         }
-        statusItem?.button?.image = NSImage(systemSymbolName: ime, accessibilityDescription: "Pitchi")
+        statusItem?.button?.image = NSImage(systemSymbolName: ime, accessibilityDescription: "Diktator")
         statusItem?.button?.image?.isTemplate = true
 
         let naslov: String
@@ -338,7 +363,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 backing: .buffered,
                 defer: false
             )
-            prozor.title = "Pitchi"
+            prozor.title = "Diktator"
             prozor.titlebarAppearsTransparent = true
             prozor.titleVisibility = .hidden
             prozor.contentView = NSHostingView(rootView: pogled)

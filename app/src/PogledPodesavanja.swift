@@ -96,7 +96,7 @@ struct PogledPodesavanja: View {
             ) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Pokreni pri prijavi računara").font(.callout.weight(.medium))
-                    Text("Pitchi se pokrene odmah posle prijave, pa je Fn spreman za diktiranje.")
+                    Text("Diktator se pokrene odmah posle prijave, pa je Fn spreman za diktiranje.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -111,7 +111,7 @@ struct PogledPodesavanja: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("macOS traži odobrenje")
                             .font(.callout.weight(.medium))
-                        Text("Odobri Pitchi u System Settings → General → Login Items.")
+                        Text("Odobri Diktator u System Settings → General → Login Items.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Button("Otvori Login Items") { app.otvoriPrijavuPodesavanja() }
@@ -129,7 +129,7 @@ struct PogledPodesavanja: View {
                     .foregroundStyle(Izgled.akcenat)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Ikona u Docku").font(.callout.weight(.medium))
-                    Text("Pitchi je vidljiv u Docku i Cmd+Tab-u, pored ikone u menu baru.")
+                    Text("Diktator je vidljiv u Docku i Cmd+Tab-u, pored ikone u menu baru.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -423,7 +423,7 @@ struct PogledPodesavanja: View {
             Divider()
             RedDozvole(
                 naziv: "Nadzor unosa",
-                opis: "Prečica Fn radi i van Pitchi-ja.",
+                opis: "Prečica Fn radi i van Diktatora.",
                 ikona: "keyboard",
                 dozvoljeno: app.dozvole.nadzorUnosa
             ) { app.zatrazNadzorUnosa() }
@@ -561,7 +561,7 @@ struct PogledPodesavanja: View {
     private var oAplikaciji: some View {
         Kartica(naslov: "O aplikaciji", ikona: "info.circle") {
             HStack {
-                Text("Pitchi")
+                Text("Diktator")
                     .font(.callout.weight(.medium))
                 Text(verzija)
                     .font(.caption.monospaced())

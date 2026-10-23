@@ -115,7 +115,7 @@ struct PogledPregled: View {
 
     private var dozvoleKartica: some View {
         Kartica(naslov: "Još malo pa sve radi", ikona: "lock.shield") {
-            Text("Pitchi traži tri dozvole. Bez njih ne može da čuje mikrofon, prepozna Fn ili zalepi tekst.")
+            Text("Diktator traži tri dozvole. Bez njih ne može da čuje mikrofon, prepozna Fn ili zalepi tekst.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
 
@@ -145,7 +145,7 @@ struct PogledPregled: View {
             ) { app.zatrazPristupacnost() }
 
             if app.dozvole.nadzorUnosa && !app.precicaRadi {
-                Text("Dozvola postoji, ali prečica još nije aktivna. Zatvori i ponovo otvori Pitchi.")
+                Text("Dozvola postoji, ali prečica još nije aktivna. Zatvori i ponovo otvori Diktator.")
                     .font(.caption)
                     .foregroundStyle(.orange)
             }

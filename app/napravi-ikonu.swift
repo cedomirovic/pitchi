@@ -1,4 +1,4 @@
-// Crta ikonicu Pitchi-ja (gradijent + mikrofon) i pravi .icns.
+// Crta ikonicu Diktatora (gradijent + mikrofon) i pravi .icns.
 // Pokretanje: swift napravi-ikonu.swift
 import AppKit
 

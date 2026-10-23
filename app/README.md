@@ -1,12 +1,12 @@
-# Pitchi
+# Diktator
 
 Diktiranje na srpskom i engleskom, lokalno, na macOS-u. Držiš `Fn`, izgovoriš
 rečenicu, pustiš — tekst se prepiše i zalepi tamo gde pišeš. Jezik se prepoznaje
 automatski, pa možeš da menjaš srpski i engleski bez podešavanja.
 
 Sve ostaje na Macu: snimak se obrađuje whisper.cpp modelom u samoj aplikaciji,
-bez servera i bez naloga. Jedini mrežni izlaz je preuzimanje modela (1 GB) i
-opciono DeepSeek doterivanje teksta, koje sam uključuješ.
+bez servera i bez naloga. Mreža se koristi za preuzimanje modela, proveru novih
+izdanja i opciono doterivanje teksta, koje sam uključuješ.
 
 ## Šta dobijaš
 
@@ -22,8 +22,8 @@ opciono DeepSeek doterivanje teksta, koje sam uključuješ.
 - **Istorija** — zadnjih 200 prepisa, pretraga i kopiranje.
 - **Štednja memorije** — model se učitava pri diktiranju i oslobađa posle
   5 minuta mirovanja. Na 8 GB Macu ostaje oko 1,4 GB samo dok radi.
-- **Opciono doterivanje** — DeepSeek popravi interpunkciju i imena; isključeno
-  po defaultu, ključ se čuva u Keychain-u.
+- **Opciono doterivanje** — izabrani servis popravi interpunkciju i imena;
+  isključeno po defaultu, ključ se čuva u Keychain-u.
 
 ## Zahtevi
 
@@ -36,12 +36,12 @@ opciono DeepSeek doterivanje teksta, koje sam uključuješ.
 
 ### Gotova aplikacija
 
-1. Preuzmi `Pitchi-0.1.0-macOS-arm64.zip` sa
+1. Preuzmi `Diktator-0.5.0-macOS-arm64.zip` sa
    [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
-2. Otpakuj i prevuci `Pitchi.app` u `/Applications`.
+2. Otpakuj i prevuci `Diktator.app` u `/Applications`.
 3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
    nije notarizovana, pa je macOS inače blokira. Alternativa:
-   `xattr -dr com.apple.quarantine /Applications/Pitchi.app`.
+   `xattr -dr com.apple.quarantine /Applications/Diktator.app`.
 
 Potreban je Apple Silicon i macOS 13 ili noviji.
 
@@ -58,15 +58,15 @@ bash app/instaliraj.sh --prepisi  # nova verzija (stara ide u .bak)
 ```
 
 Prvo građenje traje **5–10 minuta** jer se whisper.cpp i Metal biblioteke
-kompajliraju jednokratno. Skripta napravi `Pitchi.app`, potpiše ga lokalno
+kompajliraju jednokratno. Skripta napravi `Diktator.app`, potpiše ga lokalno
 (ad-hoc ako nema razvojnog sertifikata) i smesti u `/Applications`.
 
 ## Prvo pokretanje
 
-1. Otvori Pitchi (ikona u menu baru, prozor se pojavi sam).
+1. Otvori Diktator (ikona u menu baru, prozor se pojavi sam).
 2. Daj tri dozvole, redom iz prozora:
    - **Mikrofon** — da čuje govor.
-   - **Nadzor unosa** — da prepozna `Fn` i van Pitchi-ja. Posle ove dozvole
+   - **Nadzor unosa** — da prepozna `Fn` i van Diktatora. Posle ove dozvole
      zatvori i ponovo otvori aplikaciju.
    - **Pristupačnost** — da pošalje `Cmd+V` posle prepisa.
 3. Ako model nije tu, klikni **Preuzmi model (1 GB)**.
@@ -84,7 +84,7 @@ Prvi prepis posle novog builda ume da bude sporiji (kompajliraju se Metal
 ## Ako nešto ne radi
 
 **Fn ne reaguje.** Nema dozvole „Nadzor unosa”. Otvori Podešavanja → Privatnost
-→ Nadzor unosa, dodaj Pitchi i restartuj ga.
+→ Nadzor unosa, dodaj Diktator i restartuj ga.
 
 **Tekst se ne lepi sam.** Nema dozvole „Pristupačnost”. Tekst i dalje završi u
 klipbordu — zalepi ga sa `Cmd+V`.
@@ -98,7 +98,7 @@ Podešavanja → Model → Oslobodi memoriju.
 ## Privatnost
 
 - Snimak se ne čuva i ne šalje nigde.
-- Istorija je lokalni JSON u `~/Library/Application Support/Pitchi/`.
+- Istorija je lokalni JSON u `~/Library/Application Support/Diktator/`.
 - DeepSeek je opcion i šalje **samo tekst**, nikada zvuk.
 
 ## Razvoj
@@ -106,7 +106,7 @@ Podešavanja → Model → Oslobodi memoriju.
 ```
 app/
   src/            Swift izvori (AppKit + SwiftUI)
-  Info.plist      bundle, dozvole, LSUIElement
+  Info.plist      bundle, dozvole, Dock i menu bar
   build.sh        građenje + potpisivanje
   pripremi-whisper.sh   jednokratno građenje statičkog whisper.cpp-a
   instaliraj.sh   build + /Applications
@@ -115,15 +115,15 @@ app/
 
 Whisper je **statički** ugrađen (Metal + BLAS), pa aplikacija ne zavisi od
 Homebrew-a na ciljnom Macu. Model se preuzima sa Hugging Face-a u
-`~/Library/Application Support/Pitchi/models/`.
+`~/Library/Application Support/Diktator/models/`.
 
 ```bash
 bash app/build.sh
-open app/build/Pitchi.app
+open app/build/Diktator.app
 ```
 
 ## Zahvalnost
 
 - [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT) — ggml/whisper
 - OpenAI Whisper model `large-v3` (MIT), kvantizovan na q5_0
-- Ikona: napravljena za Pitchi
+- Ikona: napravljena za Diktator

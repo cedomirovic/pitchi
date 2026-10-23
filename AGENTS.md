@@ -1,36 +1,36 @@
-# Pitchi · lokalni alat za diktiranje
+# Diktator · lokalni alat za diktiranje
 
 Treći projekat pored `moja-zemlja-crm` (port 3000) i `alat` (port 3001).
 Ova dva se **ne diraju odavde** — svaki ima svoj `AGENTS.md` i svoj git.
 
-Pitchi snima govor sa mikrofona, prepisuje ga lokalno (whisper.cpp) i predaje
+Diktator snima govor sa mikrofona, prepisuje ga lokalno (whisper.cpp) i predaje
 tekst klipbordu ili aktivnoj aplikaciji. Sve ostaje na mašini — nema oblaka i
 nema npm paketa. Glavni deo je sada **macOS aplikacija** (`app/`, Swift +
-SwiftUI), a stari Node CLI (`pitchi.js`) ostaje kao rezerva.
+SwiftUI), a stari Node CLI (`diktator.js`) ostaje kao rezerva.
 
 ## Pokretanje
 
 ```bash
-bash app/build.sh                 # napravi app/build/Pitchi.app
+bash app/build.sh                 # napravi app/build/Diktator.app
 bash app/instaliraj.sh            # build + kopija u /Applications
 bash app/instaliraj.sh --prepisi  # zameni postojeću (stara u .bak)
 
 # stari CLI
-node pitchi.js stanje
-node pitchi.js diktat
+node diktator.js stanje
+node diktator.js diktat
 npm test
 ```
 
 ## Struktura
 
 ```
-app/src/          Swift izvori (PitchiApp, AppStanje, Snimac, Prepisivac…)
+app/src/          Swift izvori (DiktatorApp, AppStanje, Snimac, Prepisivac…)
 app/Info.plist    bundle, dozvole, Dock i menu bar
 app/build.sh      građenje + potpisivanje (swiftc, bez Xcode-a)
 app/pripremi-whisper.sh  statički whisper.cpp (Metal + BLAS)
 app/instaliraj.sh build + /Applications
 app/vendor/       whisper.cpp biblioteke — ne ide u git
-pitchi.js        stariji CLI ulaz — parsira opcije i zove lib/
+diktator.js        stariji CLI ulaz — parsira opcije i zove lib/
 lib/             stariji CLI (snimak, prepis, tekst)
 test/            testovi; pokretanje: node --test test/
 snimci/, izlaz/  korisnikovi fajlovi — u .gitignore
@@ -60,19 +60,21 @@ snimci/, izlaz/  korisnikovi fajlovi — u .gitignore
 ## Provera posle izmena
 
 ```bash
-node --check pitchi.js lib/*.js
-node pitchi.js --help
+node --check diktator.js lib/*.js
+node diktator.js --help
 npm test
 bash app/build.sh
-app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
+app/build/Diktator.app/Contents/MacOS/Diktator --test-whisper
+app/build/Diktator.app/Contents/MacOS/Diktator --dozvole
 ```
 
 ## Stanje projekta
 
-*(Ovaj deo se prepisuje na kraju svake sesije.)*
+*(Ovaj deo se prepisuje na kraju svake sesije. Istorijske beleške koriste
+današnje ime aplikacije.)*
 
 - **23.10.2026.** — projekat pokrenut i postavljen skelet: `package.json`
-  (bez zavisnosti), `.gitignore`, `pitchi.js` (CLI: `stanje`, `snimi`,
+  (bez zavisnosti), `.gitignore`, `diktator.js` (CLI: `stanje`, `snimi`,
   `prepis`, `diktat`), `lib/` (pomoc, snimak, prepis, tekst), `test/`
   (11 provera), `README.md`, `AGENTS.md`.
   Utvrđeno: Apple-ov Speech framework na ovoj mašini **ne podržava srpski**
@@ -88,14 +90,14 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   - srpski izlaz se transliteriše ćirilica → latinica (`Tekst.naLatnicu`);
   - `Fn` hold preko CGEventTap-a; lepljenje preko `Cmd+V` (Accessibility);
   - statičke biblioteke se grade sa `CMAKE_OSX_DEPLOYMENT_TARGET=13.0`.
-  Provereno: TTS snimak (`/tmp/sr.wav`) daje „Pitchi, Test, Nemanja
+  Provereno: TTS snimak (`/tmp/sr.wav`) daje „Diktator, Test, Nemanja
   Čedomirović, Tamara Pandža. Danas je lepo vreme u Beogradu.” za ~2,8 s
   (posle prvog Metal kompajliranja).
-  Instalirano u `/Applications/Pitchi.app`, potpis `Pichi Local Dev`.
+  Instalirano u `/Applications/Diktator.app`, potpis `Pichi Local Dev`.
 - **23.10.2026. (čišćenje)** — stara `Pichi.app` (`com.johnny.pichi`) potpuno
   uklonjena jer se i ona javljala na `Fn`. Model od 1 GB je pre toga premešten
   iz `~/Library/Application Support/Pichi/models/ggml-small-q5_1.bin` u
-  `~/Library/Application Support/Pitchi/models/ggml-large-v3-q5_0.bin`
+  `~/Library/Application Support/Diktator/models/ggml-large-v3-q5_0.bin`
   (1.081.140.203 bajta). Obrisani su i stari Application Support (1,7 GB),
   `com.johnny.pichi.plist` i sam bundle; novi rečnik je već bio identičan.
   `--test-whisper` sada čita novu putanju i daje isti srpski tekst za ~3,2 s.
@@ -107,14 +109,14 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   `params.language`, a `detect_language` ostaje `false`. Prepoznati jezik se
   pamti uz zapis; `hr`/`bs` se prikazuju kao `sr` jer je izlaz isti. DeepSeek
   dobija uputstvo na prepoznatom jeziku. Provereno TTS snimcima: srpski daje
-  isti tekst, engleski „Pitchi, Test, My name is Nemanja Čedomirović…”; auto
+  isti tekst, engleski „Diktator, Test, My name is Nemanja Čedomirović…”; auto
   detekcija dodaje ~1,5 s (prepis ~4,5 s umesto ~3 s).
 - **23.10.2026. (objava)** — projekat je javno objavljen:
   <https://github.com/cedomirovic/pitchi> (MIT licenca). Dodati su `LICENSE`,
   uputstvo za instalaciju iz izvornog koda i dve slike u `docs/`. Provereno je
   da **svež klon** radi: `app/build.sh` sam preuzme i kompajlira whisper.cpp
   (5–10 min), pa napravi aplikaciju; `--test-whisper` na engleskom daje isti
-  tekst. Napravljen je i release `v0.1.0` sa `Pitchi-0.1.0-macOS-arm64.zip`
+  tekst. Napravljen je i release `v0.1.0` sa `Diktator-0.1.0-macOS-arm64.zip`
   (2,9 MB, ad-hoc potpis, bez modela). Aplikacija nije notarizovana — u
   uputstvu piše desni klik → Open ili `xattr -dr com.apple.quarantine`.
 - **23.10.2026. (modeli, prijava, Dock)** — dodato je biranje modela sa
@@ -139,7 +141,7 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   item je uključen i isključen kroz UI (`sfltool dumpbtm` potvrdio), a
   aplikacija je posle zatvaranja prozora ponovo otvorena preko Docka. Verzija
   je podignuta na `0.2.0` i objavljen je release `v0.2.0` sa
-  `Pitchi-0.2.0-macOS-arm64.zip` (2,9 MB, SHA-256
+  `Diktator-0.2.0-macOS-arm64.zip` (2,9 MB, SHA-256
   `6f47d7f8d8453dfdb69da092aec9482566cff583f7271c1f7a085d573c7b02b3`).
 - **23.10.2026. (izbor LLM servisa)** — doterivanje više nije vezano samo za
   DeepSeek. Odluke:
@@ -164,7 +166,7 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   kroz UI su prošli „Test veze“ (uspeh i greška) i prebacivanje servisa sa
   čuvanjem/ucitavanjem ključa po servisu. Živi pozivi nisu probani jer nema
   API ključeva. Verzija je podignuta na `0.3.0` i objavljen je release
-  `v0.3.0` sa `Pitchi-0.3.0-macOS-arm64.zip` (3,0 MB, SHA-256
+  `v0.3.0` sa `Diktator-0.3.0-macOS-arm64.zip` (3,0 MB, SHA-256
   `bbb3aea0cefa7d298750a104efefed2305218d5da90f6c47cdc1f66f47530e92`).
 - **23.10.2026. (ažuriranja)** — dodata je provera novih izdanja i obaveštenje.
   Odluke:
@@ -184,16 +186,43 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
     obaveštava samo jednom, a preskočena se nudi ponovo tek posle ručne provere
     ili nove verzije;
   - aplikacija se ne menja sama — „Preuzmi“ otvara zip u browseru, pa korisnik
-    zameni `Pitchi.app` u `/Applications`.
+    zameni `Diktator.app` u `/Applications`.
   Provereno: test poređenja verzija i dekodiranja GitHub odgovora protiv
   lokalnog mock servera; živa aplikacija je sa mock izdanjem `0.4.0`/`0.5.0`
   upisala `zadnjaVerzija` i `obavestenaVerzija`, a pravi GitHub je vratio
   `0.3.0` i aplikacija je ispravno zaključila da je `0.4.0` ažurna. Tabovi su
-  nacrtani kroz `--slika` sa lažnim izdanjem (`PITCHI_SLIKA_AZURIRANJE=1`);
+  nacrtani kroz `--slika` sa lažnim izdanjem (`DIKTATOR_SLIKA_AZURIRANJE=1`);
   `--test-whisper` i dalje daje isti srpski tekst. Verzija je podignuta na
   `0.4.0` (build 4) i instalirana u `/Applications`. Objavljen je release
-  `v0.4.0` sa `Pitchi-0.4.0-macOS-arm64.zip` (3,0 MB, SHA-256
+  `v0.4.0` sa `Diktator-0.4.0-macOS-arm64.zip` (3,0 MB, SHA-256
   `244d39a0cb2bb7a3c85e421414271a2b678a0b9a41843147f986109e88a91bf1`).
+- **23.10.2026. (ime)** — aplikacija je preimenovana u **Diktator**.
+  Odluke:
+  - `Diktator.app`, izvršni fajl `Diktator`, `CFBundleDisplayName` i
+    `CFBundleName` su novi; svi vidljivi tekstovi (meni, prozor, HUD,
+    obaveštenja, pomoć, README) takođe. Fajlovi su `DiktatorApp.swift`,
+    `Diktator-Bridging-Header.h`, `diktator.js` i `diktator.test.mjs`.
+  - `CFBundleIdentifier` je ostao `com.cedomirovic.pitchi`, a UserDefaults
+    ključ i Keychain servis takođe, da dozvole, podešavanja, API ključevi i
+    login item nastave da rade bez ponovnog davanja. Zato u tim internim
+    identifikatorima i dalje stoji staro ime — to je svesna kompatibilnost.
+  - `~/Library/Application Support/Pitchi` se pri prvom pokretanju premešta u
+    `~/Library/Application Support/Diktator` (model, istorija, rečnik); ako
+    premestanje ne uspe, koristi se stari folder. Isto radi i stari CLI.
+  - `instaliraj.sh` instalira `Diktator.app`, a stariju kopiju istog bundle
+    ID-a pronalazi po identifikatoru i čuva je kao `.bak`.
+  - Razvojne promenljive su `DIKTATOR_AZURIRANJE_API` i
+    `DIKTATOR_SLIKA_AZURIRANJE`; lažno izdanje za `--slika` je `0.6.0`.
+  - Javni repo za izdanja je zadržao adresu `cedomirovic/pitchi` jer se tu već
+    nalaze release-i; `cedomirovic/diktator` je drugi, privatni projekat i nije
+    diran.
+  Provereno: `node --check diktator.js lib/*.js`, `node diktator.js --help`,
+  `npm test` (11/11), `bash app/build.sh`, `--test-whisper` sa novim TTS
+  snimkom daje „Diktator, Test, Nemanja Čedomirović, Tamara Pandža. Danas je
+  lepo vreme u Beogradu.”, `--dozvole` čita stvarne dozvole, a `--slika` crta
+  tabove sa imenom Diktator. Verzija je podignuta na `0.5.0` (build 5);
+  instalirano u `/Applications/Diktator.app`, login item ponovo uključen preko
+  `--prijava`.
 - Sledeći korak: probni diktat uživo sa Large v3 i stvarnim API ključem za
   izabrani servis, zatim po potrebi brisanje modela koje korisnik ne želi i
   eventualni prelazak `diktator` repoa na ovu aplikaciju.

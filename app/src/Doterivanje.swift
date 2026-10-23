@@ -174,7 +174,7 @@ struct Doterivac {
             and obvious speech-recognition errors. Do not change the meaning, add \
             sentences, or translate. Return only the corrected text, without \
             explanations or quotation marks. Preserve these names and terms: \
-            Nemanja Čedomirović, Tamara Pandža, Pitchi, Diktator, Beograd.
+            Nemanja Čedomirović, Tamara Pandža, Diktator, Beograd.
             """
         }
         return """
@@ -182,7 +182,7 @@ struct Doterivac {
         očigledne greške u prepoznavanju govora. Ne menjaj smisao, ne dodaj nove \
         rečenice i ne prevodi. Vrati isključivo ispravljen tekst, bez objašnjenja \
         i bez navodnika. Imena i pojmovi koje treba poštovati: Nemanja Čedomirović, \
-        Tamara Pandža, Pitchi, Diktator, Beograd.
+        Tamara Pandža, Diktator, Beograd.
         """
     }
 }

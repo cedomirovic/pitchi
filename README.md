@@ -1,6 +1,6 @@
-# Pitchi — diktiranje na srpskom i engleskom (macOS)
+# Diktator — diktiranje na srpskom i engleskom (macOS)
 
-Pitchi je macOS aplikacija za dikiranje: držiš `Fn`, izgovoriš rečenicu, pusti
+Diktator je macOS aplikacija za dikiranje: držiš `Fn`, izgovoriš rečenicu, pusti
 — tekst se prepiše **lokalno** (whisper.cpp) i zalepi u aplikaciju u kojoj
 pišeš. Jezik se prepoznaje automatski, pa srpski i engleski mogu da se smenjuju
 bez podešavanja. Snimak ne napušta Mac.
@@ -16,7 +16,7 @@ lakši modeli se preuzimaju direktno iz aplikacije.
 
 ## Šta radi
 
-- **Fn kao prečica** — drži i govori, pusti kada završiš; radi i van Pitchi-ja.
+- **Fn kao prečica** — drži i govori, pusti kada završiš; radi i van Diktatora.
 - **Automatsko lepljenje** — pošalje `Cmd+V` u aplikaciju u kojoj si bio; ako
   dozvola nije data, tekst čeka u klipbordu.
 - **Srpski i engleski** — jezik se prepoznaje automatski; srpski izlaz ide u
@@ -38,12 +38,12 @@ lakši modeli se preuzimaju direktno iz aplikacije.
 
 ### Gotova aplikacija
 
-1. Preuzmi `Pitchi-0.4.0-macOS-arm64.zip` sa
+1. Preuzmi `Diktator-0.5.0-macOS-arm64.zip` sa
    [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
-2. Otpakuj i prevuci `Pitchi.app` u `/Applications`.
+2. Otpakuj i prevuci `Diktator.app` u `/Applications`.
 3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
    nije notarizovana, pa je macOS inače blokira. Alternativa:
-   `xattr -dr com.apple.quarantine /Applications/Pitchi.app`.
+   `xattr -dr com.apple.quarantine /Applications/Diktator.app`.
 
 Potreban je Apple Silicon i macOS 13 ili noviji.
 
@@ -60,15 +60,15 @@ bash app/instaliraj.sh --prepisi  # nova verzija (stara ide u .bak)
 ```
 
 Prvo građenje traje **5–10 minuta** jer se whisper.cpp i Metal biblioteke
-kompajliraju jednokratno. Skripta napravi `Pitchi.app`, potpiše ga lokalno
+kompajliraju jednokratno. Skripta napravi `Diktator.app`, potpiše ga lokalno
 (ad-hoc ako nema razvojnog sertifikata) i smesti u `/Applications`.
 
 ### Prvo pokretanje
 
-1. Otvori Pitchi — prozor se pojavi sam, a ikona je u Docku i u menu baru.
+1. Otvori Diktator — prozor se pojavi sam, a ikona je u Docku i u menu baru.
 2. Daj tri dozvole iz prozora:
    - **Mikrofon** — da čuje govor.
-   - **Nadzor unosa** — da prepozna `Fn` i van Pitchi-ja. Posle ove dozvole
+   - **Nadzor unosa** — da prepozna `Fn` i van Diktatora. Posle ove dozvole
      zatvori i ponovo otvori aplikaciju.
    - **Pristupačnost** — da pošalje `Cmd+V` posle prepisa.
 3. U Podešavanjima → **Model** izaberi model. Preporučeni Large v3 Turbo ima
@@ -94,7 +94,7 @@ izabrati i drugi model; svi se preuzimaju jednokratno sa Hugging Face-a.
 Modeli se čuvaju u:
 
 ```
-~/Library/Application Support/Pitchi/models/
+~/Library/Application Support/Diktator/models/
 ```
 
 Dok je model učitan, aplikacija drži ~0,2–1,4 GB, zavisno od izbora; posle
@@ -104,7 +104,7 @@ se kompajliraju Metal šejderi; sledeći su nekoliko sekundi za kraću rečenicu
 
 ## Doterivanje teksta (opciono)
 
-Whisper ponekad pogreši interpunkciju ili ime. Ako uključiš doterivanje, Pitchi
+Whisper ponekad pogreši interpunkciju ili ime. Ako uključiš doterivanje, Diktator
 pošalje **samo gotov tekst** izabranom servisu i vrati ispravljenu verziju.
 Snimak se nikada ne šalje. Opcija je isključena po defaultu.
 
@@ -128,7 +128,7 @@ U **Podešavanjima → Doterivanje teksta**:
 ### DeepSeek
 
 Napravi ključ na [platform.deepseek.com](https://platform.deepseek.com/api_keys)
-i nalepi ga u Pitchi. Postojeći DeepSeek ključ iz starije verzije se automatski
+i nalepi ga u Diktator. Postojeći DeepSeek ključ iz starije verzije se automatski
 koristi. Model `deepseek-chat` je dovoljan za lektorisanje.
 
 ### OpenAI / ChatGPT
@@ -141,9 +141,9 @@ prepise.
 ### Anthropic Claude
 
 Napravi ključ na [console.anthropic.com](https://console.anthropic.com/settings/keys).
-Pitchi koristi Claude Messages API i podrazumevano model `claude-haiku-5-5`.
+Diktator koristi Claude Messages API i podrazumevano model `claude-haiku-5-5`.
 
-**Claude Code nije API.** To je CLI alat za rad u terminalu i Pitchi ga ne
+**Claude Code nije API.** To je CLI alat za rad u terminalu i Diktator ga ne
 poziva. Ako želiš Claude za doterivanje, izaberi „Anthropic Claude“ i napravi
 Anthropic API ključ.
 
@@ -155,7 +155,7 @@ Instaliraj [Ollama](https://ollama.com/download), pa u terminalu pokreni:
 ollama pull llama3.2
 ```
 
-Pitchi koristi `http://localhost:11434/api/chat`, bez ključa. Tekst tada ne
+Diktator koristi `http://localhost:11434/api/chat`, bez ključa. Tekst tada ne
 napušta Mac. Ako imaš drugi model, upiši njegov tačan naziv u polje **Model**
 (na primer `qwen2.5:7b`).
 
@@ -175,7 +175,7 @@ servisu odvojeno; ne upisuju se u istoriju ni u fajl sa podešavanjima.
 
 ## Ažuriranja
 
-Pitchi pri pokretanju i najviše jednom dnevno pita GitHub za najnovije izdanje
+Diktator pri pokretanju i najviše jednom dnevno pita GitHub za najnovije izdanje
 (`api.github.com/repos/cedomirovic/pitchi/releases/latest`). Ako je verzija
 novija od instalirane:
 
@@ -184,7 +184,7 @@ novija od instalirane:
 - u menu baru stavi **Ažuriranje X…**.
 
 Aplikacija se ne menja sama. **Preuzmi** otvara zip paket u browseru, a
-**Stranica izdanja** vodi na GitHub. Posle preuzimanja zameni `Pitchi.app` u
+**Stranica izdanja** vodi na GitHub. Posle preuzimanja zameni `Diktator.app` u
 `/Applications` (stara kopija može u `.bak`).
 
 Proveru možeš isključiti u Podešavanjima → **Ažuriranja**, a ručno je pokrenuti
@@ -194,7 +194,7 @@ se ne nudi ponovo dok ne izađe novija.
 ## Privatnost
 
 - Snimak se ne čuva i ne šalje nigde.
-- Istorija i rečnik su lokalni fajlovi u `~/Library/Application Support/Pitchi/`.
+- Istorija i rečnik su lokalni fajlovi u `~/Library/Application Support/Diktator/`.
 - Doterivanje je opciono i šalje samo gotov tekst, nikada zvuk. Kod Ollama
   servisa i tekst ostaje na Macu; kod ostalih ide izabranom provajderu.
 - API ključevi su u macOS Keychain-u, odvojeno po servisu.
@@ -211,27 +211,28 @@ app/
   pripremi-whisper.sh  jednokratno građenje statičkog whisper.cpp-a
   instaliraj.sh        build + /Applications
   vendor/              whisper.cpp biblioteke (ne ide u git)
-pitchi.js, lib/, test/ stariji CLI (Node, bez paketa)
+diktator.js, lib/, test/ stariji CLI (Node, bez paketa)
 ```
 
 ```bash
 bash app/build.sh
-open app/build/Pitchi.app
+open app/build/Diktator.app
 ```
 
 Whisper je **statički** ugrađen (Metal + BLAS), pa aplikacija ne zavisi od
 Homebrew-a na ciljnom Macu. Skrivene razvojne opcije: `--slika` (nacrta tabove
-u PNG), `--test-whisper` (prepiše `/tmp/sr.wav` kroz isti kod). Za proveru
-ažuriranja bez objave: `PITCHI_AZURIRANJE_API` menja GitHub adresu, a
-`PITCHI_SLIKA_AZURIRANJE=1` ubacuje lažno izdanje u `--slika`.
+u PNG), `--test-whisper` (prepiše `/tmp/sr.wav` kroz isti kod), `--dozvole`
+(ispiše stvarne macOS dozvole) i `--prijava` (uključi pokretanje pri prijavi).
+Za proveru ažuriranja bez objave: `DIKTATOR_AZURIRANJE_API` menja GitHub
+adresu, a `DIKTATOR_SLIKA_AZURIRANJE=1` ubacuje lažno izdanje u `--slika`.
 
 ## Stariji CLI
 
-`pitchi.js` je prva verzija (Node 22.5+, ffmpeg + whisper-cli) i još radi:
+`diktator.js` je prva verzija (Node 22.5+, ffmpeg + whisper-cli) i još radi:
 
 ```bash
-node pitchi.js stanje
-node pitchi.js diktat
+node diktator.js stanje
+node diktator.js diktat
 npm test
 ```
 

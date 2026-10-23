@@ -160,9 +160,9 @@ final class AppStanje: NSObject, ObservableObject {
 
         osveziPrijavu()
         if prijavaZahtevaOdobrenje {
-            postaviInfo("Odobri Pitchi u System Settings → General → Login Items.")
+            postaviInfo("Odobri Diktator u System Settings → General → Login Items.")
         } else if prijavaUkljucena {
-            postaviInfo("Pitchi će se pokretati pri prijavi računara.")
+            postaviInfo("Diktator će se pokretati pri prijavi računara.")
         } else {
             postaviInfo("Pokretanje pri prijavi je isključeno.")
         }
@@ -718,7 +718,7 @@ final class AppStanje: NSObject, ObservableObject {
         } else {
             azuriranje = nil
             if rucno {
-                postaviInfo("Pitchi je ažuran (verzija \(trenutnaVerzija)).")
+                postaviInfo("Diktator je ažuran (verzija \(trenutnaVerzija)).")
             }
         }
     }

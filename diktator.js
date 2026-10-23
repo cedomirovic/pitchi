@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Pitchi — ulazna tačka. Samo parsira opcije i poziva lib/ module.
+// Diktator — ulazna tačka. Samo parsira opcije i poziva lib/ module.
 import fs from "node:fs";
 import path from "node:path";
 import {
@@ -17,10 +17,10 @@ import { snimi, nadjiFfmpeg } from "./lib/snimak.js";
 import { uKlipbord, ubaciUTekst } from "./lib/tekst.js";
 
 const POMOC = `
-Pitchi — lokalno diktiranje: snimi govor → tekst → klipbord.
+Diktator — lokalno diktiranje: snimi govor → tekst → klipbord.
 
 KORIŠĆENJE
-  node pitchi.js <komanda> [opcije]
+  node diktator.js <komanda> [opcije]
 
 KOMANDE
   stanje                    proveri šta je instalirano (ffmpeg, whisper, modeli)
@@ -41,10 +41,10 @@ OPCIJE
   -h, --pomoc               ova pomoć
 
 PRIMERI
-  node pitchi.js stanje
-  node pitchi.js diktat --sekundi 15 --u-klipbord
-  node pitchi.js snimi snimci/test.wav --sekundi 5
-  node pitchi.js prepis snimci/test.wav --izlaz izlaz/test.txt --u-klipbord
+  node diktator.js stanje
+  node diktator.js diktat --sekundi 15 --u-klipbord
+  node diktator.js snimi snimci/test.wav --sekundi 5
+  node diktator.js prepis snimci/test.wav --izlaz izlaz/test.txt --u-klipbord
 `;
 
 /** Opcije koje uzimaju vrednost iz sledećeg argumenta. */
@@ -196,7 +196,7 @@ function komandaSnimi(opcije, pozicioni) {
 function komandaPrepis(opcije, pozicioni) {
   const ulaz = pozicioni[0];
   if (!ulaz) {
-    throw new Error(`${GRESKA} Nedostaje snimak. Primer: node pitchi.js prepis snimci/test.wav`);
+    throw new Error(`${GRESKA} Nedostaje snimak. Primer: node diktator.js prepis snimci/test.wav`);
   }
 
   const rezultat = prepisi({

@@ -1,13 +1,13 @@
 {
-  "name": "pitchi",
-  "version": "0.3.0",
+  "name": "diktator",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
-  "description": "Pitchi — lokalni alat za diktiranje: snimi govor, pretvori u tekst i zalepi ga gde treba.",
+  "description": "Diktator — lokalni alat za diktiranje: snimi govor, pretvori u tekst i zalepi ga gde treba.",
   "scripts": {
-    "start": "node pitchi.js",
+    "start": "node diktator.js",
     "test": "node --test test/",
-    "provera": "node --check pitchi.js lib/*.js"
+    "provera": "node --check diktator.js lib/*.js"
   },
   "engines": {
     "node": ">=22.5"

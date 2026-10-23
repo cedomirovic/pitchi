@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 
 swift napravi-ikonu.swift
 
-ICONSET="Resursi/Pitchi.iconset"
+ICONSET="Resursi/Diktator.iconset"
 rm -rf "$ICONSET"
 mkdir -p "$ICONSET"
 

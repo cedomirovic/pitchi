@@ -3,6 +3,8 @@ import Foundation
 import Security
 
 final class SkladistePodesavanja {
+    // Kljuc je zadrzao staro ime da postojeća podesavanja ostanu vidljiva
+    // posle preimenovanja aplikacije.
     private static let kljuc = "pitchi.podesavanja.v1"
 
     static func ucitaj() -> Podesavanja {
@@ -20,6 +22,8 @@ final class SkladistePodesavanja {
 }
 
 enum Kljuc {
+    // Servis je zadrzao stari bundle ID da API kljucevi u Keychain-u ostanu
+    // dostupni bez ponovnog unosa.
     private static let servis = "com.cedomirovic.pitchi"
 
     /// Svaki servis ima svoj nalog u Keychain-u, pa se ključevi ne mešaju.

@@ -1,11 +1,11 @@
-// Testovi za Pitchi — node:test, bez spoljnih paketa.
+// Testovi za Diktator — node:test, bez spoljnih paketa.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { parsirajArgumente } from "../pitchi.js";
+import { parsirajArgumente } from "../diktator.js";
 import { ocistiTekst } from "../lib/tekst.js";
 import { putanjaUDaljem } from "../lib/pomoc.js";
 import { nadjiModel, listaModela } from "../lib/prepis.js";
@@ -57,17 +57,17 @@ test("ocistiTekst: prazan ulaz", () => {
 });
 
 test("putanjaUDaljem: pušta putanju unutar foldera", () => {
-  const osnovni = path.join(os.tmpdir(), "pitchi-test");
+  const osnovni = path.join(os.tmpdir(), "diktator-test");
   assert.equal(putanjaUDaljem(osnovni, "a/b.txt"), path.join(osnovni, "a/b.txt"));
 });
 
 test("putanjaUDaljem: odbija izlazak iz foldera", () => {
-  const osnovni = path.join(os.tmpdir(), "pitchi-test");
+  const osnovni = path.join(os.tmpdir(), "diktator-test");
   assert.throws(() => putanjaUDaljem(osnovni, "../../nešto.txt"), /izlazi iz foldera/);
 });
 
 test("nadjiModel: bira turbo model i po imenu", () => {
-  const folder = fs.mkdtempSync(path.join(os.tmpdir(), "pitchi-modeli-"));
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), "diktator-modeli-"));
   fs.writeFileSync(path.join(folder, "ggml-small.bin"), "");
   fs.writeFileSync(path.join(folder, "ggml-large-v3-turbo.bin"), "");
 
@@ -82,6 +82,6 @@ test("nadjiModel: bira turbo model i po imenu", () => {
 });
 
 test("nadjiModel: vraća null kada nema modela", () => {
-  const folder = fs.mkdtempSync(path.join(os.tmpdir(), "pitchi-prazno-"));
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), "diktator-prazno-"));
   assert.equal(nadjiModel("large", { folderi: [folder] }), null);
 });

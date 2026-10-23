@@ -82,7 +82,7 @@ enum GreskaAzuriranja: LocalizedError {
         case .status(403):
             return "GitHub je ograničio broj provera. Pokušaj kasnije."
         case .status(404):
-            return "GitHub ne nalazi objavljeno izdanje Pitchi-ja."
+            return "GitHub ne nalazi objavljeno izdanje Diktatora."
         case .status(let kod):
             return "GitHub je vratio HTTP \(kod)."
         case .neispravanOdgovor:
@@ -94,11 +94,13 @@ enum GreskaAzuriranja: LocalizedError {
 }
 
 enum Azuriranja {
+    // Javni repozitorijum u kome su objavljena izdanja. Adresa je zadržana
+    // jer se tu već nalaze release-i i stare veze.
     static let repozitorij = "cedomirovic/pitchi"
 
     static var adresaNajnovijeg: URL {
         // Samo za razvoj i testiranje: lokalni mock umesto GitHub-a.
-        if let tekst = ProcessInfo.processInfo.environment["PITCHI_AZURIRANJE_API"],
+        if let tekst = ProcessInfo.processInfo.environment["DIKTATOR_AZURIRANJE_API"],
            let adresa = URL(string: tekst) {
             return adresa
         }
@@ -122,7 +124,7 @@ enum Azuriranja {
         zahtev.httpMethod = "GET"
         zahtev.timeoutInterval = 15
         zahtev.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        zahtev.setValue("Pitchi/\(trenutnaVerzija)", forHTTPHeaderField: "User-Agent")
+        zahtev.setValue("Diktator/\(trenutnaVerzija)", forHTTPHeaderField: "User-Agent")
 
         URLSession.shared.dataTask(with: zahtev) { podaci, odgovor, greska in
             if let greska {
@@ -160,10 +162,10 @@ enum Azuriranja {
 /// Da se GitHub ne pita pri svakom pokretanju i da se ista verzija ne
 /// obaveštava više puta.
 enum SkladisteAzuriranja {
-    private static let zadnjaProveraKljuc = "pitchi.azuriranja.zadnjaProvera"
-    private static let zadnjaVerzijaKljuc = "pitchi.azuriranja.zadnjaVerzija"
-    private static let obavestenaVerzijaKljuc = "pitchi.azuriranja.obavestenaVerzija"
-    private static let preskocenaVerzijaKljuc = "pitchi.azuriranja.preskocenaVerzija"
+    private static let zadnjaProveraKljuc = "diktator.azuriranja.zadnjaProvera"
+    private static let zadnjaVerzijaKljuc = "diktator.azuriranja.zadnjaVerzija"
+    private static let obavestenaVerzijaKljuc = "diktator.azuriranja.obavestenaVerzija"
+    private static let preskocenaVerzijaKljuc = "diktator.azuriranja.preskocenaVerzija"
 
     private static var defaults: UserDefaults { .standard }
 
@@ -197,7 +199,7 @@ enum SkladisteAzuriranja {
 // MARK: - Sistemsko obaveštenje
 
 enum ObavestenjaAzuriranja {
-    private static let identifikator = "pitchi.azuriranje"
+    private static let identifikator = "diktator.azuriranje"
 
     /// Prvo pita za dozvolu, pa prikaže obaveštenje. Ako je korisnik
     /// isključio obaveštenja, traka u aplikaciji i dalje radi.
@@ -220,7 +222,7 @@ enum ObavestenjaAzuriranja {
 
     private static func posalji(_ centar: UNUserNotificationCenter, verzija: String, adresa: URL) {
         let sadrzaj = UNMutableNotificationContent()
-        sadrzaj.title = "Dostupno je ažuriranje Pitchi-ja"
+        sadrzaj.title = "Dostupno je ažuriranje Diktatora"
         sadrzaj.body = "Verzija \(verzija) je spremna. Klikni da otvoriš preuzimanje."
         sadrzaj.sound = .default
         sadrzaj.userInfo = ["adresa": adresa.absoluteString]
