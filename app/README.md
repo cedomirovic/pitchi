@@ -38,12 +38,15 @@ Potrebni su Command Line Tools (`xcode-select --install`), `cmake`
 (`brew install cmake`) i `git` — samo za prvo građenje whisper.cpp-a.
 
 ```bash
+git clone https://github.com/cedomirovic/pitchi.git
+cd pitchi
 bash app/instaliraj.sh            # prvi put
 bash app/instaliraj.sh --prepisi  # nova verzija (stara ide u .bak)
 ```
 
-Skripta napravi `Pitchi.app`, potpiše ga lokalnim sertifikatom (ako postoji) i
-smesti u `/Applications`.
+Prvo građenje traje **5–10 minuta** jer se whisper.cpp i Metal biblioteke
+kompajliraju jednokratno. Skripta napravi `Pitchi.app`, potpiše ga lokalno
+(ad-hoc ako nema razvojnog sertifikata) i smesti u `/Applications`.
 
 ## Prvo pokretanje
 

@@ -10,7 +10,7 @@ enum GreskaPrepisaa: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .modelNijePreuzet:
-            return "Model za srpski još nije preuzet. Otvori Podešavanja i preuzmi ga (1 GB)."
+            return "Model još nije preuzet. Otvori Podešavanja i preuzmi ga (1 GB)."
         case .modelNeMoeDaSeUcita:
             return "Model nije mogao da se učita. Proveri da li je fajl kompletan."
         case .dekodiranje:

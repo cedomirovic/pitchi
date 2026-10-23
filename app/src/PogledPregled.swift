@@ -153,7 +153,7 @@ struct PogledPregled: View {
     }
 
     private var modelKartica: some View {
-        Kartica(naslov: "Model za srpski", ikona: "brain") {
+        Kartica(naslov: "Model za diktiranje", ikona: "brain") {
             if app.modelSpreman {
                 HStack(spacing: 10) {
                     Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
@@ -187,7 +187,7 @@ struct PogledPregled: View {
                     }
                 }
             } else {
-                Text("Za dobar srpski potreban je whisper `large-v3` model od 1 GB. Skida se jednokratno, direktno sa Hugging Face-a.")
+                Text("Za dobar prepis srpskog i engleskog potreban je whisper `large-v3` model od 1 GB. Skida se jednokratno, direktno sa Hugging Face-a.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 Button {

@@ -49,7 +49,7 @@ struct PogledPomoc: View {
                 Kartica(naslov: "Tehnički podaci", ikona: "cpu") {
                     red("Motor", "whisper.cpp (statički ugrađen)")
                     red("Model", "large-v3 q5_0, 1 GB")
-                    red("Jezik", "srpski, latinica")
+                    red("Jezik", "srpski i engleski, automatski; srpski latinica")
                     red("Memorija", "~1,4 GB samo tokom diktiranja")
                     red("Sistemski zahtev", "macOS 13+, Apple Silicon")
                 }

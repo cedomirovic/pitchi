@@ -161,7 +161,7 @@ struct PogledIstorija: View {
 
     private func jezik(_ kod: String) -> String {
         switch kod {
-        case "sr": return "srpski"
+        case "sr", "hr", "bs": return "srpski"
         case "en": return "engleski"
         default: return "automatski"
         }

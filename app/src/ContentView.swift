@@ -60,7 +60,7 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Pitchi")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                Text("Diktiranje na srpskom — sve ostaje na ovom Macu")
+                Text("Diktiranje na srpskom i engleskom — sve ostaje na ovom Macu")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
