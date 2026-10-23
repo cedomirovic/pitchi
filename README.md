@@ -1,97 +1,105 @@
-# Pitchi · lokalno diktiranje
+# Pitchi — diktiranje na srpskom (macOS)
 
-Pitchi pretvara govor u tekst — na tvom Macu, bez slanja snimka na internet.
-Snimiš mikrofon, Whisper prepiše, tekst ode u klipbord (ili se sam zalepi u
-aplikaciju u kojoj pišeš).
+Pitchi je macOS aplikacija za dikiranje: držiš `Fn`, izgovoriš rečenicu, pusti
+— tekst se prepiše **lokalno** (whisper.cpp) i zalepi u aplikaciju u kojoj
+pišeš. Snimak ne napušta Mac.
 
-Projekat je u ranoj fazi: radi komandna linija; sledeći korak je globalna
-prečica i rad iz meni bara.
+Aplikacija ima prozor sa stanjem, istorijom, rečnikom i podešavanjima; radi i
+iz menu bara. Model se učitava samo tokom diktiranja i oslobađa posle 5 minuta,
+pa i 8 GB Mac ostaje upotrebljiv.
 
-## Šta je potrebno
+![Pitchi](app/Resursi/AppIcon-1024.png)
 
-| Alat | Zašto | Instalacija |
-| --- | --- | --- |
-| Node 22.5+ | pokreće Pitchi (bez npm paketa) | već instaliran (v26) |
-| ffmpeg | snimanje mikrofona | `brew install ffmpeg` (već je tu) |
-| whisper.cpp | prepis govora u tekst | `brew install whisper-cpp` |
-| model | „mozak“ za srpski | vidi „Modeli“ ispod |
+## Šta radi
 
-### Modeli
+- **Fn kao prečica** — drži i govori, pusti kada završiš; radi i van Pitchi-ja.
+- **Automatsko lepljenje** — pošalje `Cmd+V` u aplikaciju u kojoj si bio; ako
+  dozvola nije data, tekst čeka u klipbordu.
+- **Latinica** — whisper za srpski ume da vrati ćirilicu; Pitchi prevodi.
+- **Rečnik** — imena i pojmovi koje model pogrešno piše.
+- **Istorija** — zadnjih 200 prepisa, pretraga i kopiranje.
+- **Opciono DeepSeek doterivanje** — popravi interpunkciju i imena; isključeno
+  po defaultu, šalje se samo tekst, nikada zvuk.
 
-Modeli se ne drže u git-u. Preporučeni folder:
+## Instalacija
 
-```bash
-mkdir -p "$HOME/Library/Application Support/Pitchi/modeli"
-```
-
-Brži i manji (≈574 MB), dobar za diktanje:
-
-```bash
-curl -L -o "$HOME/Library/Application Support/Pitchi/modeli/ggml-large-v3-turbo-q5_0.bin" \
-  "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin"
-```
-
-Tačniji i veći (≈1,6 GB):
+Potrebni su Command Line Tools (`xcode-select --install`), `cmake`
+(`brew install cmake`) i `git` — samo za prvo građenje whisper.cpp-a.
 
 ```bash
-curl -L -o "$HOME/Library/Application Support/Pitchi/modeli/ggml-large-v3-turbo.bin" \
-  "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin"
+bash app/instaliraj.sh            # prvi put
+bash app/instaliraj.sh --prepisi  # nova verzija (stara ide u .bak)
 ```
 
-Pitchi sam nađe model u `modeli/` (u projektu), u
-`~/Library/Application Support/Pitchi/modeli/` i u `~/.cache/whisper.cpp/`.
-Može i eksplicitno: `--model /putanja/do/ggml-....bin` ili promenljiva
-`PITCHI_MODEL`.
+Skripta napravi `Pitchi.app`, potpiše ga lokalnim sertifikatom (ako postoji) i
+smesti u `/Applications`.
 
-## Korišćenje
+### Prvo pokretanje
+
+1. Otvori Pitchi — prozor se pojavi sam, ikona ostaje u menu baru.
+2. Daj tri dozvole iz prozora:
+   - **Mikrofon** — da čuje govor.
+   - **Nadzor unosa** — da prepozna `Fn` i van Pitchi-ja. Posle ove dozvole
+     zatvori i ponovo otvori aplikaciju.
+   - **Pristupačnost** — da pošalje `Cmd+V` posle prepisa.
+3. Ako model nije tu, klikni **Preuzmi model (1 GB)**.
+
+Ako `Fn` otvara emoji birač: Podešavanja → Tastatura → „Pritisni 🌐 key za” →
+**Ne radi ništa**.
+
+## Model i memorija
+
+Podrazumevani model je `large-v3 q5_0` (1 GB) — najbolji kompromis za 8 GB.
+Model se čuva u:
+
+```
+~/Library/Application Support/Pitchi/models/ggml-large-v3-q5_0.bin
+```
+
+Ako postoji stari Pichi model, Pitchi ga preuzima bez ponovnog skidanja.
+Dok je model učitan, aplikacija drži ~1,4 GB; posle 5 minuta mirovanja se
+oslobađa. Prvi prepis posle novog builda je sporiji jer se kompajliraju Metal
+šejderi; sledeći su ~3 s za kraću rečenicu.
+
+## Privatnost
+
+- Snimak se ne čuva i ne šalje nigde.
+- Istorija i rečnik su lokalni fajlovi u `~/Library/Application Support/Pitchi/`.
+- DeepSeek je opcion i šalje samo gotov tekst, nikada zvuk.
+
+## Razvoj
+
+```
+app/
+  src/                 Swift izvori (AppKit + SwiftUI)
+  Info.plist           bundle, dozvole, LSUIElement
+  build.sh             građenje + potpisivanje
+  pripremi-whisper.sh  jednokratno građenje statičkog whisper.cpp-a
+  instaliraj.sh        build + /Applications
+  vendor/              whisper.cpp biblioteke (ne ide u git)
+pitchi.js, lib/, test/ stariji CLI (Node, bez paketa)
+```
 
 ```bash
-node pitchi.js stanje                 # šta je instalirano i koji modeli postoje
-node pitchi.js diktat --sekundi 15    # snimi 15 s, prepiši, stavi u klipbord
-node pitchi.js diktat --ubaci         # isto, ali odmah zalepi u aktivnu aplikaciju
-node pitchi.js snimi snimci/test.wav --sekundi 5
-node pitchi.js prepis snimci/test.wav --izlaz izlaz/test.txt --u-klipbord
-node pitchi.js --help                 # sve opcije
+bash app/build.sh
+open app/build/Pitchi.app
 ```
 
-Probni rad (ništa se ne menja):
+Whisper je **statički** ugrađen (Metal + BLAS), pa aplikacija ne zavisi od
+Homebrew-a na ciljnom Macu. Skrivene razvojne opcije: `--slika` (nacrta tabove
+u PNG), `--test-whisper` (prepiše `/tmp/sr.wav` kroz isti kod).
+
+## Stariji CLI
+
+`pitchi.js` je prva verzija (Node 22.5+, ffmpeg + whisper-cli) i još radi:
 
 ```bash
-node pitchi.js diktat --dry-run --sekundi 10
-```
-
-### Dozvole (macOS)
-
-- **Mikrofon** — pri prvom snimanju macOS pita da Terminal sme da koristi
-  mikrofon. Ako se odbije: Sistemska podešavanja → Privatnost i bezbednost →
-  Mikrofon.
-- **Pristupačnost** (samo za `--ubaci`) — Terminal mora imati dozvolu
-  „Accessibility“, inače se `Cmd+V` ignoriše.
-
-## Struktura
-
-```
-pitchi.js        ulaz — parsira opcije i zove lib/
-lib/pomoc.js     pronalaženje alata, čuvanje putanja, ispis
-lib/snimak.js    snimanje mikrofona preko ffmpeg-a (AVFoundation)
-lib/prepis.js    whisper.cpp: pronalaženje programa i modela, prepis
-lib/tekst.js     čišćenje teksta, klipbord, lepljenje u aplikaciju
-test/            testovi (node:test)
-snimci/, izlaz/  tvoji snimci i prepisi (nisu u git-u)
-```
-
-## Plan
-
-- [x] skelet, CLI (`stanje`, `snimi`, `prepis`, `diktat`)
-- [ ] instalacija whisper.cpp + model, prvi pravi prepis srpskog
-- [ ] globalna prečica (snimanje „na dugme“, bez terminala)
-- [ ] meni bar ikonica i status snimanja
-- [ ] podešavanja (jezik, model, unos vs. klipbord)
-
-## Provera
-
-```bash
-npm test
-node --check pitchi.js lib/*.js
 node pitchi.js stanje
+node pitchi.js diktat
+npm test
 ```
+
+## Zahvalnost
+
+- [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT)
+- OpenAI Whisper model `large-v3` (MIT), q5_0 kvantizacija

@@ -1,0 +1,379 @@
+// Ulaz u aplikaciju: menu bar ikona, glavni prozor i mali HUD tokom snimanja.
+import AppKit
+import AVFoundation
+import Combine
+import SwiftUI
+
+@main
+struct PitchiMain {
+    // NSApplication.delegate je slaba referenca — bez ovoga bi delegat nestao
+    // pre nego što stigne da napravi prozor i menu bar.
+    private static let delegate = AppDelegate()
+
+    static func main() {
+        let app = NSApplication.shared
+
+        if CommandLine.arguments.contains("--slika") {
+            Task { @MainActor in
+                nacrtajSlike()
+                exit(0)
+            }
+            app.setActivationPolicy(.accessory)
+            app.run()
+            return
+        }
+
+        if CommandLine.arguments.contains("--test-whisper") {
+            testWhisper()
+            exit(0)
+        }
+
+        app.delegate = delegate
+        app.setActivationPolicy(.accessory)
+        app.run()
+    }
+
+    /// Pomoćna opcija za razvoj: nacrta sve tabove u PNG bez snimanja ekrana.
+    @MainActor
+    private static func nacrtajSlike() {
+        let stanje = AppStanje()
+        stanje.poslednjiTekst = "Danas je lepo vreme u Beogradu. Sastanak je u pet sati, u kancelariji."
+        stanje.istorija = [
+            Zapis(tekst: "Pošalji Nemanji ponudu do petka, pa da vidimo.", datum: Date().addingTimeInterval(-3600), trajanje: 4.2),
+            Zapis(tekst: "Podseti me da zovem Tamaru u vezi ugovora.", datum: Date().addingTimeInterval(-7200), trajanje: 3.1),
+        ]
+        stanje.dozvole = Dozvole(mikrofon: true, pristupacnost: true, nadzorUnosa: true)
+        stanje.precicaRadi = true
+
+        let prozor = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 820, height: 700),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        prozor.contentView = NSHostingView(rootView: ContentView().environmentObject(stanje))
+        prozor.setFrameOrigin(NSPoint(x: 60, y: 60))
+        prozor.orderFrontRegardless()
+
+        for tab in 0...3 {
+            stanje.izabranTab = tab
+            RunLoop.main.run(until: Date().addingTimeInterval(0.5))
+            guard let pogled = prozor.contentView else { continue }
+            pogled.layoutSubtreeIfNeeded()
+            guard let rep = pogled.bitmapImageRepForCachingDisplay(in: pogled.bounds) else { continue }
+            pogled.cacheDisplay(in: pogled.bounds, to: rep)
+            guard let png = rep.representation(using: .png, properties: [:]) else { continue }
+            let putanja = "/tmp/pitchi-tab\(tab).png"
+            try? png.write(to: URL(fileURLWithPath: putanja))
+            print(putanja)
+        }
+        prozor.orderOut(nil)
+    }
+
+    /// Pomoćna opcija za razvoj: prepiše /tmp/sr.wav kroz isti kod koji koristi aplikacija.
+    private static func testWhisper() {
+        if !CommandLine.arguments.contains("--log") {
+            Prepisivac.utisajLog()
+        }
+        guard let model = Putanje.nadjiPostojeciModel() else {
+            print("GRESKA: nema modela")
+            return
+        }
+        let fajlURL = URL(fileURLWithPath: "/tmp/sr.wav")
+        do {
+            let fajl = try AVAudioFile(
+                forReading: fajlURL,
+                commonFormat: .pcmFormatFloat32,
+                interleaved: false
+            )
+            let format = fajl.processingFormat
+            guard let bafer = AVAudioPCMBuffer(
+                pcmFormat: format,
+                frameCapacity: AVAudioFrameCount(fajl.length)
+            ) else {
+                print("GRESKA: bafer")
+                return
+            }
+            try fajl.read(into: bafer)
+            guard let kanal = bafer.floatChannelData?[0] else {
+                print("GRESKA: nema float podataka")
+                return
+            }
+            let uzorci = Array(UnsafeBufferPointer(start: kanal, count: Int(bafer.frameLength)))
+
+            let prepisivac = Prepisivac()
+            let pocetak = Date()
+            try prepisivac.ucitaj(putanja: model.path)
+            let ucitan = Date()
+            let sirovo = try prepisivac.prepisi(
+                uzorci: uzorci,
+                jezik: "sr",
+                recnik: Recnik.kaoPrompt(Recnik.ucitaj())
+            )
+            let kraj = Date()
+            print("MODEL:", model.path)
+            print("UCITAVANJE: \(String(format: "%.2f", ucitan.timeIntervalSince(pocetak))) s")
+            print("PREPIS:     \(String(format: "%.2f", kraj.timeIntervalSince(ucitan))) s")
+            print("SIROVO:     \(sirovo)")
+            print("SREDJENO:   \(Tekst.sredi(sirovo))")
+
+            if CommandLine.arguments.contains("--zadrzi") {
+                print("PID:        \(ProcessInfo.processInfo.processIdentifier)")
+                Thread.sleep(forTimeInterval: 20)
+            }
+
+            prepisivac.oslobodi()
+        } catch {
+            print("GRESKA: \(error.localizedDescription)")
+        }
+    }
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    private let stanje = AppStanje()
+    private var statusItem: NSStatusItem?
+    private var window: NSWindow?
+    private var hud: NSPanel?
+    private var stavkaSnimi: NSMenuItem?
+    private var pretplate = Set<AnyCancellable>()
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        postaviGlavniMeni()
+        postaviStatusItem()
+        postaviHud()
+        pratiStanje()
+        prikaziProzor()
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
+    }
+
+    // MARK: - Menu bar
+
+    private func postaviGlavniMeni() {
+        let glavni = NSMenu()
+
+        let aplikacijaStavka = NSMenuItem()
+        glavni.addItem(aplikacijaStavka)
+        let aplikacijaMeni = NSMenu()
+        aplikacijaMeni.addItem(
+            withTitle: "O aplikaciji Pitchi",
+            action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
+            keyEquivalent: ""
+        )
+        aplikacijaMeni.addItem(.separator())
+        aplikacijaMeni.addItem(
+            withTitle: "Sakrij Pitchi",
+            action: #selector(NSApplication.hide(_:)),
+            keyEquivalent: "h"
+        )
+        aplikacijaMeni.addItem(.separator())
+        aplikacijaMeni.addItem(
+            withTitle: "Izađi iz Pitchi-ja",
+            action: #selector(NSApplication.terminate(_:)),
+            keyEquivalent: "q"
+        )
+        aplikacijaStavka.submenu = aplikacijaMeni
+
+        let izmenaStavka = NSMenuItem()
+        glavni.addItem(izmenaStavka)
+        let izmena = NSMenu(title: "Izmena")
+        izmena.addItem(withTitle: "Poništi", action: Selector(("undo:")), keyEquivalent: "z")
+        izmena.addItem(withTitle: "Ponovi", action: Selector(("redo:")), keyEquivalent: "Z")
+        izmena.addItem(.separator())
+        izmena.addItem(withTitle: "Iseci", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        izmena.addItem(withTitle: "Kopiraj", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        izmena.addItem(withTitle: "Zalepi", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        izmena.addItem(withTitle: "Obriši", action: Selector(("delete:")), keyEquivalent: "")
+        izmena.addItem(withTitle: "Označi sve", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        izmenaStavka.submenu = izmena
+
+        NSApp.mainMenu = glavni
+    }
+
+    private func postaviStatusItem() {
+        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        if let dugme = item.button {
+            dugme.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Pitchi")
+            dugme.image?.isTemplate = true
+            dugme.toolTip = "Pitchi — drži Fn i govori"
+        }
+
+        let meni = NSMenu()
+
+        let pokazi = NSMenuItem(title: "Prikaži Pitchi", action: #selector(prikaziProzor), keyEquivalent: "o")
+        pokazi.target = self
+        meni.addItem(pokazi)
+
+        let snimi = NSMenuItem(title: "Snimi sada", action: #selector(prebaciSnimanje), keyEquivalent: "")
+        snimi.target = self
+        meni.addItem(snimi)
+        stavkaSnimi = snimi
+
+        let kopiraj = NSMenuItem(
+            title: "Poslednji tekst u klipbord",
+            action: #selector(kopirajPoslednji),
+            keyEquivalent: ""
+        )
+        kopiraj.target = self
+        meni.addItem(kopiraj)
+
+        meni.addItem(.separator())
+
+        let podesavanja = NSMenuItem(title: "Podešavanja…", action: #selector(otvoriPodesavanja), keyEquivalent: ",")
+        podesavanja.target = self
+        meni.addItem(podesavanja)
+
+        let dozvole = NSMenuItem(title: "Dozvole…", action: #selector(otvoriDozvole), keyEquivalent: "")
+        dozvole.target = self
+        meni.addItem(dozvole)
+
+        meni.addItem(.separator())
+
+        let izadji = NSMenuItem(title: "Izađi", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        meni.addItem(izadji)
+
+        item.menu = meni
+        statusItem = item
+    }
+
+    private func pratiStanje() {
+        stanje.$stanje
+            .receive(on: RunLoop.main)
+            .sink { [weak self] novo in
+                self?.osveziIkonu(novo)
+                self?.osveziHud(novo)
+            }
+            .store(in: &pretplate)
+
+        stanje.$sekunde
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.osveziIkonu(self?.stanje.stanje ?? .mirno) }
+            .store(in: &pretplate)
+    }
+
+    private func osveziIkonu(_ stanje: StanjeAplikacije) {
+        let ime: String
+        switch stanje {
+        case .mirno: ime = "mic.fill"
+        case .snima: ime = "waveform"
+        case .priprema, .prepisuje: ime = "hourglass"
+        case .greska: ime = "exclamationmark.triangle.fill"
+        }
+        statusItem?.button?.image = NSImage(systemSymbolName: ime, accessibilityDescription: "Pitchi")
+        statusItem?.button?.image?.isTemplate = true
+
+        let naslov: String
+        if stanje.jeSnimanje {
+            let sek = self.stanje.sekunde
+            naslov = String(format: "Zaustavi snimanje (%d:%02d)", sek / 60, sek % 60)
+        } else {
+            naslov = "Snimi sada"
+        }
+        stavkaSnimi?.title = naslov
+    }
+
+    // MARK: - Prozor
+
+    @objc func prikaziProzor() {
+        if window == nil {
+            let pogled = ContentView().environmentObject(stanje)
+            let prozor = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 820, height: 740),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered,
+                defer: false
+            )
+            prozor.title = "Pitchi"
+            prozor.titlebarAppearsTransparent = true
+            prozor.titleVisibility = .hidden
+            prozor.contentView = NSHostingView(rootView: pogled)
+            prozor.contentMinSize = NSSize(width: 760, height: 640)
+            prozor.isReleasedWhenClosed = false
+            prozor.tabbingMode = .disallowed
+            prozor.center()
+            window = prozor
+        }
+        window?.makeKeyAndOrderFront(nil)
+        window?.deminiaturize(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    // MARK: - HUD
+
+    private func postaviHud() {
+        let panel = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 340, height: 102),
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = false
+        panel.level = .floating
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+        panel.ignoresMouseEvents = true
+        panel.contentView = NSHostingView(rootView: HudPogled().environmentObject(stanje))
+        panel.alphaValue = 0
+        hud = panel
+        pozicionirajHud()
+    }
+
+    private func pozicionirajHud() {
+        guard let hud, let ekran = NSScreen.main else { return }
+        let okvir = ekran.visibleFrame
+        hud.setFrameOrigin(NSPoint(x: okvir.midX - 170, y: okvir.minY + 80))
+    }
+
+    private func osveziHud(_ stanje: StanjeAplikacije) {
+        guard let hud else { return }
+        pozicionirajHud()
+
+        let treba = stanje.jeSnimanje || stanje.jeZauzet
+        if treba {
+            if !hud.isVisible {
+                hud.alphaValue = 0
+                hud.orderFrontRegardless()
+            }
+            NSAnimationContext.runAnimationGroup { kontekst in
+                kontekst.duration = 0.15
+                hud.animator().alphaValue = 1
+            }
+        } else {
+            NSAnimationContext.runAnimationGroup { kontekst in
+                kontekst.duration = 0.2
+                hud.animator().alphaValue = 0
+            } completionHandler: {
+                if !self.stanje.stanje.jeSnimanje && !self.stanje.stanje.jeZauzet {
+                    hud.orderOut(nil)
+                }
+            }
+        }
+    }
+
+    // MARK: - Akcije iz menija
+
+    @objc private func prebaciSnimanje() {
+        stanje.prebaciSnimanje()
+    }
+
+    @objc private func kopirajPoslednji() {
+        guard !stanje.poslednjiTekst.isEmpty else {
+            stanje.postaviInfo("Još nema prepisa.")
+            return
+        }
+        stanje.kopiraj(stanje.poslednjiTekst)
+    }
+
+    @objc private func otvoriPodesavanja() {
+        stanje.izabranTab = 2
+        prikaziProzor()
+    }
+
+    @objc private func otvoriDozvole() {
+        stanje.izabranTab = 2
+        prikaziProzor()
+    }
+}
