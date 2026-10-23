@@ -222,7 +222,10 @@ današnje ime aplikacije.)*
   lepo vreme u Beogradu.”, `--dozvole` čita stvarne dozvole, a `--slika` crta
   tabove sa imenom Diktator. Verzija je podignuta na `0.5.0` (build 5);
   instalirano u `/Applications/Diktator.app`, login item ponovo uključen preko
-  `--prijava`.
+  `--prijava`. Objavljen je release `v0.5.0` sa
+  `Diktator-0.5.0-macOS-arm64.zip` (3,0 MB, SHA-256
+  `d067de37fd14e826e4ec0e78ba33635116ae70fab4ab010ed291e3fa969305f8`);
+  starija izdanja zadržavaju istorijske nazive fajlova.
 - Sledeći korak: probni diktat uživo sa Large v3 i stvarnim API ključem za
   izabrani servis, zatim po potrebi brisanje modela koje korisnik ne želi i
   eventualni prelazak `diktator` repoa na ovu aplikaciju.
