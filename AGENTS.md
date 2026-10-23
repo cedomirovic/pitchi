@@ -191,7 +191,9 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   `0.3.0` i aplikacija je ispravno zaključila da je `0.4.0` ažurna. Tabovi su
   nacrtani kroz `--slika` sa lažnim izdanjem (`PITCHI_SLIKA_AZURIRANJE=1`);
   `--test-whisper` i dalje daje isti srpski tekst. Verzija je podignuta na
-  `0.4.0` (build 4) i instalirana u `/Applications`.
+  `0.4.0` (build 4) i instalirana u `/Applications`. Objavljen je release
+  `v0.4.0` sa `Pitchi-0.4.0-macOS-arm64.zip` (3,0 MB, SHA-256
+  `244d39a0cb2bb7a3c85e421414271a2b678a0b9a41843147f986109e88a91bf1`).
 - Sledeći korak: probni diktat uživo sa Large v3 i stvarnim API ključem za
   izabrani servis, zatim po potrebi brisanje modela koje korisnik ne želi i
   eventualni prelazak `diktator` repoa na ovu aplikaciju.
