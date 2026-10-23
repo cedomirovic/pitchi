@@ -39,8 +39,26 @@ struct PogledPomoc: View {
                     )
                 }
 
+                Kartica(naslov: "Doterivanje teksta", ikona: "wand.and.stars") {
+                    Text("U Podešavanjima → Doterivanje uključi opciju, izaberi servis, unesi ključ i klikni „Test veze“. Ako obavezan ključ nedostaje, prepis ostaje sirov.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Divider()
+                    servis("DeepSeek", "API ključ sa platform.deepseek.com → API keys. Model: deepseek-chat.")
+                    Divider()
+                    servis("OpenAI / ChatGPT", "API ključ sa platform.openai.com → API keys. ChatGPT Plus pretplata nije dovoljna za API.")
+                    Divider()
+                    servis("Anthropic Claude", "API ključ sa console.anthropic.com → API keys. Claude Code je druga alatka, nije API.")
+                    Divider()
+                    servis("Ollama (lokalno)", "Instaliraj Ollama i pokreni `ollama pull llama3.2`. Nema ključa i tekst ostaje na Macu.")
+                    Divider()
+                    servis("Drugi OpenAI-kompatibilni", "OpenRouter, Groq, LM Studio, vLLM… Unesi adresu koja se završava sa /chat/completions i tačan naziv modela.")
+                }
+
                 Kartica(naslov: "Privatnost", ikona: "hand.raised") {
-                    Text("Snimak se obrađuje lokalno, whisper.cpp modelom na ovom Macu. Nigde se ne šalje. Jedina mrežna radnja je preuzimanje modela. Ako uključiš DeepSeek doterivanje, tada se šalje samo gotov tekst — nikada zvuk.")
+                    Text("Snimak se obrađuje lokalno, whisper.cpp modelom na ovom Macu. Nigde se ne šalje. Jedina mrežna radnja je preuzimanje modela. Ako uključiš doterivanje, samo gotov tekst ide izabranom servisu — nikada zvuk. Ollama radi lokalno i tada tekst ne napušta Mac.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -50,6 +68,7 @@ struct PogledPomoc: View {
                     red("Motor", "whisper.cpp (statički ugrađen)")
                     red("Model", "Tiny, Base, Small, Turbo ili Large v3 — po izboru")
                     red("Jezik", "srpski i engleski, automatski; srpski latinica")
+                    red("Doterivanje", "DeepSeek, OpenAI, Claude, Ollama ili drugi")
                     red("Memorija", "~0,2–1,4 GB samo tokom diktiranja")
                     red("Sistemski zahtev", "macOS 13+, Apple Silicon")
                 }
@@ -80,6 +99,17 @@ struct PogledPomoc: View {
     private func problem(_ naslov: String, _ opis: String) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(naslov).font(.callout.weight(.medium))
+            Text(opis)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func servis(_ naziv: String, _ opis: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(naziv).font(.callout.weight(.medium))
             Text(opis)
                 .font(.caption)
                 .foregroundStyle(.secondary)

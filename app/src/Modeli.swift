@@ -64,6 +64,11 @@ struct Podesavanja: Codable, Equatable {
     var doterivanje = false
     var cuvajIstoriju = true
     var model = Modeli.podrazumevani.id
+    var provajderDoterivanja = ProvajderiDoterivanja.podrazumevani.id
+    /// Model se pamti po servisu da promena servisa ne bi poslala pogrešan naziv.
+    var modeliDoterivanja: [String: String] = [:]
+    /// Adresa se koristi samo za servis „Drugi OpenAI-kompatibilni“.
+    var adresaCustomDoterivanja = ""
 
     init() {}
 
@@ -74,6 +79,9 @@ struct Podesavanja: Codable, Equatable {
         case doterivanje
         case cuvajIstoriju
         case model
+        case provajderDoterivanja
+        case modeliDoterivanja
+        case adresaCustomDoterivanja
     }
 
     /// Rucno dekodiranje da stara podesavanja (bez polja `model`) ne puknu
@@ -88,5 +96,14 @@ struct Podesavanja: Codable, Equatable {
         model = try kontejner.decodeIfPresent(String.self, forKey: .model)
             ?? Modeli.nadjiPostojeci()?.id
             ?? Modeli.podrazumevani.id
+        provajderDoterivanja = try kontejner.decodeIfPresent(String.self, forKey: .provajderDoterivanja)
+            ?? ProvajderiDoterivanja.podrazumevani.id
+        modeliDoterivanja = try kontejner.decodeIfPresent([String: String].self, forKey: .modeliDoterivanja)
+            ?? [:]
+        adresaCustomDoterivanja = try kontejner.decodeIfPresent(String.self, forKey: .adresaCustomDoterivanja)
+            ?? ""
+        if ProvajderiDoterivanja.nadji(provajderDoterivanja) == nil {
+            provajderDoterivanja = ProvajderiDoterivanja.podrazumevani.id
+        }
     }
 }

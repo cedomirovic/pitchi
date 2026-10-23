@@ -24,7 +24,8 @@ final class AppStanje: NSObject, ObservableObject {
     @Published var greska: String?
     @Published var info: String?
     @Published var izabranTab = 0
-    @Published var deepSeekKljuc = ""
+    @Published var kljucDoterivanja = ""
+    @Published var testiraDoterivanje = false
 
     let snimac = Snimac()
     let prepisivac = Prepisivac()
@@ -40,10 +41,11 @@ final class AppStanje: NSObject, ObservableObject {
     private var brojInfo = 0
 
     override init() {
-        podesavanja = SkladistePodesavanja.ucitaj()
+        let ucitanaPodesavanja = SkladistePodesavanja.ucitaj()
+        podesavanja = ucitanaPodesavanja
         istorija = IstorijaSkladiste.ucitaj()
         recnik = Recnik.ucitaj()
-        deepSeekKljuc = Kljuc.citaj() ?? ""
+        kljucDoterivanja = Kljuc.citaj(za: ucitanaPodesavanja.provajderDoterivanja) ?? ""
         super.init()
 
         Prepisivac.utisajLog()
@@ -230,6 +232,49 @@ final class AppStanje: NSObject, ObservableObject {
         postaviInfo("Model je oslobođen iz memorije.")
     }
 
+    // MARK: - Doterivanje
+
+    var provajderDoterivanja: ProvajderDoterivanja {
+        ProvajderiDoterivanja.nadji(podesavanja.provajderDoterivanja)
+            ?? ProvajderiDoterivanja.podrazumevani
+    }
+
+    var modelDoterivanja: String {
+        let upisan = podesavanja.modeliDoterivanja[provajderDoterivanja.id]?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return upisan.isEmpty ? provajderDoterivanja.model : upisan
+    }
+
+    var adresaDoterivanja: String {
+        let provajder = provajderDoterivanja
+        guard provajder.id == ProvajderiDoterivanja.customId else {
+            return provajder.adresa
+        }
+        let upisana = podesavanja.adresaCustomDoterivanja
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return upisana.isEmpty ? provajder.adresa : upisana
+    }
+
+    func postaviModelDoterivanja(_ vrednost: String) {
+        let ocisceno = vrednost.trimmingCharacters(in: .whitespacesAndNewlines)
+        let provajder = provajderDoterivanja.id
+        if ocisceno.isEmpty {
+            podesavanja.modeliDoterivanja.removeValue(forKey: provajder)
+        } else {
+            podesavanja.modeliDoterivanja[provajder] = ocisceno
+        }
+    }
+
+    func izaberiProvajdera(_ id: String) {
+        guard id != podesavanja.provajderDoterivanja,
+              let provajder = ProvajderiDoterivanja.nadji(id) else { return }
+
+        sacuvajKljuc(prikaziPoruku: false)
+        podesavanja.provajderDoterivanja = provajder.id
+        SkladistePodesavanja.sacuvaj(podesavanja)
+        kljucDoterivanja = Kljuc.citaj(za: provajder.id) ?? ""
+    }
+
     // MARK: - Snimanje
 
     func prebaciSnimanje() {
@@ -345,7 +390,10 @@ final class AppStanje: NSObject, ObservableObject {
         let jezik = podesavanja.jezik
         let prompt = Recnik.kaoPrompt(recnik)
         let doteruj = podesavanja.doterivanje
-        let kljuc = deepSeekKljuc
+        let provajder = provajderDoterivanja
+        let kljuc = kljucDoterivanja.trimmingCharacters(in: .whitespacesAndNewlines)
+        let model = modelDoterivanja
+        let adresa = adresaDoterivanja
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self else { return }
@@ -374,13 +422,16 @@ final class AppStanje: NSObject, ObservableObject {
                     return
                 }
 
-                if doteruj, !kljuc.isEmpty {
+                if doteruj, !provajder.traziKljuc || !kljuc.isEmpty {
                     Task { [weak self] in
                         guard let self else { return }
                         do {
                             let doteran = try await Doterivac.doteraj(
                                 sredjeno,
+                                provajder: provajder,
                                 kljuc: kljuc,
+                                model: model,
+                                adresa: adresa,
                                 jezik: jezikTeksta
                             )
                             DispatchQueue.main.async {
@@ -397,18 +448,21 @@ final class AppStanje: NSObject, ObservableObject {
                                     sredjeno,
                                     trajanje: trajanje,
                                     jezik: jezikTeksta,
-                                    napomena: "Doterivanje nije uspelo — ostavljen je sirov prepis."
+                                    napomena: "Doterivanje nije uspelo (\(provajder.naziv)) — ostavljen je sirov prepis."
                                 )
                             }
                         }
                     }
                 } else {
+                    let napomena = doteruj
+                        ? "Doterivanje je preskočeno — \(provajder.naziv) ključ nije unet."
+                        : nil
                     DispatchQueue.main.async {
                         self.dovrsi(
                             sredjeno,
                             trajanje: trajanje,
                             jezik: jezikTeksta,
-                            napomena: nil
+                            napomena: napomena
                         )
                     }
                 }
@@ -504,8 +558,59 @@ final class AppStanje: NSObject, ObservableObject {
     }
 
     func sacuvajKljuc() {
-        Kljuc.upisi(deepSeekKljuc)
-        postaviInfo(deepSeekKljuc.isEmpty ? "Ključ je obrisan." : "Ključ je sačuvan u Keychain-u.")
+        sacuvajKljuc(prikaziPoruku: true)
+    }
+
+    private func sacuvajKljuc(prikaziPoruku: Bool) {
+        let provajder = provajderDoterivanja
+        let kljuc = kljucDoterivanja.trimmingCharacters(in: .whitespacesAndNewlines)
+        kljucDoterivanja = kljuc
+        Kljuc.upisi(kljuc, za: provajder.id)
+        guard prikaziPoruku else { return }
+        postaviInfo(kljuc.isEmpty
+            ? "\(provajder.naziv) ključ je obrisan."
+            : "\(provajder.naziv) ključ je sačuvan u Keychain-u.")
+    }
+
+    func testirajDoterivanje() {
+        guard !testiraDoterivanje else { return }
+
+        let provajder = provajderDoterivanja
+        let kljuc = kljucDoterivanja.trimmingCharacters(in: .whitespacesAndNewlines)
+        let model = modelDoterivanja
+        let adresa = adresaDoterivanja
+
+        guard !provajder.traziKljuc || !kljuc.isEmpty else {
+            greska = "\(provajder.naziv) API ključ nije unet."
+            return
+        }
+
+        greska = nil
+        testiraDoterivanje = true
+        Task { [weak self] in
+            do {
+                let odgovor = try await Doterivac.doteraj(
+                    "Ovo je kratak test. Popravi interpunkciju.",
+                    provajder: provajder,
+                    kljuc: kljuc,
+                    model: model,
+                    adresa: adresa,
+                    jezik: "sr"
+                )
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    self.testiraDoterivanje = false
+                    let kratko = odgovor.count > 80 ? "\(odgovor.prefix(80))…" : odgovor
+                    self.postaviInfo("Test je uspeo (\(provajder.naziv)): \(kratko)")
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    self.testiraDoterivanje = false
+                    self.greska = "Test nije uspeo (\(provajder.naziv)): \(error.localizedDescription)"
+                }
+            }
+        }
     }
 
     // MARK: - Pomoćno

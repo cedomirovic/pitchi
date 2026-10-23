@@ -141,6 +141,29 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   je podignuta na `0.2.0` i objavljen je release `v0.2.0` sa
   `Pitchi-0.2.0-macOS-arm64.zip` (2,9 MB, SHA-256
   `6f47d7f8d8453dfdb69da092aec9482566cff583f7271c1f7a085d573c7b02b3`).
-- Sledeći korak: probni diktat uživo sa Large v3, zatim po potrebi brisanje
-  modela koje korisnik ne želi (sada se samo biraju/preuzimaju) i eventualni
-  prelazak `diktator` repoa na ovu aplikaciju.
+- **23.10.2026. (izbor LLM servisa)** — doterivanje više nije vezano samo za
+  DeepSeek. Odluke:
+  - `ProvajderiDoterivanja.swift` je katalog: DeepSeek, OpenAI / ChatGPT,
+    Anthropic Claude, Ollama (lokalno) i „Drugi OpenAI-kompatibilni“;
+    podrazumevani modeli su `deepseek-chat`, `gpt-4o-mini`,
+    `claude-haiku-5-5`, `llama3.2` i `local-model`;
+  - `Doterivac` zna tri formata: OpenAI chat, Anthropic Messages i Ollama chat;
+    ima timeout od 60 s i jasnije poruke za 401/403, 404 i 429;
+  - ključevi se čuvaju u Keychain-u **po servisu**; stari DeepSeek nalog
+    `deepseek` ostaje važeći, a novi servisi dobijaju svoje naloge;
+  - `Podesavanja` čuva `provajderDoterivanja`, `modeliDoterivanja` (model po
+    servisu) i `adresaCustomDoterivanja`; stara podešavanja se dekodiraju bez
+    greške i dalje koriste DeepSeek;
+  - u Podešavanjima su izbor servisa, dinamičko polje za ključ, model, adresa
+    za custom servis i dugme „Test veze“; verzija u „O aplikaciji“ se sada čita
+    iz `Info.plist` (ranije je bila hardkodovana na `0.1.0`);
+  - README i Pomoć objašnjavaju povezivanje svih servisa; posebno piše da
+    **Claude Code nije API** i da se za Claude koristi Anthropic API ključ.
+  Provereno: samostalni test protiv lokalnog mock servera za OpenAI,
+  Anthropic i Ollama odgovore, HTTP 401, prazan tekst i nedostajući ključ;
+  kroz UI su prošli „Test veze“ (uspeh i greška) i prebacivanje servisa sa
+  čuvanjem/ucitavanjem ključa po servisu. Živi pozivi nisu probani jer nema
+  API ključeva. Verzija je podignuta na `0.3.0`.
+- Sledeći korak: probni diktat uživo sa Large v3 i stvarnim API ključem za
+  izabrani servis, zatim po potrebi brisanje modela koje korisnik ne želi i
+  eventualni prelazak `diktator` repoa na ovu aplikaciju.

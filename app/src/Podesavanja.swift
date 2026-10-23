@@ -21,25 +21,26 @@ final class SkladistePodesavanja {
 
 enum Kljuc {
     private static let servis = "com.cedomirovic.pitchi"
-    private static let nalog = "deepseek"
 
-    static func upisi(_ vrednost: String) {
-        obrisi()
+    /// Svaki servis ima svoj nalog u Keychain-u, pa se ključevi ne mešaju.
+    /// Stari DeepSeek ključ je već pod nalogom „deepseek“ i zato ostaje važeći.
+    static func upisi(_ vrednost: String, za provajder: String) {
+        obrisi(za: provajder)
         guard !vrednost.isEmpty, let podaci = vrednost.data(using: .utf8) else { return }
         let upit: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: servis,
-            kSecAttrAccount as String: nalog,
+            kSecAttrAccount as String: provajder,
             kSecValueData as String: podaci,
         ]
         SecItemAdd(upit as CFDictionary, nil)
     }
 
-    static func citaj() -> String? {
+    static func citaj(za provajder: String) -> String? {
         let upit: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: servis,
-            kSecAttrAccount as String: nalog,
+            kSecAttrAccount as String: provajder,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
         ]
@@ -49,11 +50,11 @@ enum Kljuc {
         return String(data: podaci, encoding: .utf8)
     }
 
-    static func obrisi() {
+    static func obrisi(za provajder: String) {
         let upit: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: servis,
-            kSecAttrAccount as String: nalog,
+            kSecAttrAccount as String: provajder,
         ]
         SecItemDelete(upit as CFDictionary)
     }

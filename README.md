@@ -28,14 +28,15 @@ lakši modeli se preuzimaju direktno iz aplikacije.
 - **Pokretanje pri prijavi** — opciono u Podešavanjima, preko macOS Login Items.
 - **Dock i menu bar** — ikonica je vidljiva na oba mesta; klik na Dock ponovo
   otvara prozor.
-- **Opciono DeepSeek doterivanje** — popravi interpunkciju i imena; isključeno
-  po defaultu, šalje se samo tekst, nikada zvuk.
+- **Opciono doterivanje teksta** — izaberi DeepSeek, OpenAI, Anthropic Claude,
+  lokalni Ollama ili drugi OpenAI-kompatibilni servis; popravlja interpunkciju
+  i imena. Isključeno po defaultu, šalje se samo tekst, nikada zvuk.
 
 ## Instalacija
 
 ### Gotova aplikacija
 
-1. Preuzmi `Pitchi-0.2.0-macOS-arm64.zip` sa
+1. Preuzmi `Pitchi-0.3.0-macOS-arm64.zip` sa
    [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
 2. Otpakuj i prevuci `Pitchi.app` u `/Applications`.
 3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
@@ -99,11 +100,84 @@ Dok je model učitan, aplikacija drži ~0,2–1,4 GB, zavisno od izbora; posle
 se kompajliraju Metal šejderi; sledeći su nekoliko sekundi za kraću rečenicu
 (uključujući detekciju jezika).
 
+## Doterivanje teksta (opciono)
+
+Whisper ponekad pogreši interpunkciju ili ime. Ako uključiš doterivanje, Pitchi
+pošalje **samo gotov tekst** izabranom servisu i vrati ispravljenu verziju.
+Snimak se nikada ne šalje. Opcija je isključena po defaultu.
+
+U **Podešavanjima → Doterivanje teksta**:
+
+1. Uključi „Popravi interpunkciju i imena“.
+2. Izaberi servis.
+3. Unesi API ključ (osim za Ollama; kod drugih servisa samo ako ga traže) i
+   klikni **Sačuvaj**.
+4. Po potrebi promeni **Model**; za „Drugi OpenAI-kompatibilni“ unesi i adresu.
+5. Klikni **Test veze**. Ako prođe, diktat će automatski doterivati tekst.
+
+| Servis | Šta treba | Podrazumevani model |
+|---|---|---|
+| DeepSeek | API ključ sa [platform.deepseek.com](https://platform.deepseek.com/api_keys) | `deepseek-chat` |
+| OpenAI / ChatGPT | API ključ sa [platform.openai.com](https://platform.openai.com/api-keys) | `gpt-4o-mini` |
+| Anthropic Claude | API ključ sa [console.anthropic.com](https://console.anthropic.com/settings/keys) | `claude-haiku-5-5` |
+| Ollama | Instaliran Ollama i preuzet model; bez ključa | `llama3.2` |
+| Drugi OpenAI-kompatibilni | Adresa i model; ključ ako servis traži | `local-model` |
+
+### DeepSeek
+
+Napravi ključ na [platform.deepseek.com](https://platform.deepseek.com/api_keys)
+i nalepi ga u Pitchi. Postojeći DeepSeek ključ iz starije verzije se automatski
+koristi. Model `deepseek-chat` je dovoljan za lektorisanje.
+
+### OpenAI / ChatGPT
+
+Potreban je **API ključ** sa [platform.openai.com](https://platform.openai.com/api-keys).
+ChatGPT Plus pretplata nije isto što i API i ne uključuje pozive iz drugih
+aplikacija. API se posebno naplaćuje; `gpt-4o-mini` je jeftin izbor za kratke
+prepise.
+
+### Anthropic Claude
+
+Napravi ključ na [console.anthropic.com](https://console.anthropic.com/settings/keys).
+Pitchi koristi Claude Messages API i podrazumevano model `claude-haiku-5-5`.
+
+**Claude Code nije API.** To je CLI alat za rad u terminalu i Pitchi ga ne
+poziva. Ako želiš Claude za doterivanje, izaberi „Anthropic Claude“ i napravi
+Anthropic API ključ.
+
+### Ollama (lokalno)
+
+Instaliraj [Ollama](https://ollama.com/download), pa u terminalu pokreni:
+
+```bash
+ollama pull llama3.2
+```
+
+Pitchi koristi `http://localhost:11434/api/chat`, bez ključa. Tekst tada ne
+napušta Mac. Ako imaš drugi model, upiši njegov tačan naziv u polje **Model**
+(na primer `qwen2.5:7b`).
+
+### Drugi OpenAI-kompatibilni servis
+
+Isti obrazac rade OpenRouter, Groq, LM Studio, vLLM i slični servisi. Unesi
+adresu koja se završava sa `/chat/completions`, tačan naziv modela i ključ ako
+ga servis traži. Primeri:
+
+- OpenRouter: `https://openrouter.ai/api/v1/chat/completions`
+- Groq: `https://api.groq.com/openai/v1/chat/completions`
+- LM Studio: `http://localhost:1234/v1/chat/completions`
+
+Ako **Test veze** prijavi HTTP 401, ključ nije ispravan. HTTP 404 obično znači
+pogrešnu adresu ili naziv modela. Ključevi se čuvaju u macOS Keychain-u, po
+servisu odvojeno; ne upisuju se u istoriju ni u fajl sa podešavanjima.
+
 ## Privatnost
 
 - Snimak se ne čuva i ne šalje nigde.
 - Istorija i rečnik su lokalni fajlovi u `~/Library/Application Support/Pitchi/`.
-- DeepSeek je opcion i šalje samo gotov tekst, nikada zvuk.
+- Doterivanje je opciono i šalje samo gotov tekst, nikada zvuk. Kod Ollama
+  servisa i tekst ostaje na Macu; kod ostalih ide izabranom provajderu.
+- API ključevi su u macOS Keychain-u, odvojeno po servisu.
 
 ## Razvoj
 

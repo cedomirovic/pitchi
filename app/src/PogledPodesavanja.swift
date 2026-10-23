@@ -1,4 +1,5 @@
-// Podesavanja: jezik, lepljenje, DeepSeek, recnik, model i dozvole.
+// Podesavanja: jezik, lepljenje, servis za doterivanje, recnik, model i dozvole.
+import Foundation
 import SwiftUI
 
 struct PogledPodesavanja: View {
@@ -141,7 +142,7 @@ struct PogledPodesavanja: View {
             Toggle(isOn: $app.podesavanja.doterivanje) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Popravi interpunkciju i imena").font(.callout.weight(.medium))
-                    Text("Šalje samo gotov tekst na DeepSeek. Isključeno znači da ništa ne napušta Mac.")
+                    Text("Šalje samo gotov tekst izabranom servisu. Isključeno znači da ništa ne napušta Mac.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -151,33 +152,146 @@ struct PogledPodesavanja: View {
             if app.podesavanja.doterivanje {
                 Divider()
 
-                HStack(spacing: 8) {
-                    if kljucVidljiv {
-                        TextField("DeepSeek API ključ", text: $app.deepSeekKljuc)
-                            .textFieldStyle(.roundedBorder)
-                    } else {
-                        SecureField("DeepSeek API ključ", text: $app.deepSeekKljuc)
-                            .textFieldStyle(.roundedBorder)
+                HStack {
+                    Text("Servis").font(.callout.weight(.medium))
+                    Spacer()
+                    Picker("", selection: izborProvajdera) {
+                        ForEach(ProvajderiDoterivanja.svi) { provajder in
+                            Text(provajder.naziv).tag(provajder.id)
+                        }
                     }
-
-                    Button {
-                        kljucVidljiv.toggle()
-                    } label: {
-                        Image(systemName: kljucVidljiv ? "eye.slash" : "eye")
-                    }
-                    .buttonStyle(.bordered)
-                    .help(kljucVidljiv ? "Sakrij ključ" : "Prikaži ključ")
-
-                    Button("Sačuvaj") { app.sacuvajKljuc() }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Izgled.akcenat)
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .frame(width: 290)
                 }
 
-                Text("Ključ se čuva u Keychain-u. Ako polje ostane prazno, doterivanje se preskače.")
+                Text(provajder.opis)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if provajder.prikazujeKljuc {
+                    HStack(spacing: 8) {
+                        if kljucVidljiv {
+                            TextField(kljucPlaceholder, text: $app.kljucDoterivanja)
+                                .textFieldStyle(.roundedBorder)
+                        } else {
+                            SecureField(kljucPlaceholder, text: $app.kljucDoterivanja)
+                                .textFieldStyle(.roundedBorder)
+                        }
+
+                        Button {
+                            kljucVidljiv.toggle()
+                        } label: {
+                            Image(systemName: kljucVidljiv ? "eye.slash" : "eye")
+                        }
+                        .buttonStyle(.bordered)
+                        .help(kljucVidljiv ? "Sakrij ključ" : "Prikaži ključ")
+                        .accessibilityLabel(kljucVidljiv ? "Sakrij ključ" : "Prikaži ključ")
+
+                        Button("Sačuvaj") { app.sacuvajKljuc() }
+                            .buttonStyle(.borderedProminent)
+                            .tint(Izgled.akcenat)
+                            .accessibilityLabel("Sačuvaj ključ")
+                    }
+
+                    Text(provajder.traziKljuc
+                        ? "Ključ se čuva u Keychain-u. Ako polje ostane prazno, doterivanje se preskače."
+                        : "Ključ nije obavezan; čuva se u Keychain-u ako ga uneseš.")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(provajder.uputstvo)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let link = provajder.link {
+                        Link(provajder.linkNaslov ?? "Otvori", destination: link)
+                            .font(.caption.weight(.medium))
+                    }
+                }
+
+                HStack(spacing: 8) {
+                    Text("Model").font(.caption.weight(.medium))
+                        .frame(width: 58, alignment: .leading)
+                    TextField(provajder.model, text: modelDoterivanja)
+                        .textFieldStyle(.roundedBorder)
+                }
+
+                if provajder.prikazujeAdresu {
+                    HStack(spacing: 8) {
+                        Text("Adresa").font(.caption.weight(.medium))
+                            .frame(width: 58, alignment: .leading)
+                        TextField(provajder.adresa, text: adresaDoterivanja)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                }
+
+                Text("Podrazumevani model je dovoljan; menjaš ga samo ako servis promeni naziv.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
+
+                HStack {
+                    Button {
+                        app.testirajDoterivanje()
+                    } label: {
+                        if app.testiraDoterivanje {
+                            HStack(spacing: 6) {
+                                ProgressView().controlSize(.small)
+                                Text("Testiram…")
+                            }
+                        } else {
+                            Label("Test veze", systemImage: "bolt.horizontal")
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .disabled(app.testiraDoterivanje || !kljucSpreman)
+                    .accessibilityLabel("Test veze")
+
+                    Spacer()
+                }
             }
         }
+        .onChange(of: app.podesavanja.provajderDoterivanja) { _ in
+            kljucVidljiv = false
+        }
+    }
+
+    private var provajder: ProvajderDoterivanja {
+        app.provajderDoterivanja
+    }
+
+    private var izborProvajdera: Binding<String> {
+        Binding(
+            get: { app.podesavanja.provajderDoterivanja },
+            set: { app.izaberiProvajdera($0) }
+        )
+    }
+
+    private var modelDoterivanja: Binding<String> {
+        Binding(
+            get: { app.modelDoterivanja },
+            set: { app.postaviModelDoterivanja($0) }
+        )
+    }
+
+    private var adresaDoterivanja: Binding<String> {
+        Binding(
+            get: { app.adresaDoterivanja },
+            set: { app.podesavanja.adresaCustomDoterivanja = $0 }
+        )
+    }
+
+    private var kljucPlaceholder: String {
+        provajder.traziKljuc ? "\(provajder.naziv) API ključ" : "API ključ (opciono)"
+    }
+
+    private var kljucSpreman: Bool {
+        !provajder.traziKljuc ||
+            !app.kljucDoterivanja.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private var recnikKartica: some View {
@@ -344,7 +458,7 @@ struct PogledPodesavanja: View {
             HStack {
                 Text("Pitchi")
                     .font(.callout.weight(.medium))
-                Text("0.1.0")
+                Text(verzija)
                     .font(.caption.monospaced())
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -352,10 +466,14 @@ struct PogledPodesavanja: View {
                     .font(.caption2.monospaced())
                     .foregroundStyle(.tertiary)
             }
-            Text("Snimak i tekst ne napuštaju Mac. Nema naloga, nema telemetrije. Jedini izlaz u mrežu je preuzimanje modela — i DeepSeek, ako ga sam uključiš.")
+            Text("Snimak i tekst ne napuštaju Mac. Nema naloga, nema telemetrije. Jedini izlaz u mrežu je preuzimanje modela — i izabrani servis za doterivanje, ako ga sam uključiš.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    private var verzija: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
     }
 }
