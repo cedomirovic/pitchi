@@ -226,6 +226,38 @@ današnje ime aplikacije.)*
   `Diktator-0.5.0-macOS-arm64.zip` (3,0 MB, SHA-256
   `d067de37fd14e826e4ec0e78ba33635116ae70fab4ab010ed291e3fa969305f8`);
   starija izdanja zadržavaju istorijske nazive fajlova.
+- **23.10.2026. (prečica)** — dodato je biranje prečice za diktiranje.
+  Odluke:
+  - `Precica` u `Modeli.swift` nudi `Fn`, desni `Option`, `Command`, `Control`
+    i `Shift`, kao i `F13`–`F19`; desni modifikatori su izabrani da levi
+    ostane slobodan za normalno kucanje.
+  - `Podesavanja.precica` čuva izbor i podrazumevano je `fn`; stara
+    podešavanja bez tog polja se dekodiraju kao `Fn`, a nepoznata vrednost se
+    vraća na `Fn`.
+  - `Tastatura` sada sluša `flagsChanged`, `keyDown` i `keyUp`; ponovljeni
+    `keyDown` se ignoriše, `Fn` koristi `.maskSecondaryFn`, a desni
+    modifikatori `CGEventSource.keyState`. Event tap ostaje živ pa promena
+    prečice važi odmah; ako se prečica promeni usred snimanja, snimak se
+    završava da ne ostane zaglavljen.
+  - U Podešavanjima → Diktiranje je izbor „Prečica za diktiranje“, a svi
+    vidljivi tekstovi (Početak, HUD, pomoć, dozvole, istorija i tooltip u menu
+    baru) prate izabranu prečicu.
+  Provereno: `node --check diktator.js lib/*.js`, `node diktator.js --help`,
+  `npm test` (11/11), `bash app/build.sh`; `--slika` crta novi izbor, a
+  `docs/pocetak.png` i `docs/podesavanja.png` su ponovo nacrtani. Kroz UI je
+  prečica promenjena `Fn` → `F13` → `Fn`, a podešavanja su sadržala
+  `"precica": "f13"` odnosno `"fn"`. Sintetički `F13` (držan 5 s) prikazuje
+  „Snimam…“ i „Pusti F13 kada završiš“, a kratak `F13` kroz System Events daje
+  „Snimak je prekratak — drži F13 dok govoriš.“ `--test-whisper` i dalje daje
+  isti srpski tekst, a `--dozvole` čita stvarne dozvole. Desni modifikatori
+  nisu probani fizički (na mašini nema takvog tastera u testu), ali su izbor,
+  keycode i logika preko `CGEventSource.keyState` provereni kodom.
+  Verzija je podignuta na `0.6.0` (build 6), `package.json` na `0.6.0`, a
+  lažno izdanje za `--slika` je `0.7.0`. Instalirano je u
+  `/Applications/Diktator.app`; objavljen je release `v0.6.0` sa
+  `Diktator-0.6.0-macOS-arm64.zip` (3,0 MB, SHA-256
+  `de8569f72317790e6c248f2d1718dd1e7b2e83eb54bcae4b41327759946488b4`).
 - Sledeći korak: probni diktat uživo sa Large v3 i stvarnim API ključem za
-  izabrani servis, zatim po potrebi brisanje modela koje korisnik ne želi i
-  eventualni prelazak `diktator` repoa na ovu aplikaciju.
+  izabrani servis, probati desni modifikator kao prečicu na tastaturi koja ga
+  ima, zatim po potrebi brisanje modela koje korisnik ne želi i eventualni
+  prelazak `diktator` repoa na ovu aplikaciju.

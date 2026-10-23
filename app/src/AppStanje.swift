@@ -174,7 +174,15 @@ final class AppStanje: NSObject, ObservableObject {
 
     // MARK: - Precica
 
+    var izabranaPrecica: Precica {
+        Precica.iz(podesavanja.precica)
+    }
+
+    var nazivPrecice: String { izabranaPrecica.naziv }
+    var simbolPrecice: String { izabranaPrecica.simbol }
+
     func pokreniTastaturu() {
+        tastatura.precica = izabranaPrecica
         tastatura.naPritisak = { [weak self] in self?.pocniSnimanje() }
         tastatura.naOtpust = { [weak self] in self?.zavrsiSnimanje() }
         precicaRadi = tastatura.pokreni()
@@ -354,7 +362,7 @@ final class AppStanje: NSObject, ObservableObject {
         let trajanje = Double(ocisceno.count) / 16_000.0
         guard trajanje >= 0.35 else {
             stanje = .mirno
-            postaviInfo("Snimak je prekratak — drži Fn dok govoriš.")
+            postaviInfo("Snimak je prekratak — drži \(nazivPrecice) dok govoriš.")
             return
         }
 
@@ -560,6 +568,8 @@ final class AppStanje: NSObject, ObservableObject {
 
     func sacuvajPodesavanja() {
         SkladistePodesavanja.sacuvaj(podesavanja)
+        // Promena prečice ne zahteva ponovno pravljenje event tapa.
+        tastatura.precica = izabranaPrecica
     }
 
     func sacuvajRecnik() {

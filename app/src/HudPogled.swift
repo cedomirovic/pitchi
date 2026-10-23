@@ -72,7 +72,7 @@ struct HudPogled: View {
 
     private var podnaslov: String {
         switch app.stanje {
-        case .snima: return "Pusti Fn kada završiš"
+        case .snima: return "Pusti \(app.nazivPrecice) kada završiš"
         case .priprema: return "Učitavam model…"
         case .prepisuje: return "Pretvaram govor u tekst…"
         default: return "Diktator"

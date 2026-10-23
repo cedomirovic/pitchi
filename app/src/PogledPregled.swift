@@ -36,7 +36,7 @@ struct PogledPregled: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(app.stanje.naslov)
                         .font(.system(size: 26, weight: .bold, design: .rounded))
-                    Text(app.stanje.detalj)
+                    Text(app.stanje.detalj(precica: app.nazivPrecice))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -61,7 +61,7 @@ struct PogledPregled: View {
                 Image(systemName: "keyboard")
                     .foregroundStyle(.secondary)
                 Text("Drži")
-                Taster("Fn")
+                Taster(app.simbolPrecice)
                 Text("i govori, pusti kada završiš. Ili klikni dugme iznad.")
                 Spacer()
             }
@@ -115,7 +115,7 @@ struct PogledPregled: View {
 
     private var dozvoleKartica: some View {
         Kartica(naslov: "Još malo pa sve radi", ikona: "lock.shield") {
-            Text("Diktator traži tri dozvole. Bez njih ne može da čuje mikrofon, prepozna Fn ili zalepi tekst.")
+            Text("Diktator traži tri dozvole. Bez njih ne može da čuje mikrofon, prepozna \(app.nazivPrecice) ili zalepi tekst.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
 
@@ -130,7 +130,7 @@ struct PogledPregled: View {
 
             RedDozvole(
                 naziv: "Nadzor unosa",
-                opis: "Da prepozna kada držiš Fn, i dok je druga aplikacija u fokusu.",
+                opis: "Da prepozna kada držiš \(app.nazivPrecice), i dok je druga aplikacija u fokusu.",
                 ikona: "keyboard",
                 dozvoljeno: app.dozvole.nadzorUnosa
             ) { app.zatrazNadzorUnosa() }

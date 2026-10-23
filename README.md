@@ -1,9 +1,9 @@
 # Diktator — diktiranje na srpskom i engleskom (macOS)
 
-Diktator je macOS aplikacija za dikiranje: držiš `Fn`, izgovoriš rečenicu, pusti
-— tekst se prepiše **lokalno** (whisper.cpp) i zalepi u aplikaciju u kojoj
-pišeš. Jezik se prepoznaje automatski, pa srpski i engleski mogu da se smenjuju
-bez podešavanja. Snimak ne napušta Mac.
+Diktator je macOS aplikacija za diktiranje: držiš izabranu prečicu (podrazumevano
+`Fn`), izgovoriš rečenicu, pusti — tekst se prepiše **lokalno** (whisper.cpp) i
+zalepi u aplikaciju u kojoj pišeš. Jezik se prepoznaje automatski, pa srpski i
+engleski mogu da se smenjuju bez podešavanja. Snimak ne napušta Mac.
 
 Aplikacija ima prozor sa stanjem, istorijom, rečnikom i podešavanjima, ikonu u
 Docku i u menu baru. Model se učitava samo tokom diktiranja i oslobađa posle
@@ -16,7 +16,9 @@ lakši modeli se preuzimaju direktno iz aplikacije.
 
 ## Šta radi
 
-- **Fn kao prečica** — drži i govori, pusti kada završiš; radi i van Diktatora.
+- **Izbor prečice** — podrazumevano `Fn`; možeš izabrati desni `Option`,
+  `Command`, `Control` ili `Shift`, ili `F13`–`F19`. Drži i govori, pusti kada
+  završiš; radi i van Diktatora.
 - **Automatsko lepljenje** — pošalje `Cmd+V` u aplikaciju u kojoj si bio; ako
   dozvola nije data, tekst čeka u klipbordu.
 - **Srpski i engleski** — jezik se prepoznaje automatski; srpski izlaz ide u
@@ -38,7 +40,7 @@ lakši modeli se preuzimaju direktno iz aplikacije.
 
 ### Gotova aplikacija
 
-1. Preuzmi `Diktator-0.5.0-macOS-arm64.zip` sa
+1. Preuzmi `Diktator-0.6.0-macOS-arm64.zip` sa
    [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
 2. Otpakuj i prevuci `Diktator.app` u `/Applications`.
 3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
@@ -68,14 +70,25 @@ kompajliraju jednokratno. Skripta napravi `Diktator.app`, potpiše ga lokalno
 1. Otvori Diktator — prozor se pojavi sam, a ikona je u Docku i u menu baru.
 2. Daj tri dozvole iz prozora:
    - **Mikrofon** — da čuje govor.
-   - **Nadzor unosa** — da prepozna `Fn` i van Diktatora. Posle ove dozvole
-     zatvori i ponovo otvori aplikaciju.
+   - **Nadzor unosa** — da prepozna izabranu prečicu i van Diktatora. Posle ove
+     dozvole zatvori i ponovo otvori aplikaciju.
    - **Pristupačnost** — da pošalje `Cmd+V` posle prepisa.
 3. U Podešavanjima → **Model** izaberi model. Preporučeni Large v3 Turbo ima
    547 MB; ako želiš najmanji, izaberi Tiny (74 MB).
 
-Ako `Fn` otvara emoji birač: Podešavanja → Tastatura → „Pritisni 🌐 key za” →
-**Ne radi ništa**.
+### Prečica
+
+Podrazumevano se drži `Fn`. U **Podešavanjima → Diktiranje → Prečica za
+diktiranje** možeš izabrati:
+
+- `Fn`,
+- desni `Option`, `Command`, `Control` ili `Shift` — levi tasteri ostaju
+  slobodni za normalno kucanje,
+- `F13`–`F19`.
+
+Promena važi odmah, bez ponovnog pokretanja aplikacije. Ako `Fn` otvara emoji
+birač, izaberi drugu prečicu ili u macOS-u otvori Podešavanja → Tastatura →
+„Pritisni 🌐 key za” → **Ne radi ništa**.
 
 ## Model i memorija
 

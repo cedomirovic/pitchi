@@ -92,7 +92,7 @@ struct PogledIstorija: View {
                 .foregroundStyle(Izgled.akcenat.opacity(0.7))
             Text("Još nema prepisa")
                 .font(.title3.weight(.semibold))
-            Text("Drži Fn i izgovori prvu rečenicu — ovde će se pojaviti.")
+            Text("Drži \(app.nazivPrecice) i izgovori prvu rečenicu — ovde će se pojaviti.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }

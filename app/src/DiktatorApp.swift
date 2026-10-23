@@ -75,13 +75,13 @@ struct DiktatorMain {
         // Razvojna provera: nacrtaj traku i karticu ažuriranja bez mreže.
         if ProcessInfo.processInfo.environment["DIKTATOR_SLIKA_AZURIRANJE"] != nil {
             stanje.azuriranje = Izdanje(
-                tag_name: "v0.6.0",
-                name: "Diktator 0.6.0",
-                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v0.6.0")!,
+                tag_name: "v0.7.0",
+                name: "Diktator 0.7.0",
+                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v0.7.0")!,
                 assets: [
                     Izdanje.Fajl(
-                        name: "Diktator-0.6.0-macOS-arm64.zip",
-                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v0.6.0/Diktator-0.6.0-macOS-arm64.zip")!
+                        name: "Diktator-0.7.0-macOS-arm64.zip",
+                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v0.7.0/Diktator-0.7.0-macOS-arm64.zip")!
                     )
                 ]
             )
@@ -258,7 +258,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let dugme = item.button {
             dugme.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Diktator")
             dugme.image?.isTemplate = true
-            dugme.toolTip = "Diktator — drži Fn i govori"
+            dugme.toolTip = "Diktator — drži \(stanje.nazivPrecice) i govori"
         }
 
         let meni = NSMenu()
@@ -327,6 +327,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak self] izdanje in
                 self?.stavkaAzuriranja?.title = izdanje.map { "Ažuriranje \($0.verzija)…" }
                     ?? "Proveri ažuriranja…"
+            }
+            .store(in: &pretplate)
+
+        stanje.$podesavanja
+            .receive(on: RunLoop.main)
+            .sink { [weak self] podesavanja in
+                let naziv = Precica.iz(podesavanja.precica).naziv
+                self?.statusItem?.button?.toolTip = "Diktator — drži \(naziv) i govori"
             }
             .store(in: &pretplate)
     }

@@ -1,5 +1,5 @@
-// Globalna precica: drzi se Fn i govori. Radi i kada Diktator nije u fokusu,
-// ali trazi dozvolu "Nadzor unosa" (Input Monitoring).
+// Globalna precica: drzi se izabrani taster i govori. Radi i kada Diktator
+// nije u fokusu, ali trazi dozvolu "Nadzor unosa" (Input Monitoring).
 import ApplicationServices
 import Foundation
 
@@ -7,16 +7,33 @@ final class Tastatura {
     var naPritisak: (() -> Void)?
     var naOtpust: (() -> Void)?
 
+    /// Taster se moze promeniti u Podesavanjima; tap ostaje isti.
+    var precica: Precica = .fn {
+        didSet {
+            guard precica != oldValue else { return }
+            // Ako je stari taster još pritisnut, završi snimak da ne ostane
+            // zaglavljen kada se prečica promeni usred snimanja.
+            if pritisnut {
+                pritisnut = false
+                DispatchQueue.main.async { [weak self] in self?.naOtpust?() }
+            }
+        }
+    }
+
     private var dodir: CFMachPort?
     private var izvor: CFRunLoopSource?
-    private var fnPritisnut = false
+    private var pritisnut = false
 
     static var dozvola: Bool { CGPreflightListenEventAccess() }
 
     @discardableResult
     func pokreni() -> Bool {
         if dodir != nil { return true }
-        let maska = CGEventMask(1 << CGEventType.flagsChanged.rawValue)
+        let maska = CGEventMask(
+            (1 << CGEventType.flagsChanged.rawValue) |
+            (1 << CGEventType.keyDown.rawValue) |
+            (1 << CGEventType.keyUp.rawValue)
+        )
         guard let dodir = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
             place: .headInsertEventTap,
@@ -46,7 +63,7 @@ final class Tastatura {
         if let izvor { CFRunLoopRemoveSource(CFRunLoopGetMain(), izvor, .commonModes) }
         dodir = nil
         izvor = nil
-        fnPritisnut = false
+        pritisnut = false
     }
 
     private func obradi(tip: CGEventType, dogadjaj: CGEvent) {
@@ -54,18 +71,38 @@ final class Tastatura {
             if let dodir { CGEvent.tapEnable(tap: dodir, enable: true) }
             return
         }
-        guard tip == .flagsChanged else { return }
 
-        // 63 = Fn
         let kod = dogadjaj.getIntegerValueField(.keyboardEventKeycode)
-        guard kod == 63 else { return }
+        guard kod == precica.kod else { return }
 
-        let sada = dogadjaj.flags.contains(.maskSecondaryFn)
-        if sada && !fnPritisnut {
-            fnPritisnut = true
+        if precica.jeModifikator {
+            guard tip == .flagsChanged else { return }
+            let sada: Bool
+            if precica == .fn {
+                sada = dogadjaj.flags.contains(.maskSecondaryFn)
+            } else {
+                sada = CGEventSource.keyState(
+                    .combinedSessionState,
+                    key: CGKeyCode(precica.kod)
+                )
+            }
+            postaviPritisnut(sada)
+        } else {
+            guard tip == .keyDown || tip == .keyUp else { return }
+            // Dok se taster drži, macOS šalje ponovljene keyDown događaje.
+            if tip == .keyDown && dogadjaj.getIntegerValueField(.keyboardEventAutorepeat) != 0 {
+                return
+            }
+            postaviPritisnut(tip == .keyDown)
+        }
+    }
+
+    private func postaviPritisnut(_ sada: Bool) {
+        if sada && !pritisnut {
+            pritisnut = true
             DispatchQueue.main.async { [weak self] in self?.naPritisak?() }
-        } else if !sada && fnPritisnut {
-            fnPritisnut = false
+        } else if !sada && pritisnut {
+            pritisnut = false
             DispatchQueue.main.async { [weak self] in self?.naOtpust?() }
         }
     }

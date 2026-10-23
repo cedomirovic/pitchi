@@ -18,10 +18,10 @@ enum StanjeAplikacije: Equatable {
         }
     }
 
-    var detalj: String {
+    func detalj(precica: String = "Fn") -> String {
         switch self {
-        case .mirno: return "Drži Fn i govori. Pusti kada završiš."
-        case .snima: return "Govori sada — pusti Fn da završiš."
+        case .mirno: return "Drži \(precica) i govori. Pusti kada završiš."
+        case .snima: return "Govori sada — pusti \(precica) da završiš."
         case .priprema: return "Model se učitava u memoriju, sačekaj trenutak."
         case .prepisuje: return "Pretvaram govor u tekst."
         case .greska(let poruka): return poruka
@@ -57,8 +57,91 @@ struct Dozvole: Equatable {
     var sve: Bool { mikrofon && pristupacnost && nadzorUnosa }
 }
 
+/// Taster koji se drži dok se govori. Desni modifikatori su bezbedniji od
+/// levih jer se levi često koriste u prečicama drugih aplikacija.
+enum Precica: String, CaseIterable, Identifiable {
+    case fn
+    case desniOption = "desni-option"
+    case desniCommand = "desni-command"
+    case desniControl = "desni-control"
+    case desniShift = "desni-shift"
+    case f13
+    case f14
+    case f15
+    case f16
+    case f17
+    case f18
+    case f19
+
+    var id: String { rawValue }
+
+    var naziv: String {
+        switch self {
+        case .fn: return "Fn"
+        case .desniOption: return "Desni Option"
+        case .desniCommand: return "Desni Command"
+        case .desniControl: return "Desni Control"
+        case .desniShift: return "Desni Shift"
+        case .f13: return "F13"
+        case .f14: return "F14"
+        case .f15: return "F15"
+        case .f16: return "F16"
+        case .f17: return "F17"
+        case .f18: return "F18"
+        case .f19: return "F19"
+        }
+    }
+
+    var simbol: String {
+        switch self {
+        case .fn: return "Fn"
+        case .desniOption: return "⌥"
+        case .desniCommand: return "⌘"
+        case .desniControl: return "⌃"
+        case .desniShift: return "⇧"
+        default: return naziv
+        }
+    }
+
+    var etiketa: String {
+        naziv == simbol ? naziv : "\(naziv)  \(simbol)"
+    }
+
+    /// macOS virtual keycode za taster.
+    var kod: Int64 {
+        switch self {
+        case .fn: return 63
+        case .desniOption: return 61
+        case .desniCommand: return 54
+        case .desniControl: return 62
+        case .desniShift: return 60
+        case .f13: return 105
+        case .f14: return 107
+        case .f15: return 113
+        case .f16: return 106
+        case .f17: return 64
+        case .f18: return 79
+        case .f19: return 80
+        }
+    }
+
+    var jeModifikator: Bool {
+        switch self {
+        case .fn, .desniOption, .desniCommand, .desniControl, .desniShift:
+            return true
+        default:
+            return false
+        }
+    }
+
+    static func iz(_ id: String) -> Precica {
+        Precica(rawValue: id) ?? .fn
+    }
+}
+
 struct Podesavanja: Codable, Equatable {
     var jezik = "auto"
+    var precica = Precica.fn.rawValue
     var automatskoLepljenje = true
     var zvuk = true
     var doterivanje = false
@@ -76,6 +159,7 @@ struct Podesavanja: Codable, Equatable {
 
     private enum CodingKeys: String, CodingKey {
         case jezik
+        case precica
         case automatskoLepljenje
         case zvuk
         case doterivanje
@@ -92,6 +176,10 @@ struct Podesavanja: Codable, Equatable {
     init(from decoder: Decoder) throws {
         let kontejner = try decoder.container(keyedBy: CodingKeys.self)
         jezik = try kontejner.decodeIfPresent(String.self, forKey: .jezik) ?? "auto"
+        precica = try kontejner.decodeIfPresent(String.self, forKey: .precica) ?? Precica.fn.rawValue
+        if Precica(rawValue: precica) == nil {
+            precica = Precica.fn.rawValue
+        }
         automatskoLepljenje = try kontejner.decodeIfPresent(Bool.self, forKey: .automatskoLepljenje) ?? true
         zvuk = try kontejner.decodeIfPresent(Bool.self, forKey: .zvuk) ?? true
         doterivanje = try kontejner.decodeIfPresent(Bool.self, forKey: .doterivanje) ?? false

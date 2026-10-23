@@ -50,6 +50,33 @@ struct PogledPodesavanja: View {
 
             Divider()
 
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Prečica za diktiranje").font(.callout.weight(.medium))
+                    Text("Drži izabrani taster dok govoriš, pusti ga da završiš.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Picker("", selection: $app.podesavanja.precica) {
+                    ForEach(Precica.allCases) { precica in
+                        Text(precica.etiketa).tag(precica.rawValue)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 190)
+            }
+
+            if app.izabranaPrecica == .fn {
+                Text("Ako Fn otvara emoji birač, izaberi drugu prečicu ili u macOS Tastaturi podesi da Fn ne radi ništa.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Divider()
+
             Toggle(isOn: $app.podesavanja.automatskoLepljenje) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Automatsko lepljenje").font(.callout.weight(.medium))
@@ -96,7 +123,7 @@ struct PogledPodesavanja: View {
             ) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Pokreni pri prijavi računara").font(.callout.weight(.medium))
-                    Text("Diktator se pokrene odmah posle prijave, pa je Fn spreman za diktiranje.")
+                    Text("Diktator se pokrene odmah posle prijave, pa je \(app.nazivPrecice) spreman za diktiranje.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -423,7 +450,7 @@ struct PogledPodesavanja: View {
             Divider()
             RedDozvole(
                 naziv: "Nadzor unosa",
-                opis: "Prečica Fn radi i van Diktatora.",
+                opis: "Prečica \(app.nazivPrecice) radi i van Diktatora.",
                 ikona: "keyboard",
                 dozvoljeno: app.dozvole.nadzorUnosa
             ) { app.zatrazNadzorUnosa() }
