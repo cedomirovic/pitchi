@@ -109,6 +109,14 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   dobija uputstvo na prepoznatom jeziku. Provereno TTS snimcima: srpski daje
   isti tekst, engleski „Pitchi, Test, My name is Nemanja Čedomirović…”; auto
   detekcija dodaje ~1,5 s (prepis ~4,5 s umesto ~3 s).
+- **23.10.2026. (objava)** — projekat je javno objavljen:
+  <https://github.com/cedomirovic/pitchi> (MIT licenca). Dodati su `LICENSE`,
+  uputstvo za instalaciju iz izvornog koda i dve slike u `docs/`. Provereno je
+  da **svež klon** radi: `app/build.sh` sam preuzme i kompajlira whisper.cpp
+  (5–10 min), pa napravi aplikaciju; `--test-whisper` na engleskom daje isti
+  tekst. Napravljen je i release `v0.1.0` sa `Pitchi-0.1.0-macOS-arm64.zip`
+  (2,9 MB, ad-hoc potpis, bez modela). Aplikacija nije notarizovana — u
+  uputstvu piše desni klik → Open ili `xattr -dr com.apple.quarantine`.
 - Sledeći korak: korisnik da dozvole (mikrofon, nadzor unosa, pristupačnost),
   probni diktat uživo i doterivanje po potrebi; zatim eventualno prelazak
   `diktator` repoa na ovu aplikaciju.

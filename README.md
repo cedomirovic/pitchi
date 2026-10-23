@@ -27,6 +27,19 @@ pa i 8 GB Mac ostaje upotrebljiv.
 
 ## Instalacija
 
+### Gotova aplikacija
+
+1. Preuzmi `Pitchi-0.1.0-macOS-arm64.zip` sa
+   [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
+2. Otpakuj i prevuci `Pitchi.app` u `/Applications`.
+3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
+   nije notarizovana, pa je macOS inače blokira. Alternativa:
+   `xattr -dr com.apple.quarantine /Applications/Pitchi.app`.
+
+Potreban je Apple Silicon i macOS 13 ili noviji.
+
+### Iz izvornog koda
+
 Potrebni su Command Line Tools (`xcode-select --install`), `cmake`
 (`brew install cmake`) i `git` — samo za prvo građenje whisper.cpp-a.
 
@@ -66,7 +79,7 @@ Model se čuva u:
 Ako postoji stari Pichi model, Pitchi ga preuzima bez ponovnog skidanja.
 Dok je model učitan, aplikacija drži ~1,4 GB; posle 5 minuta mirovanja se
 oslobađa. Prvi prepis posle novog builda je sporiji jer se kompajliraju Metal
-šejderi; sledeći su ~3 s za kraću rečenicu.
+šejderi; sledeći su ~4–5 s za kraću rečenicu (uključujući detekciju jezika).
 
 ## Privatnost
 

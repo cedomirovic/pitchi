@@ -34,6 +34,19 @@ opciono DeepSeek doterivanje teksta, koje sam uključuješ.
 
 ## Instalacija
 
+### Gotova aplikacija
+
+1. Preuzmi `Pitchi-0.1.0-macOS-arm64.zip` sa
+   [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
+2. Otpakuj i prevuci `Pitchi.app` u `/Applications`.
+3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
+   nije notarizovana, pa je macOS inače blokira. Alternativa:
+   `xattr -dr com.apple.quarantine /Applications/Pitchi.app`.
+
+Potreban je Apple Silicon i macOS 13 ili noviji.
+
+### Iz izvornog koda
+
 Potrebni su Command Line Tools (`xcode-select --install`), `cmake`
 (`brew install cmake`) i `git` — samo za prvo građenje whisper.cpp-a.
 
