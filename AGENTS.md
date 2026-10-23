@@ -92,6 +92,14 @@ app/build/Pitchi.app/Contents/MacOS/Pitchi --test-whisper
   Čedomirović, Tamara Pandža. Danas je lepo vreme u Beogradu.” za ~2,8 s
   (posle prvog Metal kompajliranja).
   Instalirano u `/Applications/Pitchi.app`, potpis `Pichi Local Dev`.
+- **23.10.2026. (čišćenje)** — stara `Pichi.app` (`com.johnny.pichi`) potpuno
+  uklonjena jer se i ona javljala na `Fn`. Model od 1 GB je pre toga premešten
+  iz `~/Library/Application Support/Pichi/models/ggml-small-q5_1.bin` u
+  `~/Library/Application Support/Pitchi/models/ggml-large-v3-q5_0.bin`
+  (1.081.140.203 bajta). Obrisani su i stari Application Support (1,7 GB),
+  `com.johnny.pichi.plist` i sam bundle; novi rečnik je već bio identičan.
+  `--test-whisper` sada čita novu putanju i daje isti srpski tekst za ~3,2 s.
+  Na mašini je ostala samo nova aplikacija, ušteda ~730 MB.
 - Sledeći korak: korisnik da dozvole (mikrofon, nadzor unosa, pristupačnost),
   probni diktat uživo i doterivanje po potrebi; zatim eventualno prelazak
   `diktator` repoa na ovu aplikaciju.
