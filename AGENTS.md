@@ -267,7 +267,38 @@ današnje ime aplikacije.)*
   instalirano u `/Applications/Diktator.app`. Objavljen je release `v0.6.1`
   sa `Diktator-0.6.1-macOS-arm64.zip` (3,0 MB, SHA-256
   `0b62ea24e8a1d80217c560031ed08c6638ac428c0f367a7ca9ba4bfce1d37ba6`).
-- Sledeći korak: probni diktat uživo sa Large v3 i stvarnim API ključem za
-  izabrani servis, probati desni modifikator kao prečicu na tastaturi koja ga
-  ima, zatim po potrebi brisanje modela koje korisnik ne želi i eventualni
-  prelazak `diktator` repoa na ovu aplikaciju.
+- **25.10.2026. (memorija, režim prepisa, bezbednost)** — aplikacija je
+  optimizovana da troši manje RAM-a, a bezbednosne provere su zaokružene.
+  Odluke:
+  - model se sada oslobađa po izabranom vremenu i kada snimak bude prekratak,
+    otkazan, tih ili kada whisper baci grešku; ranije je u tim putevima timer
+    ostajao nezakazan pa je model mogao zauvek da ostane u RAM-u;
+  - timer se zakazuje odmah posle prepisa, pre opcionog doterivanja, pa model
+    može da se oslobodi dok LLM još čeka mrežu;
+  - snimak je ograničen na 5 minuta (`Snimac.najduzeSekundi`), da ne raste
+    neograničeno; audio tap više ne pravi privremeni niz za svaki deo;
+  - dodat je `RezimPrepisa`: `kvalitet` (beam search 5, staro ponašanje) i
+    `stedljivo` (greedy `best_of = 1`); nova instalacija podrazumevano dobija
+    `stedljivo`, a stara podešavanja bez polja se dekodiraju kao `kvalitet`;
+    korisniku je kroz UI izabran `stedljivo` (može da vrati `kvalitet`);
+  - izmereno na `/tmp/sr.wav` sa Large v3: beam 5 ~2,37 GB, greedy ~1,93 GB
+    (ušteda ~440 MB), isti tekst; u pregledu stoji savet da Turbo troši ~500 MB
+    manje od Large v3;
+  - bezbednosne izmene: Keychain stavke sa
+    `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`, LLM adrese samo `https://`
+    (osim `localhost`/`127.0.0.1`), GitHub samo za ažuriranja, fajlovi
+    `0700`/`0600`, provera statusa/preusmeravanja/veličine preuzimanja,
+    `SECURITY.md`.
+  Provereno: `node --check diktator.js lib/*.js`, `npm test` (11/11),
+  `bash app/build.sh` (10 postojećih upozorenja), `--test-whisper` u oba režima
+  daje isti srpski tekst, `--dozvole` čita stvarne dozvole, a kroz UI su
+  provereni izbor režima (upis `"rezimPrepisa": "stedljivo"`) i vraćanje
+  provajdera na DeepSeek. Verzija je `0.7.0` (build 9), `package.json` `0.7.0`;
+  lažno izdanje za `--slika` je `0.8.0`. Instalirano u
+  `/Applications/Diktator.app`; objavljen je release `v0.7.0` sa
+  `Diktator-0.7.0-macOS-arm64.zip` (3,1 MB, SHA-256
+  `5aedd193a5e25e7a50d874c918083b98c037d98df1b6bd82367af027e3d938fd`).
+- Sledeći korak: probni diktat uživo sa Large v3 u oba režima i stvarnim API
+  ključem za izabrani servis, probati desni modifikator kao prečicu na
+  tastaturi koja ga ima, zatim po potrebi brisanje modela koje korisnik ne
+  želi i eventualni prelazak `diktator` repoa na ovu aplikaciju.

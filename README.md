@@ -7,8 +7,9 @@ engleski mogu da se smenjuju bez podešavanja. Snimak ne napušta Mac.
 
 Aplikacija ima prozor sa stanjem, istorijom, rečnikom i podešavanjima, ikonu u
 Docku i u menu baru. Model se učitava samo tokom diktiranja i oslobađa posle
-5 minuta, pa i 8 GB Mac ostaje upotrebljiv. Koji model se koristi biraš sam, a
-lakši modeli se preuzimaju direktno iz aplikacije.
+izabranog vremena mirovanja (podrazumevano 5 minuta), pa i 8 GB Mac ostaje
+upotrebljiv. Koji model se koristi biraš sam, a lakši modeli se preuzimaju
+direktno iz aplikacije.
 
 | Početak | Podešavanja |
 |---|---|
@@ -27,6 +28,9 @@ lakši modeli se preuzimaju direktno iz aplikacije.
 - **Istorija** — zadnjih 200 prepisa, pretraga i kopiranje.
 - **Izbor modela** — Tiny, Base, Small, Large v3 Turbo i Large v3; lakši modeli
   se preuzimaju iz same aplikacije, bez terminala.
+- **Oslobađanje memorije** — biraš da se model oslobodi odmah, posle 1, 5, 15
+  ili 30 minuta, ili nikad; „Odmah“ najviše štedi RAM, a „Nikad“ ubrzava sledeći
+  prepis.
 - **Pokretanje pri prijavi** — opciono u Podešavanjima, preko macOS Login Items.
 - **Dock i menu bar** — ikonica je vidljiva na oba mesta; klik na Dock ponovo
   otvara prozor.
@@ -40,7 +44,7 @@ lakši modeli se preuzimaju direktno iz aplikacije.
 
 ### Gotova aplikacija
 
-1. Preuzmi `Diktator-0.6.1-macOS-arm64.zip` sa
+1. Preuzmi `Diktator-0.7.0-macOS-arm64.zip` sa
    [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
 2. Otpakuj i prevuci `Diktator.app` u `/Applications`.
 3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
@@ -110,9 +114,16 @@ Modeli se čuvaju u:
 ~/Library/Application Support/Diktator/models/
 ```
 
-Dok je model učitan, aplikacija drži ~0,2–1,4 GB, zavisno od izbora; posle
-5 minuta mirovanja se oslobađa. Prvi prepis posle novog builda je sporiji jer
-se kompajliraju Metal šejderi; sledeći su nekoliko sekundi za kraću rečenicu
+Dok je model učitan, aplikacija drži ~0,2–1,4 GB, zavisno od izbora. U
+Podešavanjima → Model → **Oslobodi memoriju posle** biraš da se model oslobodi
+odmah, posle 1, 5, 15 ili 30 minuta mirovanja, ili nikad; podrazumevano je 5
+minuta. Model se oslobađa i kada prepis ne uspe ili snimak bude tišina, a ne
+samo posle uspešnog prepisa. Snimak je ograničen na 5 minuta da ne bi
+neograničeno rastao u memoriji. Ako želiš još manje RAM-a, u Podešavanjima →
+Model → **Režim prepisa** izaberi **Manje memorije**: greedy dekodiranje troši
+oko 400 MB manje od beam search-a i malo je brže, ali na težem snimku može dati
+sitno drugačiji tekst. Prvi prepis posle novog builda je sporiji jer se
+kompajliraju Metal šejderi; sledeći su nekoliko sekundi za kraću rečenicu
 (uključujući detekciju jezika).
 
 ## Doterivanje teksta (opciono)
@@ -176,7 +187,9 @@ napušta Mac. Ako imaš drugi model, upiši njegov tačan naziv u polje **Model*
 
 Isti obrazac rade OpenRouter, Groq, LM Studio, vLLM i slični servisi. Unesi
 adresu koja se završava sa `/chat/completions`, tačan naziv modela i ključ ako
-ga servis traži. Primeri:
+ga servis traži. Iz bezbednosnih razloga adresa mora da koristi `https://`;
+`http://` je dozvoljen samo za `localhost` (LM Studio, Ollama i drugi lokalni
+servisi). Primeri:
 
 - OpenRouter: `https://openrouter.ai/api/v1/chat/completions`
 - Groq: `https://api.groq.com/openai/v1/chat/completions`
@@ -204,15 +217,25 @@ Proveru možeš isključiti u Podešavanjima → **Ažuriranja**, a ručno je po
 dugmetom **Proveri ažuriranja** ili iz menija u menu baru. Preskočena verzija
 se ne nudi ponovo dok ne izađe novija.
 
-## Privatnost
+## Privatnost i bezbednost
 
 - Snimak se ne čuva i ne šalje nigde.
 - Istorija i rečnik su lokalni fajlovi u `~/Library/Application Support/Diktator/`.
+  Folder je dostupan samo korisniku (0700), a fajlovi istorije i rečnika samo
+  korisniku (0600). I stariji CLI upisuje snimke i prepise sa dozvolama 0600.
 - Doterivanje je opciono i šalje samo gotov tekst, nikada zvuk. Kod Ollama
   servisa i tekst ostaje na Macu; kod ostalih ide izabranom provajderu.
-- API ključevi su u macOS Keychain-u, odvojeno po servisu.
+- API ključevi su u macOS Keychain-u, odvojeno po servisu. Dostupni su samo dok
+  je Mac otključan i samo na ovom uređaju; ne sinhronizuju se preko iCloud-a.
+- Adresa za doterivanje mora da koristi `https://`; `http://` je dozvoljen samo
+  za `localhost`, da ključ i tekst ne bi išli nešifrovani preko mreže.
+- Modeli se preuzimaju isključivo preko HTTPS-a sa Hugging Face-a, a veličina
+  fajla se proverava pre nego što model postane dostupan.
 - Provera ažuriranja šalje samo običan HTTPS zahtev GitHub-u za javni spisak
-  izdanja. Ne šalju se tekst, snimak ni podaci o računaru.
+  izdanja. Aplikacija otvara samo HTTPS adrese sa GitHub-a. Ne šalju se tekst,
+  snimak ni podaci o računaru.
+- Preuzimaj aplikaciju samo sa zvanične GitHub stranice izdanja. Paket nije
+  notarizovan, pa macOS pri prvom pokretanju traži potvrdu (desni klik → Open).
 
 ## Razvoj
 

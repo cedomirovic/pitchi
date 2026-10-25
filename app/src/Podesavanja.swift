@@ -28,16 +28,21 @@ enum Kljuc {
 
     /// Svaki servis ima svoj nalog u Keychain-u, pa se ključevi ne mešaju.
     /// Stari DeepSeek ključ je već pod nalogom „deepseek“ i zato ostaje važeći.
-    static func upisi(_ vrednost: String, za provajder: String) {
+    /// Vraća `false` ako Keychain nije prihvatio zapis.
+    @discardableResult
+    static func upisi(_ vrednost: String, za provajder: String) -> Bool {
         obrisi(za: provajder)
-        guard !vrednost.isEmpty, let podaci = vrednost.data(using: .utf8) else { return }
+        guard !vrednost.isEmpty, let podaci = vrednost.data(using: .utf8) else { return true }
         let upit: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: servis,
             kSecAttrAccount as String: provajder,
             kSecValueData as String: podaci,
+            // Ključ je dostupan samo dok je Mac otključan i samo na ovom uređaju.
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+            kSecAttrSynchronizable as String: false,
         ]
-        SecItemAdd(upit as CFDictionary, nil)
+        return SecItemAdd(upit as CFDictionary, nil) == errSecSuccess
     }
 
     static func citaj(za provajder: String) -> String? {
@@ -70,6 +75,7 @@ final class IstorijaSkladiste {
               let zapisi = try? JSONDecoder().decode([Zapis].self, from: podaci) else {
             return []
         }
+        Putanje.zastitiFajl(Putanje.istorija)
         return zapisi
     }
 
@@ -77,18 +83,21 @@ final class IstorijaSkladiste {
         let ograniceno = Array(zapisi.prefix(200))
         guard let podaci = try? JSONEncoder().encode(ograniceno) else { return }
         try? podaci.write(to: Putanje.istorija, options: .atomic)
+        Putanje.zastitiFajl(Putanje.istorija)
     }
 }
 
 enum Recnik {
     static func ucitaj() -> String {
         if let tekst = try? String(contentsOf: Putanje.recnik, encoding: .utf8) {
+            Putanje.zastitiFajl(Putanje.recnik)
             return tekst
         }
         // Prvi put: preuzmi recnik starog Pichija ako postoji.
         if let stari = try? String(contentsOf: Putanje.stariRecnik, encoding: .utf8),
            !stari.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             try? stari.write(to: Putanje.recnik, atomically: true, encoding: .utf8)
+            Putanje.zastitiFajl(Putanje.recnik)
             return stari
         }
         return ""
@@ -96,6 +105,7 @@ enum Recnik {
 
     static func sacuvaj(_ tekst: String) {
         try? tekst.write(to: Putanje.recnik, atomically: true, encoding: .utf8)
+        Putanje.zastitiFajl(Putanje.recnik)
     }
 
     /// Recnik ide whisper-u kao pocetni tekst (prompt), zato ga kratimo.

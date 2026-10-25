@@ -93,7 +93,7 @@ final class Prepisivac {
         bravaStanja.unlock()
     }
 
-    func prepisi(uzorci: [Float], jezik: String, recnik: String) throws -> String {
+    func prepisi(uzorci: [Float], jezik: String, recnik: String, rezim: RezimPrepisa = .kvalitet) throws -> String {
         try red.sync {
             guard let kontekst else { throw GreskaPrepisaa.modelNijePreuzet }
             guard !uzorci.isEmpty else { return "" }
@@ -102,7 +102,16 @@ final class Prepisivac {
             }
             defer { whisper_free_state(stanje) }
 
-            var p = whisper_full_default_params(WHISPER_SAMPLING_BEAM_SEARCH)
+            var p: whisper_full_params
+            switch rezim {
+            case .kvalitet:
+                p = whisper_full_default_params(WHISPER_SAMPLING_BEAM_SEARCH)
+                p.beam_search.beam_size = 5
+                p.greedy.best_of = 5
+            case .stedljivo:
+                p = whisper_full_default_params(WHISPER_SAMPLING_GREEDY)
+                p.greedy.best_of = 1
+            }
             p.n_threads = 4
             p.translate = false
             p.no_context = true
@@ -116,8 +125,6 @@ final class Prepisivac {
             p.suppress_nst = true
             p.temperature = 0.0
             p.temperature_inc = 0.2
-            p.beam_search.beam_size = 5
-            p.greedy.best_of = 5
             // "auto" u polju language pokreće detekciju i odmah nastavlja prepis.
             // detect_language u whisper.cpp 1.9.5 služi samo za detekciju jezika
             // (vraća se pre dekodiranja), pa ga ovde ne uključujemo.

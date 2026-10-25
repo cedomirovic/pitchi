@@ -32,9 +32,18 @@ struct Izdanje: Decodable, Equatable {
         assets.first { $0.name.lowercased().hasSuffix(".zip") } ?? assets.first
     }
 
-    /// Ako izdanje nema zip, otvara se stranica izdanja.
-    var adresaPreuzimanja: URL {
-        fajlPreuzimanja?.browser_download_url ?? html_url
+    /// Za bezbednost otvaramo samo HTTPS adrese sa GitHub-a. Ako API vrati
+    /// nešto drugo, koristimo zvaničnu stranicu izdanja.
+    var bezbednaAdresaPreuzimanja: URL {
+        if let fajl = fajlPreuzimanja,
+           Azuriranja.jeBezbednaAdresa(fajl.browser_download_url) {
+            return fajl.browser_download_url
+        }
+        return bezbednaStranicaIzdanja
+    }
+
+    var bezbednaStranicaIzdanja: URL {
+        Azuriranja.jeBezbednaAdresa(html_url) ? html_url : Azuriranja.stranicaIzdanja
     }
 }
 
@@ -109,6 +118,17 @@ enum Azuriranja {
 
     static var stranicaIzdanja: URL {
         URL(string: "https://github.com/\(repozitorij)/releases")!
+    }
+
+    /// Dozvoljavamo samo HTTPS adrese koje pripadaju GitHub-u. Time se
+    /// sprečava da neočekivan odgovor otvori `file://` ili neki drugi
+    /// protokol u browseru.
+    static func jeBezbednaAdresa(_ url: URL) -> Bool {
+        guard url.scheme?.lowercased() == "https",
+              let host = url.host?.lowercased() else { return false }
+        return host == "github.com"
+            || host == "www.github.com"
+            || host == "objects.githubusercontent.com"
     }
 
     static var trenutnaVerzija: String {
@@ -247,7 +267,8 @@ final class DelegateObavestenja: NSObject, UNUserNotificationCenterDelegate {
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         if let tekst = response.notification.request.content.userInfo["adresa"] as? String,
-           let adresa = URL(string: tekst) {
+           let adresa = URL(string: tekst),
+           Azuriranja.jeBezbednaAdresa(adresa) {
             DispatchQueue.main.async {
                 NSWorkspace.shared.open(adresa)
             }

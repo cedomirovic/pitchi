@@ -373,6 +373,53 @@ struct PogledPodesavanja: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Oslobodi memoriju posle").font(.callout.weight(.medium))
+                    Text("Model se učitava pri diktiranju, a oslobađa posle izabranog mirovanja.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Picker("", selection: izborOslobadjanja) {
+                    ForEach(OslobadjanjeModela.allCases) { opcija in
+                        Text(opcija.naziv).tag(opcija.rawValue)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 220)
+            }
+
+            Text(app.oslobadjanjeModela.opis)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Režim prepisa").font(.callout.weight(.medium))
+                    Text("Štedljivi režim troši manje RAM-a, ali na težem snimku može biti nešto manje tačan.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Picker("", selection: izborRezima) {
+                    ForEach(RezimPrepisa.allCases) { rezim in
+                        Text(rezim.naziv).tag(rezim.rawValue)
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 220)
+                .disabled(app.stanje.jeZauzet)
+            }
+
+            Text(app.rezimPrepisa.opis)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
             HStack(spacing: 10) {
                 if app.izabraniModel.preuzet {
                     Label("Preuzet", systemImage: "checkmark.circle.fill")
@@ -425,9 +472,6 @@ struct PogledPodesavanja: View {
                     .lineLimit(2)
             }
 
-            Text("Model se ne drži stalno u memoriji. Učita se pri diktiranju i oslobodi posle 5 minuta — zato na 8 GB Mac ostaje upotrebljiv.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
         }
     }
 
@@ -435,6 +479,20 @@ struct PogledPodesavanja: View {
         Binding(
             get: { app.podesavanja.model },
             set: { app.izaberiModel($0) }
+        )
+    }
+
+    private var izborOslobadjanja: Binding<String> {
+        Binding(
+            get: { app.podesavanja.oslobadjanjeModela },
+            set: { app.postaviOslobadjanjeModela($0) }
+        )
+    }
+
+    private var izborRezima: Binding<String> {
+        Binding(
+            get: { app.podesavanja.rezimPrepisa },
+            set: { app.postaviRezimPrepisa($0) }
         )
     }
 

@@ -139,9 +139,98 @@ enum Precica: String, CaseIterable, Identifiable {
     }
 }
 
+/// Koliko dugo model ostaje u memoriji posle prepisa.
+enum OslobadjanjeModela: String, CaseIterable, Identifiable {
+    case odmah
+    case jedan
+    case pet
+    case petnaest
+    case trideset
+    case nikad
+
+    var id: String { rawValue }
+
+    var naziv: String {
+        switch self {
+        case .odmah: return "Odmah posle prepisa"
+        case .jedan: return "Posle 1 minuta"
+        case .pet: return "Posle 5 minuta"
+        case .petnaest: return "Posle 15 minuta"
+        case .trideset: return "Posle 30 minuta"
+        case .nikad: return "Nikad"
+        }
+    }
+
+    /// Broj sekundi za tajmer; `nil` znači da se model ne oslobađa automatski.
+    var sekunde: TimeInterval? {
+        switch self {
+        case .odmah: return 0
+        case .jedan: return 60
+        case .pet: return 300
+        case .petnaest: return 900
+        case .trideset: return 1800
+        case .nikad: return nil
+        }
+    }
+
+    var opis: String {
+        switch self {
+        case .odmah:
+            return "Model se oslobađa odmah posle prepisa — najmanje memorije, ali se sledeći prepis sporije učitava."
+        case .jedan:
+            return "Model se oslobađa posle 1 minuta mirovanja."
+        case .pet:
+            return "Model se oslobađa posle 5 minuta mirovanja — podrazumevano."
+        case .petnaest:
+            return "Model se oslobađa posle 15 minuta mirovanja."
+        case .trideset:
+            return "Model se oslobađa posle 30 minuta mirovanja."
+        case .nikad:
+            return "Model ostaje u memoriji do ručnog oslobađanja ili zatvaranja aplikacije."
+        }
+    }
+
+    static func iz(_ id: String) -> OslobadjanjeModela {
+        OslobadjanjeModela(rawValue: id) ?? .pet
+    }
+}
+
+/// Brzina i tačnost prepisa. Štedljivi režim koristi greedy dekodiranje i
+/// troši znatno manje RAM-a od beam search-a.
+enum RezimPrepisa: String, CaseIterable, Identifiable {
+    case kvalitet
+    case stedljivo
+
+    var id: String { rawValue }
+
+    var naziv: String {
+        switch self {
+        case .kvalitet: return "Najbolji kvalitet"
+        case .stedljivo: return "Manje memorije"
+        }
+    }
+
+    var opis: String {
+        switch self {
+        case .kvalitet:
+            return "Beam search sa 5 kandidata — tačniji na težem snimku, troši više RAM-a."
+        case .stedljivo:
+            return "Greedy dekodiranje — oko 400 MB manje RAM-a i brži prepis, uz moguće sitne razlike u tekstu."
+        }
+    }
+
+    static func iz(_ id: String) -> RezimPrepisa {
+        RezimPrepisa(rawValue: id) ?? .kvalitet
+    }
+}
+
 struct Podesavanja: Codable, Equatable {
     var jezik = "auto"
     var precica = Precica.fn.rawValue
+    var oslobadjanjeModela = OslobadjanjeModela.pet.rawValue
+    /// Novi korisnici dobijaju štedljivi režim; stara podešavanja bez ovog
+    /// polja zadržavaju beam search (kvalitet) da se ponašanje ne promeni.
+    var rezimPrepisa = RezimPrepisa.stedljivo.rawValue
     var automatskoLepljenje = true
     var zvuk = true
     var doterivanje = false
@@ -160,6 +249,8 @@ struct Podesavanja: Codable, Equatable {
     private enum CodingKeys: String, CodingKey {
         case jezik
         case precica
+        case oslobadjanjeModela
+        case rezimPrepisa
         case automatskoLepljenje
         case zvuk
         case doterivanje
@@ -179,6 +270,16 @@ struct Podesavanja: Codable, Equatable {
         precica = try kontejner.decodeIfPresent(String.self, forKey: .precica) ?? Precica.fn.rawValue
         if Precica(rawValue: precica) == nil {
             precica = Precica.fn.rawValue
+        }
+        oslobadjanjeModela = try kontejner.decodeIfPresent(String.self, forKey: .oslobadjanjeModela)
+            ?? OslobadjanjeModela.pet.rawValue
+        if OslobadjanjeModela(rawValue: oslobadjanjeModela) == nil {
+            oslobadjanjeModela = OslobadjanjeModela.pet.rawValue
+        }
+        rezimPrepisa = try kontejner.decodeIfPresent(String.self, forKey: .rezimPrepisa)
+            ?? RezimPrepisa.kvalitet.rawValue
+        if RezimPrepisa(rawValue: rezimPrepisa) == nil {
+            rezimPrepisa = RezimPrepisa.kvalitet.rawValue
         }
         automatskoLepljenje = try kontejner.decodeIfPresent(Bool.self, forKey: .automatskoLepljenje) ?? true
         zvuk = try kontejner.decodeIfPresent(Bool.self, forKey: .zvuk) ?? true

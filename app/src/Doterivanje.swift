@@ -6,6 +6,7 @@ import Foundation
 enum GreskaDoterivanja: LocalizedError {
     case nemaKljuca(String)
     case neispravnaAdresa
+    case nebezbednaAdresa
     case odgovor(String)
     case prazan(String)
 
@@ -15,6 +16,8 @@ enum GreskaDoterivanja: LocalizedError {
             return "\(naziv) API ključ nije unet."
         case .neispravnaAdresa:
             return "Adresa servisa za doterivanje nije ispravna."
+        case .nebezbednaAdresa:
+            return "Adresa servisa mora da koristi https://. http:// je dozvoljen samo za localhost (Ollama)."
         case .odgovor(let poruka):
             return poruka
         case .prazan(let naziv):
@@ -41,11 +44,7 @@ struct Doterivac {
         guard !izabraniModel.isEmpty else {
             throw GreskaDoterivanja.odgovor("\(provajder.naziv): model nije unet.")
         }
-        guard let url = URL(string: adresa),
-              let sema = url.scheme,
-              sema == "http" || sema == "https" else {
-            throw GreskaDoterivanja.neispravnaAdresa
-        }
+        let url = try proveriAdresu(adresa)
 
         let uputstvo = uputstvo(jezik: jezik)
         var zahtev = URLRequest(url: url)
@@ -115,6 +114,32 @@ struct Doterivac {
             throw GreskaDoterivanja.prazan(provajder.naziv)
         }
         return tekst
+    }
+
+    /// Za bezbednost dozvoljavamo HTTPS svuda, a HTTP samo za loopback
+    /// (Ollama i lokalni modeli). Tako API ključ i tekst nikad ne idu
+    /// nešifrovani preko mreže.
+    static func proveriAdresu(_ tekst: String) throws -> URL {
+        let ocisceno = tekst.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: ocisceno),
+              let sema = url.scheme?.lowercased(),
+              let host = url.host?.lowercased(),
+              !host.isEmpty,
+              url.user == nil,
+              url.password == nil else {
+            throw GreskaDoterivanja.neispravnaAdresa
+        }
+        guard sema == "http" || sema == "https" else {
+            throw GreskaDoterivanja.neispravnaAdresa
+        }
+        let ociscenHost = host
+            .trimmingCharacters(in: CharacterSet(charactersIn: "[]"))
+            .trimmingCharacters(in: CharacterSet(charactersIn: "."))
+        let lokalna = ociscenHost == "localhost" || ociscenHost == "127.0.0.1" || ociscenHost == "::1"
+        guard sema == "https" || lokalna else {
+            throw GreskaDoterivanja.nebezbednaAdresa
+        }
+        return url
     }
 
     private static func ocitaj(_ podaci: Data, vrsta: VrstaDoterivaca) throws -> String? {

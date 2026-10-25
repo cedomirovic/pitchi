@@ -96,7 +96,7 @@ enum ProvajderiDoterivanja {
         traziKljuc: false,
         prikazujeKljuc: true,
         prikazujeAdresu: true,
-        uputstvo: "Adresa mora da se završava sa /chat/completions. Model piši tačno kako ga servis traži.",
+        uputstvo: "Adresa mora da koristi https:// (http:// samo za localhost) i da se završava sa /chat/completions. Model piši tačno kako ga servis traži.",
         linkNaslov: nil,
         link: nil
     )

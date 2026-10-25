@@ -95,6 +95,8 @@ final class AppStanje: NSObject, ObservableObject {
     deinit {
         tastatura.zaustavi()
         tajmerAzuriranja?.invalidate()
+        tajmerOslobadjanja?.invalidate()
+        tajmerSekundi?.invalidate()
     }
 
     // MARK: - Dozvole
@@ -194,8 +196,19 @@ final class AppStanje: NSObject, ObservableObject {
         Modeli.nadji(podesavanja.model) ?? Modeli.podrazumevani
     }
 
+    var oslobadjanjeModela: OslobadjanjeModela {
+        OslobadjanjeModela.iz(podesavanja.oslobadjanjeModela)
+    }
+
+    var rezimPrepisa: RezimPrepisa {
+        RezimPrepisa.iz(podesavanja.rezimPrepisa)
+    }
+
     func osveziModel() {
         modelPutanja = izabraniModel.preuzet ? izabraniModel.putanja : nil
+        if let modelPutanja {
+            Putanje.zastitiFajl(modelPutanja)
+        }
     }
 
     var modelSpreman: Bool { modelPutanja != nil }
@@ -211,6 +224,8 @@ final class AppStanje: NSObject, ObservableObject {
             return
         }
 
+        tajmerOslobadjanja?.invalidate()
+        tajmerOslobadjanja = nil
         prepisivac.oslobodi()
         modelUcitan = false
         podesavanja.model = id
@@ -244,9 +259,28 @@ final class AppStanje: NSObject, ObservableObject {
     }
 
     func oslobodiMemoriju() {
+        tajmerOslobadjanja?.invalidate()
+        tajmerOslobadjanja = nil
         prepisivac.oslobodi()
         modelUcitan = false
         postaviInfo("Model je oslobođen iz memorije.")
+    }
+
+    func postaviOslobadjanjeModela(_ id: String) {
+        let opcija = OslobadjanjeModela.iz(id)
+        guard opcija.rawValue != podesavanja.oslobadjanjeModela else { return }
+        podesavanja.oslobadjanjeModela = opcija.rawValue
+        SkladistePodesavanja.sacuvaj(podesavanja)
+        if modelUcitan {
+            zakaziOslobadjanje()
+        }
+    }
+
+    func postaviRezimPrepisa(_ id: String) {
+        let rezim = RezimPrepisa.iz(id)
+        guard rezim.rawValue != podesavanja.rezimPrepisa else { return }
+        podesavanja.rezimPrepisa = rezim.rawValue
+        SkladistePodesavanja.sacuvaj(podesavanja)
     }
 
     // MARK: - Doterivanje
@@ -362,6 +396,7 @@ final class AppStanje: NSObject, ObservableObject {
         let trajanje = Double(ocisceno.count) / 16_000.0
         guard trajanje >= 0.35 else {
             stanje = .mirno
+            zakaziOslobadjanje()
             postaviInfo("Snimak je prekratak — drži \(nazivPrecice) dok govoriš.")
             return
         }
@@ -375,6 +410,7 @@ final class AppStanje: NSObject, ObservableObject {
         snimac.otkazi()
         nivo = 0
         stanje = .mirno
+        zakaziOslobadjanje()
         postaviInfo("Snimak je otkazan.")
     }
 
@@ -382,7 +418,14 @@ final class AppStanje: NSObject, ObservableObject {
         tajmerSekundi?.invalidate()
         tajmerSekundi = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
             guard let self, self.stanje.jeSnimanje else { return }
-            self.sekunde = Int(Date().timeIntervalSince(self.pocetakSnimanja))
+            let proteklo = Int(Date().timeIntervalSince(self.pocetakSnimanja))
+            self.sekunde = proteklo
+            // Ne dozvoljavamo neograničen snimak: dugo držanje bi napunilo
+            // RAM i whisper bi trošio sve više memorije pri prepisu.
+            if proteklo >= Snimac.najduzeSekundi {
+                self.zavrsiSnimanje()
+                self.postaviInfo("Snimak je ograničen na \(Snimac.najduzeSekundi / 60) minuta.")
+            }
         }
     }
 
@@ -396,6 +439,7 @@ final class AppStanje: NSObject, ObservableObject {
     private func obradi(_ uzorci: [Float], trajanje: Double) {
         guard let putanja = modelPutanja else {
             stanje = .mirno
+            zakaziOslobadjanje()
             greska = GreskaPrepisaa.modelNijePreuzet.localizedDescription
             izabranTab = 2
             return
@@ -406,6 +450,7 @@ final class AppStanje: NSObject, ObservableObject {
         tajmerOslobadjanja?.invalidate()
         let jezik = podesavanja.jezik
         let prompt = Recnik.kaoPrompt(recnik)
+        let rezim = RezimPrepisa.iz(podesavanja.rezimPrepisa)
         let doteruj = podesavanja.doterivanje
         let provajder = provajderDoterivanja
         let kljuc = kljucDoterivanja.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -426,10 +471,15 @@ final class AppStanje: NSObject, ObservableObject {
                 let sirovo = try self.prepisivac.prepisi(
                     uzorci: uzorci,
                     jezik: jezik,
-                    recnik: prompt
+                    recnik: prompt,
+                    rezim: rezim
                 )
                 let jezikTeksta = self.prepisivac.jezikZadnjegPrepisa()
                 let sredjeno = Tekst.sredi(sirovo)
+
+                // Whisper je završio posao — model može da se oslobodi po
+                // izabranom vremenu, čak i dok doterivanje još čeka mrežu.
+                DispatchQueue.main.async { self.zakaziOslobadjanje() }
 
                 guard !sredjeno.isEmpty else {
                     DispatchQueue.main.async {
@@ -486,6 +536,9 @@ final class AppStanje: NSObject, ObservableObject {
             } catch {
                 DispatchQueue.main.async {
                     self.stanje = .mirno
+                    // I posle greške model treba da se oslobodi po izabranom
+                    // vremenu, umesto da zauvek ostane u RAM-u.
+                    self.zakaziOslobadjanje()
                     self.greska = error.localizedDescription
                 }
             }
@@ -500,7 +553,6 @@ final class AppStanje: NSObject, ObservableObject {
             if istorija.count > 200 { istorija = Array(istorija.prefix(200)) }
             IstorijaSkladiste.sacuvaj(istorija)
         }
-        zakaziOslobadjanje()
 
         if let napomena {
             postaviInfo(napomena)
@@ -580,15 +632,21 @@ final class AppStanje: NSObject, ObservableObject {
         sacuvajKljuc(prikaziPoruku: true)
     }
 
-    private func sacuvajKljuc(prikaziPoruku: Bool) {
+    @discardableResult
+    private func sacuvajKljuc(prikaziPoruku: Bool) -> Bool {
         let provajder = provajderDoterivanja
         let kljuc = kljucDoterivanja.trimmingCharacters(in: .whitespacesAndNewlines)
         kljucDoterivanja = kljuc
-        Kljuc.upisi(kljuc, za: provajder.id)
-        guard prikaziPoruku else { return }
+        let sacuvan = Kljuc.upisi(kljuc, za: provajder.id)
+        if !kljuc.isEmpty && !sacuvan {
+            greska = "\(provajder.naziv) ključ nije mogao da se sačuva u Keychain-u."
+            return false
+        }
+        guard prikaziPoruku else { return true }
         postaviInfo(kljuc.isEmpty
             ? "\(provajder.naziv) ključ je obrisan."
             : "\(provajder.naziv) ključ je sačuvan u Keychain-u.")
+        return true
     }
 
     func testirajDoterivanje() {
@@ -719,7 +777,7 @@ final class AppStanje: NSObject, ObservableObject {
                 SkladisteAzuriranja.obavestenaVerzija = izdanje.verzija
                 ObavestenjaAzuriranja.prikazi(
                     verzija: izdanje.verzija,
-                    adresa: izdanje.adresaPreuzimanja
+                    adresa: izdanje.bezbednaAdresaPreuzimanja
                 )
             }
             if rucno {
@@ -735,12 +793,12 @@ final class AppStanje: NSObject, ObservableObject {
 
     func otvoriAzuriranje() {
         guard let izdanje = azuriranje else { return }
-        NSWorkspace.shared.open(izdanje.adresaPreuzimanja)
+        NSWorkspace.shared.open(izdanje.bezbednaAdresaPreuzimanja)
         sakrijTrakuAzuriranja = true
     }
 
     func otvoriStranicuIzdanja() {
-        NSWorkspace.shared.open(azuriranje?.html_url ?? Azuriranja.stranicaIzdanja)
+        NSWorkspace.shared.open(azuriranje?.bezbednaStranicaIzdanja ?? Azuriranja.stranicaIzdanja)
     }
 
     func kasnijeAzuriranje() {
@@ -759,8 +817,11 @@ final class AppStanje: NSObject, ObservableObject {
 
     private func zakaziOslobadjanje() {
         tajmerOslobadjanja?.invalidate()
-        tajmerOslobadjanja = Timer.scheduledTimer(withTimeInterval: 300, repeats: false) { [weak self] _ in
+        tajmerOslobadjanja = nil
+        guard let sekunde = oslobadjanjeModela.sekunde else { return }
+        tajmerOslobadjanja = Timer.scheduledTimer(withTimeInterval: sekunde, repeats: false) { [weak self] _ in
             guard let self else { return }
+            self.tajmerOslobadjanja = nil
             self.prepisivac.oslobodi()
             self.modelUcitan = false
         }

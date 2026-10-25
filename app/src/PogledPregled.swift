@@ -169,9 +169,17 @@ struct PogledPregled: View {
                     }
                     izborModelaMeni
                 }
-                Text("Model se učitava samo kada diktiraš i sam se oslobađa posle 5 minuta mirovanja — da ne guši Mac.")
+                Text("Model se učitava samo kada diktiraš. \(app.oslobadjanjeModela.opis)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if app.izabraniModel.id == "ggml-large-v3-q5_0.bin" {
+                    Text("Za oko 500 MB manje memorije izaberi Large v3 Turbo — kvalitet je blizu.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             } else if app.preuzimaModel {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Preuzimam \(Modeli.nadji(app.modelPreuzimanja ?? "")?.naziv ?? "model")…")

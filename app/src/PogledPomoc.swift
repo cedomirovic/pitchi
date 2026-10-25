@@ -37,7 +37,7 @@ struct PogledPomoc: View {
                     Divider()
                     problem(
                         "Mac se guši",
-                        "Model se drži u memoriji samo dok diktiraš. U Podešavanjima izaberi lakši model (Tiny, Base ili Small) ili klikni „Oslobodi memoriju”."
+                        "Model se učitava pri diktiranju i oslobađa po izabranom vremenu (Podešavanja → Model → Oslobodi memoriju posle). Za manje RAM-a izaberi lakši model ili „Odmah posle prepisa“."
                     )
                 }
 
@@ -56,7 +56,7 @@ struct PogledPomoc: View {
                     Divider()
                     servis("Ollama (lokalno)", "Instaliraj Ollama i pokreni `ollama pull llama3.2`. Nema ključa i tekst ostaje na Macu.")
                     Divider()
-                    servis("Drugi OpenAI-kompatibilni", "OpenRouter, Groq, LM Studio, vLLM… Unesi adresu koja se završava sa /chat/completions i tačan naziv modela.")
+                    servis("Drugi OpenAI-kompatibilni", "OpenRouter, Groq, LM Studio, vLLM… Unesi adresu koja se završava sa /chat/completions i tačan naziv modela. Adresa mora da koristi https://; http:// je dozvoljen samo za localhost.")
                 }
 
                 Kartica(naslov: "Ažuriranja", ikona: "arrow.down.circle") {
@@ -72,9 +72,14 @@ struct PogledPomoc: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Kartica(naslov: "Privatnost", ikona: "hand.raised") {
+                Kartica(naslov: "Privatnost i bezbednost", ikona: "hand.raised") {
                     Text("Snimak se obrađuje lokalno, whisper.cpp modelom na ovom Macu. Nigde se ne šalje. Mreža se koristi za preuzimanje modela i za proveru novih izdanja na GitHub-u. Ako uključiš doterivanje, samo gotov tekst ide izabranom servisu — nikada zvuk. Ollama radi lokalno i tada tekst ne napušta Mac.")
                         .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text("API ključevi su u macOS Keychain-u, dostupni samo dok je Mac otključan i samo na ovom uređaju. Adrese za doterivanje moraju da koriste https://; http:// je dozvoljen samo za localhost. Istorija i rečnik su lokalni fajlovi dostupni samo korisniku.")
+                        .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -84,7 +89,9 @@ struct PogledPomoc: View {
                     red("Model", "Tiny, Base, Small, Turbo ili Large v3 — po izboru")
                     red("Jezik", "srpski i engleski, automatski; srpski latinica")
                     red("Doterivanje", "DeepSeek, OpenAI, Claude, Ollama ili drugi")
-                    red("Memorija", "~0,2–1,4 GB samo tokom diktiranja")
+                    red("Memorija", "~0,2–1,4 GB dok je model učitan; vreme oslobađanja biraš u Podešavanjima")
+                    red("Režim prepisa", "Najbolji kvalitet (beam 5) ili manje memorije (greedy)")
+                    red("Najduži snimak", "5 minuta")
                     red("Sistemski zahtev", "macOS 13+, Apple Silicon")
                 }
             }

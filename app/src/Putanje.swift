@@ -2,6 +2,21 @@
 import Foundation
 
 enum Putanje {
+    /// Folder i fajlovi sa prepisima su samo za korisnika (0700/0600).
+    private static func zastitiFolder(_ url: URL) {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o700],
+            ofItemAtPath: url.path
+        )
+    }
+
+    static func zastitiFajl(_ url: URL) {
+        try? FileManager.default.setAttributes(
+            [.posixPermissions: 0o600],
+            ofItemAtPath: url.path
+        )
+    }
+
     static var podrska: URL {
         let baza = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let dir = baza.appendingPathComponent("Diktator", isDirectory: true)
@@ -16,18 +31,21 @@ enum Putanje {
                 do {
                     try fm.moveItem(at: stara, to: dir)
                 } catch {
+                    zastitiFolder(stara)
                     return stara
                 }
             }
         }
 
         try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
+        zastitiFolder(dir)
         return dir
     }
 
     static var modeli: URL {
         let dir = podrska.appendingPathComponent("models", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        zastitiFolder(dir)
         return dir
     }
 

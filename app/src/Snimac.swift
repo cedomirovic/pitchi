@@ -29,9 +29,11 @@ final class Snimac {
     private var uzorci: [Float] = []
     private var aktivan = false
     private var zadnjiNivo = CFAbsoluteTimeGetCurrent()
-    private var ukupnoUzoraka = 0
 
     var naNivo: ((Float) -> Void)?
+
+    /// Najduži snimak je 5 minuta — duže držanje bi trošilo RAM i usporilo prepis.
+    static let najduzeSekundi = 300
 
     static var dozvola: AVAuthorizationStatus {
         AVCaptureDevice.authorizationStatus(for: .audio)
@@ -56,7 +58,6 @@ final class Snimac {
 
         brava.lock()
         uzorci.removeAll(keepingCapacity: true)
-        ukupnoUzoraka = 0
         self.pretvarac = pretvarac
         brava.unlock()
 
@@ -98,11 +99,11 @@ final class Snimac {
 
         let broj = Int(izlaz.frameLength)
         guard broj > 0 else { return }
-        let deo = Array(UnsafeBufferPointer(start: podaci, count: broj))
+        // Ne pravi privremeni niz za svaki deo — upisujemo direktno iz bafera.
+        let deo = UnsafeBufferPointer(start: podaci, count: broj)
 
         brava.lock()
         uzorci.append(contentsOf: deo)
-        ukupnoUzoraka += broj
         brava.unlock()
 
         // Nivo za UI (RMS u dB, preslikano na 0…1).
