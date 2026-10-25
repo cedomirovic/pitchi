@@ -39,14 +39,14 @@ direktno iz aplikacije.
 - **Ažuriranja** — jednom dnevno proveri GitHub; kada postoji novije izdanje,
   prikaže obaveštenje i traku sa dugmetom za preuzimanje.
 - **Opciono doterivanje teksta** — izaberi DeepSeek, OpenAI, Anthropic Claude,
-  lokalni Ollama ili drugi OpenAI-kompatibilni servis; popravlja interpunkciju
-  i imena. Isključeno po defaultu, šalje se samo tekst, nikada zvuk.
+  Google Gemini, lokalni Ollama ili drugi OpenAI-kompatibilni servis; popravlja
+  interpunkciju i imena. Isključeno po defaultu, šalje se samo tekst, nikada zvuk.
 
 ## Instalacija
 
 ### Gotova aplikacija
 
-1. Preuzmi `Diktator-0.7.1-macOS-arm64.zip` sa
+1. Preuzmi `Diktator-0.8.0-macOS-arm64.zip` sa
    [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
 2. Otpakuj i prevuci `Diktator.app` u `/Applications`.
 3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
@@ -149,6 +149,7 @@ U **Podešavanjima → Doterivanje teksta**:
 | DeepSeek | API ključ sa [platform.deepseek.com](https://platform.deepseek.com/api_keys) | `deepseek-chat` |
 | OpenAI / ChatGPT | API ključ sa [platform.openai.com](https://platform.openai.com/api-keys) | `gpt-4o-mini` |
 | Anthropic Claude | API ključ sa [console.anthropic.com](https://console.anthropic.com/settings/keys) | `claude-haiku-5-5` |
+| Google Gemini | API ključ sa [aistudio.google.com](https://aistudio.google.com/app/apikey) | `gemini-3.5-flash-lite` |
 | Ollama | Instaliran Ollama i preuzet model; bez ključa | `llama3.2` |
 | Drugi OpenAI-kompatibilni | Adresa i model; ključ ako servis traži | `local-model` |
 
@@ -173,6 +174,13 @@ Diktator koristi Claude Messages API i podrazumevano model `claude-haiku-5-5`.
 **Claude Code nije API.** To je CLI alat za rad u terminalu i Diktator ga ne
 poziva. Ako želiš Claude za doterivanje, izaberi „Anthropic Claude“ i napravi
 Anthropic API ključ.
+
+### Google Gemini
+
+Napravi ključ u [Google AI Studio](https://aistudio.google.com/app/apikey) i
+nalepi ga u Diktator. Podrazumevani model je `gemini-3.5-flash-lite`; ako želiš
+noviji ili drugi model, upiši njegov tačan naziv u polje **Model**. Gemini
+Advanced pretplata nije dovoljna — potreban je API ključ iz AI Studio-a.
 
 ### Ollama (lokalno)
 

@@ -44,7 +44,25 @@ struct Doterivac {
         guard !izabraniModel.isEmpty else {
             throw GreskaDoterivanja.odgovor("\(provajder.naziv): model nije unet.")
         }
-        let url = try proveriAdresu(adresa)
+        let url: URL
+        if case .gemini = provajder.vrsta {
+            // Gemini traži model u putanji, pa se adresa sastavlja od osnove i
+            // izabranog modela. Naziv modela sme da sadrži samo bezbedne znake.
+            var modelZaUrl = izabraniModel
+            if modelZaUrl.hasPrefix("models/") {
+                modelZaUrl.removeFirst("models/".count)
+            }
+            let dozvoljeni = CharacterSet(
+                charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
+            )
+            guard modelZaUrl.unicodeScalars.allSatisfy({ dozvoljeni.contains($0) }) else {
+                throw GreskaDoterivanja.odgovor("\(provajder.naziv): naziv modela nije ispravan.")
+            }
+            let osnovna = adresa.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            url = try proveriAdresu("\(osnovna)/\(modelZaUrl):generateContent")
+        } else {
+            url = try proveriAdresu(adresa)
+        }
 
         let uputstvo = uputstvo(jezik: jezik)
         var zahtev = URLRequest(url: url)
@@ -78,6 +96,19 @@ struct Doterivac {
                 "messages": [
                     ["role": "user", "content": tekst],
                 ],
+            ]
+            zahtev.httpBody = try JSONSerialization.data(withJSONObject: telo)
+
+        case .gemini:
+            zahtev.setValue(ociscenKljuc, forHTTPHeaderField: "x-goog-api-key")
+            let telo: [String: Any] = [
+                "systemInstruction": [
+                    "parts": [["text": uputstvo]],
+                ],
+                "contents": [
+                    ["role": "user", "parts": [["text": tekst]]],
+                ],
+                "generationConfig": ["temperature": 0],
             ]
             zahtev.httpBody = try JSONSerialization.data(withJSONObject: telo)
 
@@ -166,6 +197,26 @@ struct Doterivac {
             let dekodirano = try JSONDecoder().decode(Odgovor.self, from: podaci)
             return dekodirano.content
                 .filter { $0.type == "text" }
+                .compactMap(\.text)
+                .joined(separator: " ")
+
+        case .gemini:
+            struct Odgovor: Decodable {
+                struct Kandidat: Decodable {
+                    struct Sadrzaj: Decodable {
+                        struct Deo: Decodable {
+                            let text: String?
+                            let thought: Bool?
+                        }
+                        let parts: [Deo]
+                    }
+                    let content: Sadrzaj
+                }
+                let candidates: [Kandidat]
+            }
+            let dekodirano = try JSONDecoder().decode(Odgovor.self, from: podaci)
+            return dekodirano.candidates.first?.content.parts
+                .filter { $0.thought != true }
                 .compactMap(\.text)
                 .joined(separator: " ")
 

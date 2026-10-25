@@ -5,6 +5,7 @@ import Foundation
 enum VrstaDoterivaca {
     case openAIKompatibilan
     case anthropic
+    case gemini
     case ollama
 }
 
@@ -71,6 +72,21 @@ enum ProvajderiDoterivanja {
         link: URL(string: "https://console.anthropic.com/settings/keys")
     )
 
+    static let gemini = ProvajderDoterivanja(
+        id: "gemini",
+        naziv: "Google Gemini",
+        opis: "Gemini API. Google AI Studio ključ; Gemini Advanced pretplata nije dovoljna.",
+        vrsta: .gemini,
+        model: "gemini-3.5-flash-lite",
+        adresa: "https://generativelanguage.googleapis.com/v1beta/models",
+        traziKljuc: true,
+        prikazujeKljuc: true,
+        prikazujeAdresu: false,
+        uputstvo: "Ključ praviš na aistudio.google.com → Get API key. Model: gemini-3.5-flash-lite (može i noviji).",
+        linkNaslov: "Otvori ključeve",
+        link: URL(string: "https://aistudio.google.com/app/apikey")
+    )
+
     static let ollama = ProvajderDoterivanja(
         id: "ollama",
         naziv: "Ollama (lokalno)",
@@ -101,7 +117,7 @@ enum ProvajderiDoterivanja {
         link: nil
     )
 
-    static let svi = [podrazumevani, openAI, anthropic, ollama, custom]
+    static let svi = [podrazumevani, openAI, anthropic, gemini, ollama, custom]
 
     static func nadji(_ id: String) -> ProvajderDoterivanja? {
         svi.first { $0.id == id }

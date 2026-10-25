@@ -325,7 +325,38 @@ današnje ime aplikacije.)*
   `0.8.0`. Instalirano u `/Applications/Diktator.app`; objavljen je release
   `v0.7.1` sa `Diktator-0.7.1-macOS-arm64.zip` (3,1 MB, SHA-256
   `e3756280177cfd474f097a3fcb2d4f0d98d974c99db0bdc0493bbad19550a582`).
-- Sledeći korak: probni diktat uživo sa Large v3 u oba režima i stvarnim API
-  ključem za izabrani servis, fizički probati `Fn + Space` i desni
-  modifikator na tastaturi koja ga ima, zatim po potrebi brisanje modela koje
-  korisnik ne želi i eventualni prelazak `diktator` repoa na ovu aplikaciju.
+- **25.10.2026. (Gemini, čist paket)** — doterivanje sada podržava i **Google
+  Gemini**, a pripremljen je čist paket za slanje drugima. Odluke:
+  - `ProvajderiDoterivanja.gemini` (`id: "gemini"`) koristi Gemini REST
+    `POST /v1beta/models/{model}:generateContent`, ključ ide u zaglavlje
+    `x-goog-api-key`, a telo u camelCase formatu (`systemInstruction`,
+    `contents`, `generationConfig`); odgovor se čita iz
+    `candidates[].content.parts[].text`, a delovi sa `thought: true` se
+    preskaču;
+  - podrazumevani model je `gemini-3.5-flash-lite` (Gemini 2.5 je ograničen na
+    postojeće korisnike), a model se može promeniti u polju **Model**;
+    `models/` prefiks se skida pre sastavljanja URL-a, a naziv sme da sadrži
+    samo slova, brojeve, tačku, crtu i donju crtu;
+  - Gemini je dodat u README, Pomoć i tehnički pregled; stari DeepSeek ključ i
+    podešavanja ostaju netaknuti;
+  - verzija je `0.8.0` (build 11), `package.json` `0.8.0`, a lažno izdanje za
+    `--slika` je `0.9.0` („Imaš 0.8.0“); `docs/pocetak.png` i
+    `docs/podesavanja.png` su ponovo nacrtani;
+  - Dock je očišćen: uklonjen je zaostali unos iz `recent-apps`, a provera je
+    potvrdila samo jedan `AXDockItem` za `/Applications/Diktator.app`.
+  Provereno: `node --check diktator.js lib/*.js`, `node diktator.js --help`,
+  `npm test` (11/11), `bash app/build.sh`, `--test-whisper` u oba režima daje
+  isti srpski tekst, `--dozvole` čita stvarne dozvole; Gemini je testiran
+  protiv lokalnog mock servera (uspešan odgovor sa `thought` delom, HTTP 401 i
+  `models/` prefiks). Aplikacija je instalirana u `/Applications/Diktator.app`
+  (0.8.0, build 11), a podešavanja su zadržala Large v3, `Fn + Space`,
+  `stedljivo` i isključeno doterivanje. Objavljen je release `v0.8.0` sa
+  `Diktator-0.8.0-macOS-arm64.zip` (3.209.469 bajtova, SHA-256
+  `aedf41858534c0d527c9fbbcc3738a123cc3d57739f71f781b9f1cd53110234d`);
+  paket je očišćen od `__MACOSX` metapodataka i proveren posle raspakivanja
+  (`codesign --verify`, verzija 0.8.0/11).
+- Sledeći korak: probni diktat uživo sa Large v3 u oba režima i stvarnim
+  Gemini API ključem (ili drugim izabranim servisom), fizički probati
+  `Fn + Space` i desni modifikator na tastaturi koja ga ima, zatim po potrebi
+  brisanje modela koje korisnik ne želi i eventualni prelazak `diktator`
+  repoa na ovu aplikaciju.

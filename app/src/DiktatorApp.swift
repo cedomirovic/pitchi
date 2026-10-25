@@ -75,13 +75,13 @@ struct DiktatorMain {
         // Razvojna provera: nacrtaj traku i karticu ažuriranja bez mreže.
         if ProcessInfo.processInfo.environment["DIKTATOR_SLIKA_AZURIRANJE"] != nil {
             stanje.azuriranje = Izdanje(
-                tag_name: "v0.8.0",
-                name: "Diktator 0.8.0",
-                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v0.8.0")!,
+                tag_name: "v0.9.0",
+                name: "Diktator 0.9.0",
+                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v0.9.0")!,
                 assets: [
                     Izdanje.Fajl(
-                        name: "Diktator-0.8.0-macOS-arm64.zip",
-                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v0.8.0/Diktator-0.8.0-macOS-arm64.zip")!
+                        name: "Diktator-0.9.0-macOS-arm64.zip",
+                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v0.9.0/Diktator-0.9.0-macOS-arm64.zip")!
                     )
                 ]
             )
