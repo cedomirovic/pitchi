@@ -351,8 +351,8 @@ današnje ime aplikacije.)*
   `models/` prefiks). Aplikacija je instalirana u `/Applications/Diktator.app`
   (0.8.0, build 11), a podešavanja su zadržala Large v3, `Fn + Space`,
   `stedljivo` i isključeno doterivanje. Objavljen je release `v0.8.0` sa
-  `Diktator-0.8.0-macOS-arm64.zip` (3.209.469 bajtova, SHA-256
-  `aedf41858534c0d527c9fbbcc3738a123cc3d57739f71f781b9f1cd53110234d`);
+  `Diktator-0.8.0-macOS-arm64.zip` (3.209.707 bajtova, SHA-256
+  `85da08f212f7c4bcfd4fa268130109b618aff9da594d0fa32d4c0f51ef1a0c28`);
   paket je očišćen od `__MACOSX` metapodataka i proveren posle raspakivanja
   (`codesign --verify`, verzija 0.8.0/11).
 - Sledeći korak: probni diktat uživo sa Large v3 u oba režima i stvarnim

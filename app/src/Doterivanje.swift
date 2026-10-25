@@ -59,7 +59,9 @@ struct Doterivac {
                 throw GreskaDoterivanja.odgovor("\(provajder.naziv): naziv modela nije ispravan.")
             }
             let osnovna = adresa.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-            url = try proveriAdresu("\(osnovna)/\(modelZaUrl):generateContent")
+            let osnovniURL = try proveriAdresu(osnovna)
+            let modelURL = osnovniURL.appendingPathComponent(modelZaUrl)
+            url = try proveriAdresu(modelURL.absoluteString + ":generateContent")
         } else {
             url = try proveriAdresu(adresa)
         }
