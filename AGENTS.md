@@ -298,7 +298,34 @@ današnje ime aplikacije.)*
   `/Applications/Diktator.app`; objavljen je release `v0.7.0` sa
   `Diktator-0.7.0-macOS-arm64.zip` (3,1 MB, SHA-256
   `5aedd193a5e25e7a50d874c918083b98c037d98df1b6bd82367af027e3d938fd`).
+- **25.10.2026. (Fn + Space)** — dodata je prečica `Fn + Space` koja radi kao
+  prekidač: prvi pritisak počinje snimak, drugi ga završava i šalje tekst.
+  Odluke:
+  - `Precica.fnSpace` (`"fn-space"`, keycode 49) je nova stavka u izboru;
+    `jePrekidac` menja uputstva u celom UI-ju (Početak, HUD, Pomoć, Istorija,
+    Podešavanja, tooltip u menu baru), a stare prečice i dalje rade kao
+    „drži i govori“;
+  - `Tastatura` na `keyDown` sa Fn flagom zove `naPrekidac` →
+    `AppStanje.prebaciSnimanje()`; ponovljeni `keyDown` se ignoriše, a Space
+    `keyDown`/`keyUp` se proguta (`progutajSpace`) da se razmak ne upiše u
+    aktivnu aplikaciju; kombinacije sa Cmd/Ctrl/Option se ne hvataju;
+  - promena prečice usred snimanja završava snimak (`sacuvajPodesavanja`);
+  - kroz UI je korisniku izabran `Fn + Space` (upis `"precica": "fn-space"`),
+    a stara podešavanja bez tog polja ostaju `Fn` (drži);
+  - `--slika` je ponovo nacrtao `docs/pocetak.png` i `docs/podesavanja.png`
+    sa prekidačem i lažnim izdanjem `0.8.0` („Imaš 0.7.1“).
+  Provereno: `node --check diktator.js lib/*.js`, `node diktator.js --help`,
+  `npm test` (11/11), `bash app/build.sh` (10 postojećih upozorenja),
+  `--test-whisper` u oba režima daje isti srpski tekst, `--dozvole` čita
+  stvarne dozvole; sintetički `Fn + Space` je pokrenuo snimak („Snimam…“,
+  „Govori sada — pritisni Fn + Space ponovo da završiš.“), drugi pritisak ga
+  zaustavio i vratio u „Spreman“; u TextEdit-u je posle oba pritiska ostalo
+  samo „X“ (Space nije upisan), a zatim je tekst zalepljen. Verzija je
+  `0.7.1` (build 10), `package.json` `0.7.1`; lažno izdanje za `--slika` je
+  `0.8.0`. Instalirano u `/Applications/Diktator.app`; objavljen je release
+  `v0.7.1` sa `Diktator-0.7.1-macOS-arm64.zip` (3,1 MB, SHA-256
+  `e3756280177cfd474f097a3fcb2d4f0d98d974c99db0bdc0493bbad19550a582`).
 - Sledeći korak: probni diktat uživo sa Large v3 u oba režima i stvarnim API
-  ključem za izabrani servis, probati desni modifikator kao prečicu na
-  tastaturi koja ga ima, zatim po potrebi brisanje modela koje korisnik ne
-  želi i eventualni prelazak `diktator` repoa na ovu aplikaciju.
+  ključem za izabrani servis, fizički probati `Fn + Space` i desni
+  modifikator na tastaturi koja ga ima, zatim po potrebi brisanje modela koje
+  korisnik ne želi i eventualni prelazak `diktator` repoa na ovu aplikaciju.

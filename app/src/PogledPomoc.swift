@@ -8,7 +8,13 @@ struct PogledPomoc: View {
         ScrollView {
             VStack(spacing: 16) {
                 Kartica(naslov: "Kako se koristi", ikona: "questionmark.circle") {
-                    korak(1, "Drži \(app.nazivPrecice)", "Dok god držiš \(app.nazivPrecice), Diktator snima. Pusti kada završiš rečenicu.")
+                    korak(
+                        1,
+                        app.izabranaPrecica.jePrekidac ? "Pritisni \(app.nazivPrecice)" : "Drži \(app.nazivPrecice)",
+                        app.izabranaPrecica.jePrekidac
+                            ? "Pritisni \(app.nazivPrecice) da počneš, ponovo da završiš. Diktator snima između ta dva pritiska."
+                            : "Dok god držiš \(app.nazivPrecice), Diktator snima. Pusti kada završiš rečenicu."
+                    )
                     korak(2, "Sačekaj trenutak", "Prvi prepis učitava model (2–3 s). Sledeći su brži dok je model u memoriji.")
                     korak(3, "Tekst se sam zalepi", "Diktator pošalje Cmd+V aplikaciji u kojoj si pisao. Ako ne može, tekst čeka u klipbordu.")
                     korak(4, "Bez \(app.nazivPrecice)? Klikni dugme", "Na ekranu „Početak” veliko dugme radi isto — klik za početak, klik za kraj.")
@@ -22,7 +28,7 @@ struct PogledPomoc: View {
                     Divider()
                     problem(
                         "Prečica otvara emoji birač",
-                        "Ako je izabran Fn, u Podešavanjima → Tastatura podesi „Pritisni 🌐 key za” na „Ne radi ništa”. Ili u Diktatoru izaberi drugu prečicu."
+                        "Ako je izabran Fn ili Fn + Space, u Podešavanjima → Tastatura podesi „Pritisni 🌐 key za” na „Ne radi ništa”. Ili u Diktatoru izaberi drugu prečicu."
                     )
                     Divider()
                     problem(

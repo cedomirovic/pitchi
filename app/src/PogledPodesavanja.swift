@@ -53,7 +53,7 @@ struct PogledPodesavanja: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Prečica za diktiranje").font(.callout.weight(.medium))
-                    Text("Drži izabrani taster dok govoriš, pusti ga da završiš.")
+                    Text(app.izabranaPrecica.uputstvo)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -68,8 +68,8 @@ struct PogledPodesavanja: View {
                 .frame(width: 190)
             }
 
-            if app.izabranaPrecica == .fn {
-                Text("Ako Fn otvara emoji birač, izaberi drugu prečicu ili u macOS Tastaturi podesi da Fn ne radi ništa.")
+            if app.izabranaPrecica == .fn || app.izabranaPrecica == .fnSpace {
+                Text("Ako Fn otvara emoji birač, u macOS Tastaturi podesi da Fn ne radi ništa ili izaberi drugu prečicu.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

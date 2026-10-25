@@ -36,7 +36,7 @@ struct PogledPregled: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(app.stanje.naslov)
                         .font(.system(size: 26, weight: .bold, design: .rounded))
-                    Text(app.stanje.detalj(precica: app.nazivPrecice))
+                    Text(app.stanje.detalj(precica: app.nazivPrecice, prekidac: app.izabranaPrecica.jePrekidac))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -60,9 +60,15 @@ struct PogledPregled: View {
             HStack(spacing: 10) {
                 Image(systemName: "keyboard")
                     .foregroundStyle(.secondary)
-                Text("Drži")
-                Taster(app.simbolPrecice)
-                Text("i govori, pusti kada završiš. Ili klikni dugme iznad.")
+                if app.izabranaPrecica.jePrekidac {
+                    Text("Pritisni")
+                    Taster(app.simbolPrecice)
+                    Text("da počneš, ponovo da završiš. Ili klikni dugme iznad.")
+                } else {
+                    Text("Drži")
+                    Taster(app.simbolPrecice)
+                    Text("i govori, pusti kada završiš. Ili klikni dugme iznad.")
+                }
                 Spacer()
             }
             .font(.caption)
@@ -130,7 +136,9 @@ struct PogledPregled: View {
 
             RedDozvole(
                 naziv: "Nadzor unosa",
-                opis: "Da prepozna kada držiš \(app.nazivPrecice), i dok je druga aplikacija u fokusu.",
+                opis: app.izabranaPrecica.jePrekidac
+                    ? "Da prepozna kada pritisneš \(app.nazivPrecice), i dok je druga aplikacija u fokusu."
+                    : "Da prepozna kada držiš \(app.nazivPrecice), i dok je druga aplikacija u fokusu.",
                 ikona: "keyboard",
                 dozvoljeno: app.dozvole.nadzorUnosa
             ) { app.zatrazNadzorUnosa() }

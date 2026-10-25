@@ -262,7 +262,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let dugme = item.button {
             dugme.image = NSImage(systemSymbolName: "mic.fill", accessibilityDescription: "Diktator")
             dugme.image?.isTemplate = true
-            dugme.toolTip = "Diktator — drži \(stanje.nazivPrecice) i govori"
+            dugme.toolTip = stanje.izabranaPrecica.kratkoUputstvo
         }
 
         let meni = NSMenu()
@@ -337,8 +337,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         stanje.$podesavanja
             .receive(on: RunLoop.main)
             .sink { [weak self] podesavanja in
-                let naziv = Precica.iz(podesavanja.precica).naziv
-                self?.statusItem?.button?.toolTip = "Diktator — drži \(naziv) i govori"
+                let precica = Precica.iz(podesavanja.precica)
+                self?.statusItem?.button?.toolTip = precica.kratkoUputstvo
             }
             .store(in: &pretplate)
     }

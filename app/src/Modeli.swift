@@ -18,10 +18,16 @@ enum StanjeAplikacije: Equatable {
         }
     }
 
-    func detalj(precica: String = "Fn") -> String {
+    func detalj(precica: String = "Fn", prekidac: Bool = false) -> String {
         switch self {
-        case .mirno: return "Drži \(precica) i govori. Pusti kada završiš."
-        case .snima: return "Govori sada — pusti \(precica) da završiš."
+        case .mirno:
+            return prekidac
+                ? "Pritisni \(precica) da počneš, ponovo da završiš."
+                : "Drži \(precica) i govori. Pusti kada završiš."
+        case .snima:
+            return prekidac
+                ? "Govori sada — pritisni \(precica) ponovo da završiš."
+                : "Govori sada — pusti \(precica) da završiš."
         case .priprema: return "Model se učitava u memoriju, sačekaj trenutak."
         case .prepisuje: return "Pretvaram govor u tekst."
         case .greska(let poruka): return poruka
@@ -57,10 +63,13 @@ struct Dozvole: Equatable {
     var sve: Bool { mikrofon && pristupacnost && nadzorUnosa }
 }
 
-/// Taster koji se drži dok se govori. Desni modifikatori su bezbedniji od
-/// levih jer se levi često koriste u prečicama drugih aplikacija.
+/// Taster ili kombinacija za diktiranje. Većina prečica se drži dok se
+/// govori; Fn + Space je prekidač (pritisni za početak, ponovo za kraj).
+/// Desni modifikatori su bezbedniji od levih jer se levi često koriste u
+/// prečicama drugih aplikacija.
 enum Precica: String, CaseIterable, Identifiable {
     case fn
+    case fnSpace = "fn-space"
     case desniOption = "desni-option"
     case desniCommand = "desni-command"
     case desniControl = "desni-control"
@@ -78,6 +87,7 @@ enum Precica: String, CaseIterable, Identifiable {
     var naziv: String {
         switch self {
         case .fn: return "Fn"
+        case .fnSpace: return "Fn + Space"
         case .desniOption: return "Desni Option"
         case .desniCommand: return "Desni Command"
         case .desniControl: return "Desni Control"
@@ -95,6 +105,7 @@ enum Precica: String, CaseIterable, Identifiable {
     var simbol: String {
         switch self {
         case .fn: return "Fn"
+        case .fnSpace: return "Fn ␣"
         case .desniOption: return "⌥"
         case .desniCommand: return "⌘"
         case .desniControl: return "⌃"
@@ -104,13 +115,15 @@ enum Precica: String, CaseIterable, Identifiable {
     }
 
     var etiketa: String {
-        naziv == simbol ? naziv : "\(naziv)  \(simbol)"
+        if self == .fnSpace { return naziv }
+        return naziv == simbol ? naziv : "\(naziv)  \(simbol)"
     }
 
     /// macOS virtual keycode za taster.
     var kod: Int64 {
         switch self {
         case .fn: return 63
+        case .fnSpace: return 49
         case .desniOption: return 61
         case .desniCommand: return 54
         case .desniControl: return 62
@@ -132,6 +145,23 @@ enum Precica: String, CaseIterable, Identifiable {
         default:
             return false
         }
+    }
+
+    /// Fn + Space radi kao prekidač, ne kao taster koji se drži.
+    var jePrekidac: Bool { self == .fnSpace }
+
+    var uputstvo: String {
+        if jePrekidac {
+            return "Pritisni \(naziv) da počneš, ponovo da završiš."
+        }
+        return "Drži izabrani taster dok govoriš, pusti ga da završiš."
+    }
+
+    var kratkoUputstvo: String {
+        if jePrekidac {
+            return "Diktator — pritisni \(naziv) da snimiš"
+        }
+        return "Diktator — drži \(naziv) i govori"
     }
 
     static func iz(_ id: String) -> Precica {
