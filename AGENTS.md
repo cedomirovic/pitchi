@@ -376,10 +376,13 @@ današnje ime aplikacije.)*
   demo prikaz statistike je pregledan (1.460 reči, 26 min ušteđeno, grafikon).
   Verzija je `0.9.0` (build 12), `package.json` `0.9.0`; lažno izdanje za
   `--slika` je `1.0.0`. Aplikacija je instalirana u `/Applications/Diktator.app`.
-  Release se objavljuje posle korisnikove provere uživo.
-- Sledeći korak: probni diktat uživo i provera da statistika raste i da se
-  `statistika.json` upisuje sa dozvolama 0600; zatim objava release-a `v0.9.0`.
-  Posle toga: probni diktat sa stvarnim Gemini API ključem (ili drugim izabranim
-  servisom), fizički probati `Fn + Space` i desni modifikator na tastaturi koja
-  ga ima, zatim po potrebi brisanje modela koje korisnik ne želi i eventualni
-  prelazak `diktator` repoa na ovu aplikaciju.
+  Korisnik je potvrdio da statistika radi uživo, pa je objavljen release
+  `v0.9.0` sa `Diktator-0.9.0-macOS-arm64.zip` (3.262.886 bajtova, SHA-256
+  `86e21950e80177e40365586a7f403ba5cf4233ae7207ae0e4ffc50e9dba20fd8`);
+  paket je očišćen od `__MACOSX` metapodataka i proveren posle raspakivanja
+  (`codesign --verify`, verzija 0.9.0/12). `--test-whisper` je proveren novim
+  TTS snimkom (engleski glas je iskrivio srpske reči, ali pipeline radi).
+- Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
+  izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
+  tastaturi koja ga ima, zatim po potrebi brisanje modela koje korisnik ne
+  želi i eventualni prelazak `diktator` repoa na ovu aplikaciju.
