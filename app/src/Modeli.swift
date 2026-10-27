@@ -268,6 +268,10 @@ struct Podesavanja: Codable, Equatable {
     /// Dnevna provera novih izdanja na GitHub-u (samo čitanje javnog spiska).
     var proveravajAzuriranja = true
     var model = Modeli.podrazumevani.id
+    /// Brzi režim: Turbo model, duže držanje u RAM-u i učitavanje unapred.
+    var brziRezim = false
+    /// Učitaj model odmah po pokretanju da prvi diktat ne čeka.
+    var unapredUcitajModel = false
     var provajderDoterivanja = ProvajderiDoterivanja.podrazumevani.id
     /// Model se pamti po servisu da promena servisa ne bi poslala pogrešan naziv.
     var modeliDoterivanja: [String: String] = [:]
@@ -287,6 +291,8 @@ struct Podesavanja: Codable, Equatable {
         case cuvajIstoriju
         case proveravajAzuriranja
         case model
+        case brziRezim
+        case unapredUcitajModel
         case provajderDoterivanja
         case modeliDoterivanja
         case adresaCustomDoterivanja
@@ -319,6 +325,8 @@ struct Podesavanja: Codable, Equatable {
         model = try kontejner.decodeIfPresent(String.self, forKey: .model)
             ?? Modeli.nadjiPostojeci()?.id
             ?? Modeli.podrazumevani.id
+        brziRezim = try kontejner.decodeIfPresent(Bool.self, forKey: .brziRezim) ?? false
+        unapredUcitajModel = try kontejner.decodeIfPresent(Bool.self, forKey: .unapredUcitajModel) ?? false
         provajderDoterivanja = try kontejner.decodeIfPresent(String.self, forKey: .provajderDoterivanja)
             ?? ProvajderiDoterivanja.podrazumevani.id
         modeliDoterivanja = try kontejner.decodeIfPresent([String: String].self, forKey: .modeliDoterivanja)

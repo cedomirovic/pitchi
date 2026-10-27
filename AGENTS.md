@@ -382,7 +382,34 @@ današnje ime aplikacije.)*
   paket je očišćen od `__MACOSX` metapodataka i proveren posle raspakivanja
   (`codesign --verify`, verzija 0.9.0/12). `--test-whisper` je proveren novim
   TTS snimkom (engleski glas je iskrivio srpske reči, ali pipeline radi).
-- Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
-  izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
-  tastaturi koja ga ima, zatim po potrebi brisanje modela koje korisnik ne
-  želi i eventualni prelazak `diktator` repoa na ovu aplikaciju.
+- **27.10.2026. (brzi režim, memorija)** — dodat je **brzi režim** i čuvar
+  memorije, posle merenja velikih modela. Odluke:
+  - `Podesavanja` dobija `brziRezim` i `unapredUcitajModel`; stara podešavanja
+    se dekodiraju kao `false`, pa se ponašanje starih instalacija ne menja;
+  - brzi režim bira **Large v3 Turbo**, `stedljivo`, oslobađanje posle 30
+    minuta i učitavanje modela odmah po pokretanju; ako Turbo nije preuzet,
+    dugme u Podešavanjima pokreće preuzimanje i posle uspeha sam učita model;
+  - `pripremiModel` radi u pozadini sa tokenom; nova priprema poništava staru,
+    a `pripremaUToku` sprečava dvostruko učitavanje na uzastopne događaje
+    buđenja;
+  - `postaviCuvarMemorije` sluša `DispatchSource` pritisak na RAM, spavanje
+    ekrana, buđenje i Low Power Mode; model se pušta na pritisak/san, a vraća
+    na buđenje i kada Low Power Mode prestane;
+  - `Prepisivac.oslobodi` sada odmah označi model kao neučitan, pa novi diktat
+    ne može da uleti u oslobađanje i dobije „model nije preuzet“;
+  - promena modela i uključivanje brzog režima su blokirani dok traje snimak,
+    da završeni snimak ne bi ostao bez izabranog modela;
+  - probano je i **audio_ctx** skraćivanje za kratke snimke: tekst se raspao
+    (nonsens, ~11 s zbog ponovnog dekodiranja), pa je uklonjeno;
+    `single_segment` sam nije doneo ubrzanje i takođe je uklonjen. Testna
+    zastavica `--model <id>` u `--test-whisper` je ostala za merenja.
+  Merenja na snimku od 4,35 s, greedy: Large v3 ~3,7 s i ~1,9 GB pik; Turbo
+  ~2,9 s i ~0,9 GB; učitavanje ~0,7 s prema ~0,2 s. Verzija je `0.9.1`
+  (build 13), `package.json` `0.9.1`; aplikacija je instalirana u
+  `/Applications/Diktator.app`. Release se objavljuje posle korisnikove probe.
+- Sledeći korak: korisnik proba brzi režim (prvi diktat posle pokretanja,
+  oslobađanje na san/Low Power Mode) pa se objavljuje `v0.9.1`. Posle toga:
+  probni diktat sa stvarnim Gemini API ključem (ili drugim izabranim servisom),
+  fizički probati `Fn + Space` i desni modifikator na tastaturi koja ga ima,
+  zatim po potrebi brisanje modela koje korisnik ne želi i eventualni prelazak
+  `diktator` repoa na ovu aplikaciju.

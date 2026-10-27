@@ -76,6 +76,9 @@ enum Modeli {
     /// Model koji se nudi novim korisnicima.
     static let podrazumevani = svi.first { $0.preporucen } ?? svi[0]
 
+    /// Model za brzi režim: Turbo je oko dva puta brži i ~500 MB lakši.
+    static let brzi = nadji("ggml-large-v3-turbo-q5_0.bin") ?? podrazumevani
+
     static func nadji(_ id: String) -> PonudaModela? {
         svi.first { $0.id == id }
     }

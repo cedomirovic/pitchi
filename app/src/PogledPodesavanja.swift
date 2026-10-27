@@ -365,7 +365,7 @@ struct PogledPodesavanja: View {
                 .labelsHidden()
                 .pickerStyle(.menu)
                 .frame(width: 300)
-                .disabled(app.preuzimaModel || app.stanje.jeZauzet)
+                .disabled(app.preuzimaModel || app.stanje.jeZauzet || app.stanje.jeSnimanje)
             }
 
             Text(app.izabraniModel.opis)
@@ -373,10 +373,12 @@ struct PogledPodesavanja: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
+            brziRezimDeo
+
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Oslobodi memoriju posle").font(.callout.weight(.medium))
-                    Text("Model se učitava pri diktiranju, a oslobađa posle izabranog mirovanja.")
+                    Text("Model se učitava pri diktiranju ili unapred, a oslobađa posle izabranog mirovanja.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -473,6 +475,81 @@ struct PogledPodesavanja: View {
             }
 
         }
+    }
+
+    private var brziRezimDeo: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                Image(systemName: "bolt.fill")
+                    .foregroundStyle(Izgled.akcenat)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Brzi režim").font(.callout.weight(.semibold))
+                    Text("Turbo model, 30 min u RAM-u i učitavanje odmah po pokretanju.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 8)
+
+                if app.brziRezimAktivan {
+                    Label("Uključen", systemImage: "checkmark.circle.fill")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.green)
+                    Button("Isključi") { app.iskljuciBrziRezim() }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                } else {
+                    Button(oznakaBrzogRezima) { app.ukljuciBrziRezim() }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Izgled.akcenat)
+                        .controlSize(.small)
+                        .disabled(app.preuzimaModel || app.stanje.jeZauzet || app.stanje.jeSnimanje)
+                }
+            }
+
+            Toggle(isOn: Binding(
+                get: { app.podesavanja.unapredUcitajModel },
+                set: { app.postaviUnapredUcitavanje($0) }
+            )) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Učitaj model odmah po pokretanju")
+                        .font(.caption)
+                    Text("Prvi diktat kreće bez čekanja; model zauzima RAM dok je aplikacija otvorena.")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .toggleStyle(.switch)
+            .controlSize(.small)
+            .disabled(
+                app.preuzimaModel
+                    || app.stanje.jeZauzet
+                    || !app.modelSpreman
+                    || app.oslobadjanjeModela == .odmah
+            )
+
+            if app.modelUcitan {
+                Text("Model je trenutno u memoriji.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Izgled.akcenat.opacity(0.07))
+        )
+    }
+
+    private var oznakaBrzogRezima: String {
+        let turbo = Modeli.brzi
+        if turbo.preuzet {
+            return "Uključi brzi režim"
+        }
+        return "Preuzmi Turbo i uključi (\(turbo.velicinaTekst))"
     }
 
     private var izborModela: Binding<String> {

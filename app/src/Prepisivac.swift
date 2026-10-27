@@ -58,6 +58,9 @@ final class Prepisivac {
     /// Oslobađa model bez blokiranja UI-ja; ako se trenutno prepisuje, sačekaće
     /// da se posao završi pa tek onda osloboditi memoriju.
     func oslobodi() {
+        // Odmah označi da model nije u memoriji; ako se u međuvremenu pokrene
+        // novi diktat, `ucitaj` će sačekati oslobađanje pa ponovo učitati model.
+        postaviUcitan(false)
         red.async { [weak self] in
             self?.oslobodiBezReda()
         }
@@ -93,7 +96,12 @@ final class Prepisivac {
         bravaStanja.unlock()
     }
 
-    func prepisi(uzorci: [Float], jezik: String, recnik: String, rezim: RezimPrepisa = .kvalitet) throws -> String {
+    func prepisi(
+        uzorci: [Float],
+        jezik: String,
+        recnik: String,
+        rezim: RezimPrepisa = .kvalitet
+    ) throws -> String {
         try red.sync {
             guard let kontekst else { throw GreskaPrepisaa.modelNijePreuzet }
             guard !uzorci.isEmpty else { return "" }

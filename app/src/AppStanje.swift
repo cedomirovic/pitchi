@@ -45,6 +45,10 @@ final class AppStanje: NSObject, ObservableObject {
     private var zadnjaSpoljnaAplikacija: NSRunningApplication?
     private var pretplate = Set<AnyCancellable>()
     private var brojInfo = 0
+    private var izvorPritiskaMemorije: DispatchSourceMemoryPressure?
+    private let bravaPripreme = NSLock()
+    private var tokenPripreme = UUID()
+    private var pripremaUToku = false
 
     override init() {
         let ucitanaPodesavanja = SkladistePodesavanja.ucitaj()
@@ -56,6 +60,7 @@ final class AppStanje: NSObject, ObservableObject {
         super.init()
 
         Prepisivac.utisajLog()
+        postaviCuvarMemorije()
         osveziModel()
         osveziDozvole()
         osveziPrijavu()
@@ -79,6 +84,8 @@ final class AppStanje: NSObject, ObservableObject {
             case .success:
                 self.osveziModel()
                 self.postaviInfo("\(naziv) je preuzet. Možeš da diktiraš.")
+                // Ako je brzi režim čekao na preuzimanje, odmah pripremi model.
+                self.pripremiModel(odmah: true)
             case .failure(let error):
                 self.greska = "Preuzimanje nije uspelo: \(error.localizedDescription)"
             }
@@ -99,6 +106,9 @@ final class AppStanje: NSObject, ObservableObject {
         tajmerAzuriranja?.invalidate()
         tajmerOslobadjanja?.invalidate()
         tajmerSekundi?.invalidate()
+        izvorPritiskaMemorije?.cancel()
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - Dozvole
@@ -216,17 +226,26 @@ final class AppStanje: NSObject, ObservableObject {
 
     var modelSpreman: Bool { modelPutanja != nil }
 
+    /// Brzi režim je aktivan samo ako su sve njegove postavke na mestu.
+    var brziRezimAktivan: Bool {
+        podesavanja.brziRezim
+            && podesavanja.model == Modeli.brzi.id
+            && podesavanja.oslobadjanjeModela == OslobadjanjeModela.trideset.rawValue
+            && podesavanja.unapredUcitajModel
+    }
+
     var opisModela: String {
         "\(izabraniModel.naziv) · \(izabraniModel.velicinaTekst)"
     }
 
     func izaberiModel(_ id: String) {
         guard id != podesavanja.model, let model = Modeli.nadji(id) else { return }
-        guard !stanje.jeZauzet, !preuzimaModel else {
-            postaviInfo("Sačekaj da završi trenutni prepis ili preuzimanje.")
+        guard !stanje.jeZauzet, !stanje.jeSnimanje, !preuzimaModel else {
+            postaviInfo("Sačekaj da završi trenutni snimak, prepis ili preuzimanje.")
             return
         }
 
+        _ = novaPriprema()
         tajmerOslobadjanja?.invalidate()
         tajmerOslobadjanja = nil
         prepisivac.oslobodi()
@@ -237,8 +256,221 @@ final class AppStanje: NSObject, ObservableObject {
 
         if model.preuzet {
             postaviInfo("Izabran je model \(model.naziv).")
+            pripremiModel(odmah: true)
         } else {
             postaviInfo("Model \(model.naziv) još nije preuzet.")
+        }
+    }
+
+    /// Uključuje Turbo model, duže držanje u RAM-u i učitavanje unapred.
+    func ukljuciBrziRezim() {
+        guard !preuzimaModel, !stanje.jeZauzet, !stanje.jeSnimanje else {
+            postaviInfo("Sačekaj da završi trenutni snimak, prepis ili preuzimanje.")
+            return
+        }
+
+        let turbo = Modeli.brzi
+        let vecIzabran = podesavanja.model == turbo.id
+        podesavanja.brziRezim = true
+        podesavanja.rezimPrepisa = RezimPrepisa.stedljivo.rawValue
+        podesavanja.oslobadjanjeModela = OslobadjanjeModela.trideset.rawValue
+        podesavanja.unapredUcitajModel = true
+
+        if !vecIzabran {
+            izaberiModel(turbo.id)
+        }
+        SkladistePodesavanja.sacuvaj(podesavanja)
+
+        if turbo.preuzet {
+            if modelUcitan {
+                zakaziOslobadjanje()
+            }
+            if vecIzabran {
+                pripremiModel(odmah: true)
+            }
+            postaviInfo("Brzi režim je uključen — \(turbo.naziv) i model ostaje u memoriji.")
+        } else {
+            preuzmiModel()
+            postaviInfo("Preuzimam \(turbo.naziv) — posle toga se model učitava odmah.")
+        }
+    }
+
+    func iskljuciBrziRezim() {
+        _ = novaPriprema()
+        podesavanja.brziRezim = false
+        podesavanja.unapredUcitajModel = false
+        podesavanja.oslobadjanjeModela = OslobadjanjeModela.pet.rawValue
+        SkladistePodesavanja.sacuvaj(podesavanja)
+        if modelUcitan {
+            zakaziOslobadjanje()
+        }
+        postaviInfo("Brzi režim je isključen. Model ostaje izabran.")
+    }
+
+    func postaviUnapredUcitavanje(_ zeljeno: Bool) {
+        guard zeljeno != podesavanja.unapredUcitajModel else { return }
+        podesavanja.unapredUcitajModel = zeljeno
+        if !zeljeno {
+            _ = novaPriprema()
+            podesavanja.brziRezim = false
+        }
+        SkladistePodesavanja.sacuvaj(podesavanja)
+        if zeljeno {
+            pripremiModel(odmah: true)
+        } else if modelUcitan {
+            zakaziOslobadjanje()
+        }
+    }
+
+    /// Učitava model u pozadini da prvi diktat ne čeka. Ako uslovi nisu
+    /// ispunjeni (nema modela, Low Power Mode, „Odmah“ oslobađanje), ne radi ništa.
+    func pripremiModel(odmah: Bool = false) {
+        guard podesavanja.unapredUcitajModel,
+              !preuzimaModel,
+              modelSpreman,
+              !stanje.jeZauzet,
+              !prepisivac.ucitano,
+              !ProcessInfo.processInfo.isLowPowerModeEnabled,
+              oslobadjanjeModela != .odmah else { return }
+
+        let model = izabraniModel
+        let putanja = model.putanja
+        guard let token = zapocniPripremu() else { return }
+
+        let posao = { [weak self] in
+            guard let self else { return }
+            defer { self.zavrsiPripremu(token) }
+            guard self.pripremaVazi(token) else { return }
+            do {
+                try self.prepisivac.ucitaj(putanja: putanja.path)
+            } catch {
+                return
+            }
+            guard self.pripremaVazi(token) else {
+                self.prepisivac.oslobodi()
+                return
+            }
+            DispatchQueue.main.async {
+                guard self.pripremaVazi(token), self.izabraniModel.id == model.id else { return }
+                self.modelUcitan = true
+                self.zakaziOslobadjanje()
+            }
+        }
+
+        if odmah {
+            DispatchQueue.global(qos: .utility).async(execute: posao)
+        } else {
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2, execute: posao)
+        }
+    }
+
+    /// Token za jednu pripremu; nova priprema poništava staru i dozvoljava
+    /// da se nova pokrene tek kada se prethodna završi ili bude napuštena.
+    private func zapocniPripremu() -> UUID? {
+        bravaPripreme.lock()
+        defer { bravaPripreme.unlock() }
+        guard !pripremaUToku else { return nil }
+        pripremaUToku = true
+        let token = UUID()
+        tokenPripreme = token
+        return token
+    }
+
+    private func zavrsiPripremu(_ token: UUID) {
+        bravaPripreme.lock()
+        defer { bravaPripreme.unlock() }
+        if tokenPripreme == token {
+            pripremaUToku = false
+        }
+    }
+
+    private func novaPriprema() -> UUID {
+        bravaPripreme.lock()
+        defer { bravaPripreme.unlock() }
+        let token = UUID()
+        tokenPripreme = token
+        pripremaUToku = false
+        return token
+    }
+
+    private func pripremaVazi(_ token: UUID) -> Bool {
+        bravaPripreme.lock()
+        defer { bravaPripreme.unlock() }
+        return tokenPripreme == token
+    }
+
+    // MARK: - Čuvanje memorije
+
+    /// Pusti model čim macOS javi pritisak na RAM, san ili zaključavanje ekrana.
+    /// Tako brzi režim ne guši mašinu: brz je dok se koristi, a memorija se
+    /// vraća sistemu kada zatreba.
+    private func postaviCuvarMemorije() {
+        let izvor = DispatchSource.makeMemoryPressureSource(
+            eventMask: [.warning, .critical],
+            queue: .main
+        )
+        izvor.setEventHandler { [weak self] in
+            self?.oslobodiZbogMemorije()
+        }
+        izvor.resume()
+        izvorPritiskaMemorije = izvor
+
+        let centar = NSWorkspace.shared.notificationCenter
+        centar.addObserver(
+            self,
+            selector: #selector(sistemOdlaziUSan(_:)),
+            name: NSWorkspace.willSleepNotification,
+            object: nil
+        )
+        centar.addObserver(
+            self,
+            selector: #selector(sistemOdlaziUSan(_:)),
+            name: NSWorkspace.screensDidSleepNotification,
+            object: nil
+        )
+        centar.addObserver(
+            self,
+            selector: #selector(sistemSeProbudio(_:)),
+            name: NSWorkspace.didWakeNotification,
+            object: nil
+        )
+        centar.addObserver(
+            self,
+            selector: #selector(sistemSeProbudio(_:)),
+            name: NSWorkspace.screensDidWakeNotification,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(stanjeNapajanjaPromenjeno(_:)),
+            name: Notification.Name("NSProcessInfoPowerStateDidChangeNotification"),
+            object: nil
+        )
+    }
+
+    private func oslobodiZbogMemorije() {
+        _ = novaPriprema()
+        tajmerOslobadjanja?.invalidate()
+        tajmerOslobadjanja = nil
+        guard prepisivac.ucitano || modelUcitan else { return }
+        prepisivac.oslobodi()
+        modelUcitan = false
+    }
+
+    @objc private func sistemOdlaziUSan(_ obavestenje: Notification) {
+        oslobodiZbogMemorije()
+    }
+
+    @objc private func sistemSeProbudio(_ obavestenje: Notification) {
+        pripremiModel()
+    }
+
+    @objc private func stanjeNapajanjaPromenjeno(_ obavestenje: Notification) {
+        if ProcessInfo.processInfo.isLowPowerModeEnabled {
+            oslobodiZbogMemorije()
+        } else {
+            pripremiModel()
         }
     }
 
@@ -262,6 +494,7 @@ final class AppStanje: NSObject, ObservableObject {
     }
 
     func oslobodiMemoriju() {
+        _ = novaPriprema()
         tajmerOslobadjanja?.invalidate()
         tajmerOslobadjanja = nil
         prepisivac.oslobodi()
@@ -276,6 +509,8 @@ final class AppStanje: NSObject, ObservableObject {
         SkladistePodesavanja.sacuvaj(podesavanja)
         if modelUcitan {
             zakaziOslobadjanje()
+        } else {
+            pripremiModel()
         }
     }
 

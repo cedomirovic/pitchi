@@ -15,7 +15,7 @@ struct PogledPomoc: View {
                             ? "Pritisni \(app.nazivPrecice) da počneš, ponovo da završiš. Diktator snima između ta dva pritiska."
                             : "Dok god držiš \(app.nazivPrecice), Diktator snima. Pusti kada završiš rečenicu."
                     )
-                    korak(2, "Sačekaj trenutak", "Prvi prepis učitava model (2–3 s). Sledeći su brži dok je model u memoriji.")
+                    korak(2, "Sačekaj trenutak", "Prvi prepis učitava model (2–3 s). U brzom režimu model je već u memoriji, pa i prvi diktat kreće odmah.")
                     korak(3, "Tekst se sam zalepi", "Diktator pošalje Cmd+V aplikaciji u kojoj si pisao. Ako ne može, tekst čeka u klipbordu.")
                     korak(4, "Bez \(app.nazivPrecice)? Klikni dugme", "Na ekranu „Početak” veliko dugme radi isto — klik za početak, klik za kraj.")
                 }
@@ -43,7 +43,7 @@ struct PogledPomoc: View {
                     Divider()
                     problem(
                         "Mac se guši",
-                        "Model se učitava pri diktiranju i oslobađa po izabranom vremenu (Podešavanja → Model → Oslobodi memoriju posle). Za manje RAM-a izaberi lakši model ili „Odmah posle prepisa“."
+                        "Uključi brzi režim u Podešavanjima → Model: Turbo model se pušta čim macOS javi pritisak na RAM, pri spavanju ekrana i u Low Power Mode. Za još manje RAM-a izaberi lakši model ili „Odmah posle prepisa“."
                     )
                 }
 
@@ -97,7 +97,8 @@ struct PogledPomoc: View {
                     red("Model", "Tiny, Base, Small, Turbo ili Large v3 — po izboru")
                     red("Jezik", "srpski i engleski, automatski; srpski latinica")
                     red("Doterivanje", "DeepSeek, OpenAI, Claude, Gemini, Ollama ili drugi")
-                    red("Memorija", "~0,2–1,4 GB dok je model učitan; vreme oslobađanja biraš u Podešavanjima")
+                    red("Memorija", "~0,2–1,9 GB dok je model učitan; vreme oslobađanja biraš u Podešavanjima")
+                    red("Brzi režim", "Turbo, učitavanje unapred i automatsko oslobađanje na pritisak memorije")
                     red("Režim prepisa", "Najbolji kvalitet (beam 5) ili manje memorije (greedy)")
                     red("Najduži snimak", "5 minuta")
                     red("Sistemski zahtev", "macOS 13+, Apple Silicon")

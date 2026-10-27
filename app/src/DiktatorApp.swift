@@ -119,11 +119,19 @@ struct DiktatorMain {
         if !CommandLine.arguments.contains("--log") {
             Prepisivac.utisajLog()
         }
-        guard let model = Modeli.nadjiPostojeci() else {
+        let argumenti = CommandLine.arguments
+        let model: PonudaModela
+        if let indeksModela = argumenti.firstIndex(of: "--model"),
+           indeksModela + 1 < argumenti.count,
+           let izabran = Modeli.nadji(argumenti[indeksModela + 1]),
+           izabran.preuzet {
+            model = izabran
+        } else if let postoji = Modeli.nadjiPostojeci() {
+            model = postoji
+        } else {
             print("GRESKA: nema modela")
             return
         }
-        let argumenti = CommandLine.arguments
         let indeks = argumenti.firstIndex(of: "--test-whisper") ?? 0
         let sledeci = indeks + 1 < argumenti.count ? argumenti[indeks + 1] : nil
         let putanja = (sledeci?.hasPrefix("--") == false ? sledeci : nil) ?? "/tmp/sr.wav"
@@ -198,6 +206,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         postaviHud()
         pratiStanje()
         prikaziProzor()
+        // Brzi režim može unapred da učita model; ako je isključen, ovo ne radi ništa.
+        stanje.pripremiModel()
     }
 
     func applicationWillTerminate(_ notification: Notification) {

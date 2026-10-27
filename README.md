@@ -33,6 +33,9 @@ direktno iz aplikacije.
   računa se samo iz brojeva o diktatima, nikada iz teksta.
 - **Izbor modela** — Tiny, Base, Small, Large v3 Turbo i Large v3; lakši modeli
   se preuzimaju iz same aplikacije, bez terminala.
+- **Brzi režim** — Turbo model, 30 minuta u RAM-u i učitavanje odmah po
+  pokretanju; model se automatski pušta na pritisak memorije, san ekrana i u
+  Low Power Mode, pa brzina ne guši Mac.
 - **Oslobađanje memorije** — biraš da se model oslobodi odmah, posle 1, 5, 15
   ili 30 minuta, ili nikad; „Odmah“ najviše štedi RAM, a „Nikad“ ubrzava sledeći
   prepis.
@@ -131,6 +134,13 @@ oko 400 MB manje od beam search-a i malo je brže, ali na težem snimku može da
 sitno drugačiji tekst. Prvi prepis posle novog builda je sporiji jer se
 kompajliraju Metal šejderi; sledeći su nekoliko sekundi za kraću rečenicu
 (uključujući detekciju jezika).
+
+**Brzi režim** (Podešavanja → Model) bira Turbo, drži ga 30 minuta i učitava ga
+odmah po pokretanju, pa prvi diktat ne čeka učitavanje. Model se ipak pušta čim
+macOS javi pritisak na RAM, kada se ekran zaključa ili zaspi i u Low Power Mode —
+brzina ne znači da Mac ostaje bez memorije. Izmereno na ovom Macu sa snimkom od
+4,3 s: Large v3 ~3,7 s i ~1,9 GB, Turbo ~2,9 s i ~0,9 GB; učitavanje ~0,7 s
+prema ~0,2 s.
 
 ## Doterivanje teksta (opciono)
 
