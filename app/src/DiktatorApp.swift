@@ -71,17 +71,18 @@ struct DiktatorMain {
         ]
         stanje.dozvole = Dozvole(mikrofon: true, pristupacnost: true, nadzorUnosa: true)
         stanje.precicaRadi = true
+        stanje.statistika = Statistika.primer()
 
         // Razvojna provera: nacrtaj traku i karticu ažuriranja bez mreže.
         if ProcessInfo.processInfo.environment["DIKTATOR_SLIKA_AZURIRANJE"] != nil {
             stanje.azuriranje = Izdanje(
-                tag_name: "v0.9.0",
-                name: "Diktator 0.9.0",
-                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v0.9.0")!,
+                tag_name: "v1.0.0",
+                name: "Diktator 1.0.0",
+                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v1.0.0")!,
                 assets: [
                     Izdanje.Fajl(
-                        name: "Diktator-0.9.0-macOS-arm64.zip",
-                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v0.9.0/Diktator-0.9.0-macOS-arm64.zip")!
+                        name: "Diktator-1.0.0-macOS-arm64.zip",
+                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v1.0.0/Diktator-1.0.0-macOS-arm64.zip")!
                     )
                 ]
             )
@@ -98,7 +99,7 @@ struct DiktatorMain {
         prozor.setFrameOrigin(NSPoint(x: 60, y: 60))
         prozor.orderFrontRegardless()
 
-        for tab in 0...3 {
+        for tab in 0...4 {
             stanje.izabranTab = tab
             RunLoop.main.run(until: Date().addingTimeInterval(0.5))
             guard let pogled = prozor.contentView else { continue }
@@ -458,12 +459,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func otvoriPodesavanja() {
-        stanje.izabranTab = 2
+        stanje.izabranTab = 3
         prikaziProzor()
     }
 
     @objc private func proveriAzuriranja() {
-        stanje.izabranTab = 2
+        stanje.izabranTab = 3
         prikaziProzor()
         if stanje.azuriranje == nil {
             stanje.proveriAzuriranja(rucno: true)
@@ -471,7 +472,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func otvoriDozvole() {
-        stanje.izabranTab = 2
+        stanje.izabranTab = 3
         prikaziProzor()
     }
 }

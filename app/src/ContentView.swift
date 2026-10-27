@@ -11,8 +11,9 @@ struct ContentView: View {
             Picker("", selection: $app.izabranTab) {
                 Text("Početak").tag(0)
                 Text("Istorija").tag(1)
-                Text("Podešavanja").tag(2)
-                Text("Pomoć").tag(3)
+                Text("Statistika").tag(2)
+                Text("Podešavanja").tag(3)
+                Text("Pomoć").tag(4)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -41,7 +42,8 @@ struct ContentView: View {
                 switch app.izabranTab {
                 case 0: PogledPregled()
                 case 1: PogledIstorija()
-                case 2: PogledPodesavanja()
+                case 2: PogledStatistika()
+                case 3: PogledPodesavanja()
                 default: PogledPomoc()
                 }
             }
@@ -80,7 +82,7 @@ struct ContentView: View {
 
             if !app.dozvole.sve {
                 Button {
-                    app.izabranTab = 2
+                    app.izabranTab = 3
                 } label: {
                     Label("Dozvole", systemImage: "lock.shield")
                         .font(.caption.weight(.medium))

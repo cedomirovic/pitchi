@@ -355,8 +355,31 @@ današnje ime aplikacije.)*
   `85da08f212f7c4bcfd4fa268130109b618aff9da594d0fa32d4c0f51ef1a0c28`);
   paket je očišćen od `__MACOSX` metapodataka i proveren posle raspakivanja
   (`codesign --verify`, verzija 0.8.0/11).
-- Sledeći korak: probni diktat uživo sa Large v3 u oba režima i stvarnim
-  Gemini API ključem (ili drugim izabranim servisom), fizički probati
-  `Fn + Space` i desni modifikator na tastaturi koja ga ima, zatim po potrebi
-  brisanje modela koje korisnik ne želi i eventualni prelazak `diktator`
-  repoa na ovu aplikaciju.
+- **27.10.2026. (statistika)** — dodat je tab **Statistika**, po uzoru na
+  Wispr Flow. Odluke:
+  - `Statistika.swift` je zaseban modul: `StatistickiZapis` (datum, reči,
+    trajanje, jezik, model, uspeh) i `Statistika` kao vrednosni tip, pa svaka
+    promena kroz `@Published` automatski osveži SwiftUI;
+  - tekst diktata se **ne** upisuje — samo brojevi; fajl je
+    `~/Library/Application Support/Diktator/statistika.json` sa dozvolama 0600;
+  - mere: ukupno reči, diktati, vreme diktiranja, brzina govora, ušteđeno vreme
+    prema kucanju od 40 reči/min, današnji brojevi, serija dana zaredom,
+    neuspeli pokušaji, aktivnost za 14 dana i podela po jeziku i modelu;
+  - neuspeo prepis se broji kao pokušaj, ali ne ulazi u reči ni u vreme;
+  - pamtimo najviše 5.000 zapisa, da fajl ne raste unedogled;
+  - grafikon je nacrtan običnim SwiftUI oblicima, bez Swift Charts, da se ne
+    dodaju novi framework-i u `build.sh`;
+  - tab je umetnut na indeks 2, pa su Podešavanja sada 3, a Pomoć 4; svi skokovi
+    na podešavanja su pomereni.
+  Provereno: `node --check`, `node diktator.js --help`, `npm test` (11/11),
+  `bash app/build.sh`, `--dozvole`; `--slika` je nacrtao svih pet tabova, a
+  demo prikaz statistike je pregledan (1.460 reči, 26 min ušteđeno, grafikon).
+  Verzija je `0.9.0` (build 12), `package.json` `0.9.0`; lažno izdanje za
+  `--slika` je `1.0.0`. Aplikacija je instalirana u `/Applications/Diktator.app`.
+  Release se objavljuje posle korisnikove provere uživo.
+- Sledeći korak: probni diktat uživo i provera da statistika raste i da se
+  `statistika.json` upisuje sa dozvolama 0600; zatim objava release-a `v0.9.0`.
+  Posle toga: probni diktat sa stvarnim Gemini API ključem (ili drugim izabranim
+  servisom), fizički probati `Fn + Space` i desni modifikator na tastaturi koja
+  ga ima, zatim po potrebi brisanje modela koje korisnik ne želi i eventualni
+  prelazak `diktator` repoa na ovu aplikaciju.

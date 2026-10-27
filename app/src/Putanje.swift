@@ -57,6 +57,10 @@ enum Putanje {
         podrska.appendingPathComponent("recnik.txt")
     }
 
+    static var statistika: URL {
+        podrska.appendingPathComponent("statistika.json")
+    }
+
     static var stariRecnik: URL {
         let baza = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         return baza.appendingPathComponent("Pichi/vocabulary.txt")

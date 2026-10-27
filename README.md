@@ -12,9 +12,9 @@ izabranog vremena mirovanja (podrazumevano 5 minuta), pa i 8 GB Mac ostaje
 upotrebljiv. Koji model se koristi biraš sam, a lakši modeli se preuzimaju
 direktno iz aplikacije.
 
-| Početak | Podešavanja |
-|---|---|
-| ![Početak](docs/pocetak.png) | ![Podešavanja](docs/podesavanja.png) |
+| Početak | Statistika | Podešavanja |
+|---|---|---|
+| ![Početak](docs/pocetak.png) | ![Statistika](docs/statistika.png) | ![Podešavanja](docs/podesavanja.png) |
 
 ## Šta radi
 
@@ -28,6 +28,9 @@ direktno iz aplikacije.
   latinicu.
 - **Rečnik** — imena i pojmovi koje model pogrešno piše.
 - **Istorija** — zadnjih 200 prepisa, pretraga i kopiranje.
+- **Statistika** — koliko si reči izdiktirao, koliko diktata imaš, ušteđeno
+  vreme u odnosu na kucanje, serija dana zaredom i aktivnost po danima;
+  računa se samo iz brojeva o diktatima, nikada iz teksta.
 - **Izbor modela** — Tiny, Base, Small, Large v3 Turbo i Large v3; lakši modeli
   se preuzimaju iz same aplikacije, bez terminala.
 - **Oslobađanje memorije** — biraš da se model oslobodi odmah, posle 1, 5, 15
@@ -234,6 +237,9 @@ se ne nudi ponovo dok ne izađe novija.
 - Istorija i rečnik su lokalni fajlovi u `~/Library/Application Support/Diktator/`.
   Folder je dostupan samo korisniku (0700), a fajlovi istorije i rečnika samo
   korisniku (0600). I stariji CLI upisuje snimke i prepise sa dozvolama 0600.
+- Statistika (`statistika.json`) čuva samo brojeve: datum, broj reči, trajanje,
+  jezik i model. Tekst diktata se u statistiku ne upisuje, a fajl ima dozvole
+  0600. Brisanjem statistike brišu se samo ti brojevi — istorija i rečnik ostaju.
 - Doterivanje je opciono i šalje samo gotov tekst, nikada zvuk. Kod Ollama
   servisa i tekst ostaje na Macu; kod ostalih ide izabranom provajderu.
 - API ključevi su u macOS Keychain-u, odvojeno po servisu. Dostupni su samo dok

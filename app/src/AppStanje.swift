@@ -30,6 +30,7 @@ final class AppStanje: NSObject, ObservableObject {
     @Published var proveravaAzuriranja = false
     @Published var sakrijTrakuAzuriranja = false
     @Published var zadnjaProveraAzuriranja: Date?
+    @Published var statistika: Statistika
 
     let snimac = Snimac()
     let prepisivac = Prepisivac()
@@ -50,6 +51,7 @@ final class AppStanje: NSObject, ObservableObject {
         podesavanja = ucitanaPodesavanja
         istorija = IstorijaSkladiste.ucitaj()
         recnik = Recnik.ucitaj()
+        statistika = StatistikaSkladiste.ucitaj()
         kljucDoterivanja = Kljuc.citaj(za: ucitanaPodesavanja.provajderDoterivanja) ?? ""
         super.init()
 
@@ -341,7 +343,7 @@ final class AppStanje: NSObject, ObservableObject {
         guard !stanje.jeSnimanje, !stanje.jeZauzet else { return }
         guard modelSpreman else {
             greska = GreskaPrepisaa.modelNijePreuzet.localizedDescription
-            izabranTab = 2
+            izabranTab = 3
             return
         }
 
@@ -444,7 +446,7 @@ final class AppStanje: NSObject, ObservableObject {
             stanje = .mirno
             zakaziOslobadjanje()
             greska = GreskaPrepisaa.modelNijePreuzet.localizedDescription
-            izabranTab = 2
+            izabranTab = 3
             return
         }
         modelPutanja = putanja
@@ -543,6 +545,8 @@ final class AppStanje: NSObject, ObservableObject {
                     // vremenu, umesto da zauvek ostane u RAM-u.
                     self.zakaziOslobadjanje()
                     self.greska = error.localizedDescription
+                    self.statistika.dodajNeuspeh(jezik: jezik, model: self.izabraniModel.naziv)
+                    StatistikaSkladiste.sacuvaj(self.statistika)
                 }
             }
         }
@@ -556,6 +560,14 @@ final class AppStanje: NSObject, ObservableObject {
             if istorija.count > 200 { istorija = Array(istorija.prefix(200)) }
             IstorijaSkladiste.sacuvaj(istorija)
         }
+
+        statistika.dodaj(
+            tekst: tekst,
+            trajanje: trajanje,
+            jezik: jezik,
+            model: izabraniModel.naziv
+        )
+        StatistikaSkladiste.sacuvaj(statistika)
 
         if let napomena {
             postaviInfo(napomena)
@@ -619,6 +631,12 @@ final class AppStanje: NSObject, ObservableObject {
         istorija.removeAll()
         IstorijaSkladiste.sacuvaj(istorija)
         postaviInfo("Istorija je obrisana.")
+    }
+
+    func obrisiStatistiku() {
+        statistika.obrisiSve()
+        StatistikaSkladiste.obrisi()
+        postaviInfo("Statistika je obrisana.")
     }
 
     func sacuvajPodesavanja() {
