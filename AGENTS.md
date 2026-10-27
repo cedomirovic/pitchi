@@ -406,10 +406,13 @@ današnje ime aplikacije.)*
   Merenja na snimku od 4,35 s, greedy: Large v3 ~3,7 s i ~1,9 GB pik; Turbo
   ~2,9 s i ~0,9 GB; učitavanje ~0,7 s prema ~0,2 s. Verzija je `0.9.1`
   (build 13), `package.json` `0.9.1`; aplikacija je instalirana u
-  `/Applications/Diktator.app`. Release se objavljuje posle korisnikove probe.
-- Sledeći korak: korisnik proba brzi režim (prvi diktat posle pokretanja,
-  oslobađanje na san/Low Power Mode) pa se objavljuje `v0.9.1`. Posle toga:
-  probni diktat sa stvarnim Gemini API ključem (ili drugim izabranim servisom),
-  fizički probati `Fn + Space` i desni modifikator na tastaturi koja ga ima,
-  zatim po potrebi brisanje modela koje korisnik ne želi i eventualni prelazak
-  `diktator` repoa na ovu aplikaciju.
+  `/Applications/Diktator.app`. Korisnik je potvrdio da brzi režim radi, pa je
+  objavljen release `v0.9.1` sa `Diktator-0.9.1-macOS-arm64.zip` (3.283.260
+  bajtova, SHA-256
+  `77e7cb43cb33864e11f5da97927bae5d2dd762d7b055231266e1cdafe6cb5a67`);
+  paket je očišćen od `__MACOSX` metapodataka i proveren posle raspakivanja
+  (`codesign --verify`, verzija 0.9.1/13, prepis Turbo modelom ~2,9 s).
+- Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
+  izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
+  tastaturi koja ga ima, zatim po potrebi brisanje modela koje korisnik ne
+  želi i eventualni prelazak `diktator` repoa na ovu aplikaciju.
