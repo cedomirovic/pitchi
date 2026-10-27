@@ -35,11 +35,14 @@ enum Tekst {
     }
 
     /// Skida visak razmaka i lepi interpunkciju za prethodnu rec.
+    /// Tacka se ne odvaja od reci kada je deo imena ili broja ("whisper.cpp",
+    /// "Node.js", "v1.2") — razmak se dodaje samo ispred velikog slova.
     static func ocisti(_ tekst: String) -> String {
         var t = tekst.replacingOccurrences(of: "\u{00A0}", with: " ")
         t = t.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
         t = t.replacingOccurrences(of: "\\s+([,.;:!?])", with: "$1", options: .regularExpression)
-        t = t.replacingOccurrences(of: "([,.;:!?])(?=\\S)", with: "$1 ", options: .regularExpression)
+        t = t.replacingOccurrences(of: "(\\p{Ll}|\\d)\\.(\\p{Lu})", with: "$1. $2", options: .regularExpression)
+        t = t.replacingOccurrences(of: "([,;:!?])(?=\\S)", with: "$1 ", options: .regularExpression)
         t = t.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
         return t.trimmingCharacters(in: .whitespacesAndNewlines)
     }

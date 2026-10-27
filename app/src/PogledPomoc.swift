@@ -38,7 +38,7 @@ struct PogledPomoc: View {
                     Divider()
                     problem(
                         "Prepis je lošiji nego što znaš da bude",
-                        "Pričaj bliže mikrofonu i malo razgovetnije. Dodaj imena u Rečnik (Podešavanja) — Whisper ih tada bolje pogađa."
+                        "Pričaj bliže mikrofonu i malo razgovetnije. Dodaj imena u Rečnik (Podešavanja) — Whisper ih tada bolje pogađa. U rečnik idu imena i pojmovi, ne obične reči; staje 600 znakova, pa najvažnije stavi na početak."
                     )
                     Divider()
                     problem(

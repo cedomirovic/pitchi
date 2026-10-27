@@ -324,27 +324,44 @@ struct PogledPodesavanja: View {
 
     private var recnikKartica: some View {
         Kartica(naslov: "Rečnik", ikona: "character.book.closed") {
-            Text("Imena i pojmovi koje Whisper pogrešno piše. Jedan po redu — model ih koristi kao nagoveštaj.")
+            Text("Imena, prezimena, firme i stručni pojmovi koje Whisper pogrešno piše. Obične reči ne pomažu jer ih model već zna. Jedan pojam po redu, najvažniji prvi.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
 
             TextEditor(text: $app.recnik)
                 .font(.system(.body, design: .monospaced))
-                .frame(minHeight: 130)
+                .frame(minHeight: 130, maxHeight: 200)
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.04)))
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.primary.opacity(0.1), lineWidth: 1))
 
-            HStack {
-                Text("\(app.recnik.components(separatedBy: .newlines).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }.count) pojmova")
+            if punRecnik {
+                Text("Rečnik je duži nego što staje u prompt — model dobija prvih \(Recnik.granica) znakova. Skrati spisak ili stavi najvažnije pojmove na početak.")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            HStack {
+                Text("\(Recnik.pojmovi(app.recnik).count) pojmova · \(duzinaRecnika) / \(Recnik.granica) znakova")
+                    .font(.caption2)
+                    .foregroundStyle(punRecnik ? .orange : .secondary)
                 Spacer()
                 Button("Sačuvaj rečnik") { app.sacuvajRecnik() }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
         }
+    }
+
+    private var duzinaRecnika: Int {
+        Recnik.duzinaPrompta(app.recnik)
+    }
+
+    private var punRecnik: Bool {
+        duzinaRecnika >= Recnik.granica
+            || Recnik.kaoPrompt(app.recnik).count < Recnik.pojmovi(app.recnik).joined(separator: ", ").count
     }
 
     private var modelKartica: some View {

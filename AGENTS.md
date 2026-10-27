@@ -412,7 +412,32 @@ današnje ime aplikacije.)*
   `77e7cb43cb33864e11f5da97927bae5d2dd762d7b055231266e1cdafe6cb5a67`);
   paket je očišćen od `__MACOSX` metapodataka i proveren posle raspakivanja
   (`codesign --verify`, verzija 0.9.1/13, prepis Turbo modelom ~2,9 s).
-- Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
-  izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
-  tastaturi koja ga ima, zatim po potrebi brisanje modela koje korisnik ne
-  želi i eventualni prelazak `diktator` repoa na ovu aplikaciju.
+- **27.10.2026. (rečnik, granica prompta)** — provereno je da li najčešće
+  srpske reči mogu da budu osnova rečnika; odgovor je ne, i to je izmereno.
+  Odluke:
+  - `initial_prompt` je ograničen na 600 znakova (`Recnik.kaoPrompt`), a
+    whisper.cpp ga dodatno seče na pola tekstualnog konteksta; top 1000 reči
+    spojenih zarezom ima 6.754 znaka, pa do modela stiže samo 116 pojmova;
+  - proba na TTS snimku od 11,6 s (Turbo, greedy): bez rečnika „Swift UII“,
+    „Visper CPP“, „Tamara Pandva“; sa 100 najčešćih reči iste greške **i**
+    izgubljena velika slova; sa imenima i pojmovima tekst je tačan. Zato
+    najčešće reči nisu baza — troše budžet koji treba imenima;
+  - `Recnik.granica` je sada konstanta, rečnik se seče **između pojmova** (ne u
+    pola reči), a u Podešavanjima stoji brojač „N pojmova · X / 600 znakova“ i
+    narandžasto upozorenje kada spisak pređe limit;
+  - popravljen `Tekst.ocisti`: tačka se više ne odvaja od reči u imenima i
+    brojevima, pa „whisper.cpp“, „Node.js“ i „v1.2“ ostaju celi (ranije je
+    izlazilo „whisper. cpp“); razmak se dodaje samo ispred velikog slova;
+  - README i Pomoć objašnjavaju da u rečnik idu imena i pojmovi, ne obične
+    reči, i da najvažnije treba staviti na početak.
+  Provereno: `node --check`, `npm test` (11/11), `bash app/build.sh`,
+  `--dozvole`; `--slika` je nacrtao karticu sa 1.015 pojmova i upozorenjem
+  („597 / 600 znakova“); prepis sa stvarnim rečnikom sada daje ceo
+  „whisper.cpp“. Verzija je `0.9.2` (build 14), `package.json` `0.9.2`;
+  aplikacija je instalirana u `/Applications/Diktator.app`. Release se
+  objavljuje posle korisnikove probe.
+- Sledeći korak: korisnik proba novi rečnik (brojač i upozorenje) pa se
+  objavljuje `v0.9.2`; zatim probni diktat sa stvarnim Gemini API ključem (ili
+  drugim izabranim servisom), fizički probati `Fn + Space` i desni modifikator
+  na tastaturi koja ga ima, po potrebi brisanje modela koje korisnik ne želi i
+  eventualni prelazak `diktator` repoa na ovu aplikaciju.

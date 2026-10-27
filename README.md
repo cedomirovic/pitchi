@@ -142,6 +142,28 @@ brzina ne znači da Mac ostaje bez memorije. Izmereno na ovom Macu sa snimkom od
 4,3 s: Large v3 ~3,7 s i ~1,9 GB, Turbo ~2,9 s i ~0,9 GB; učitavanje ~0,7 s
 prema ~0,2 s.
 
+## Rečnik
+
+Rečnik je spisak imena, prezimena, firmi, proizvoda i stručnih pojmova koje
+Whisper pogrešno piše. Model ga dobija kao **nagoveštaj**, ne kao tekst koji
+izgovara.
+
+- **Jedan pojam po redu**, latinicom i sa dijakriticima onako kako želiš da
+  izađe („Čedomirović“, ne „Cedomirovic“).
+- **Najvažnije na početak** — u prompt staje 600 znakova, a sve posle toga se
+  ne šalje modelu. Aplikacija prikazuje koliko je znakova zauzeto i upozori
+  kada se pređe limit.
+- **Obične reči ne pomažu.** Whisper ih već zna, a spisak tipa „da, je, ne, se“
+  samo zauzme prostor i istisne imena. Zato se u rečnik stavljaju samo pojmovi
+  koje model stvarno pogrešno piše.
+- **Whisper ne prima rečenice.** Ako u rečnik staviš rečenicu, ona troši
+  budžet, a ne pomaže.
+
+Provereno na snimku od 11,6 s (Turbo): bez rečnika model napiše „Swift UII“,
+„Visper CPP“ i „Tamara Pandva“; sa rečnikom „SwiftUI“, „whisper.cpp“ i
+„Tamara Pandža“. Isti snimak sa 100 najčešćih srpskih reči u promptu daje iste
+greške i izgubi velika slova — zato najčešće reči nisu korisna baza.
+
 ## Doterivanje teksta (opciono)
 
 Whisper ponekad pogreši interpunkciju ili ime. Ako uključiš doterivanje, Diktator

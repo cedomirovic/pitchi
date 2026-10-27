@@ -108,14 +108,36 @@ enum Recnik {
         Putanje.zastitiFajl(Putanje.recnik)
     }
 
-    /// Recnik ide whisper-u kao pocetni tekst (prompt), zato ga kratimo.
-    static func kaoPrompt(_ tekst: String) -> String {
-        let redovi = tekst
+    /// Koliko znakova recnika whisper prima kao pocetni tekst (prompt).
+    static let granica = 600
+
+    /// Pojmovi iz recnika, bez praznih redova.
+    static func pojmovi(_ tekst: String) -> [String] {
+        tekst
             .components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
-        let spojeno = redovi.joined(separator: ", ")
-        if spojeno.count <= 600 { return spojeno }
-        return String(spojeno.prefix(600))
+    }
+
+    /// Recnik ide whisper-u kao pocetni tekst (prompt), zato ga kratimo.
+    /// Sece se izmedju pojmova, da se u promptu ne nadje pola reci.
+    static func kaoPrompt(_ tekst: String) -> String {
+        var rezultat = ""
+        for pojam in pojmovi(tekst) {
+            let kandidat = rezultat.isEmpty ? pojam : rezultat + ", " + pojam
+            if kandidat.count <= granica {
+                rezultat = kandidat
+            } else if rezultat.isEmpty {
+                return String(pojam.prefix(granica))
+            } else {
+                break
+            }
+        }
+        return rezultat
+    }
+
+    /// Koliko znakova prompta zauzima trenutni recnik.
+    static func duzinaPrompta(_ tekst: String) -> Int {
+        kaoPrompt(tekst).count
     }
 }
