@@ -483,6 +483,45 @@ današnje ime aplikacije.)*
     proveren posle raspakivanja (`codesign --verify --deep --strict`,
     verzija 0.9.3/15). Opis izdanja je napisan sa spiskom, pa ga nova
     aplikacija prikazuje kao „šta je novo“.
+- **29.10.2026. (novi izgled)** — ceo interfejs je preuređen po dostavljenom
+  dizajnu (četiri slike: Statistika, Istorija, Podešavanja, Pomoć). Odluke:
+  - `Delovi.swift` sada drži dizajn sistem: plava `#0A84FF`, bela kartica na
+    sivoj podlozi prozora, ugao 14, leva navigacija širine 208 sa providnom
+    podlogom i plavim izborom strane; `ZaglavljeStrane` je naslov od 27 pt sa
+    sivim podnaslovom i mestom za kontrolu desno, a `SekcijaPodesavanja` i
+    `RedPodesavanja` daju grupisana podešavanja (ikona, naslov, opis, kontrola);
+  - `ContentView` više nema segmentirane tabove, nego levu navigaciju
+    (Pregled, Istorija, Statistika, Podešavanja, Pomoć) sa logom, napomenom o
+    dozvolama i verzijom na dnu; prozor je 1120×780 (najmanje 900×640);
+  - `Prekidac` se crta sam (plava kapsula) jer sistemski `.switch` u
+    neaktivnom prozoru izgleda sivo, pa `--slika` nije verno prikazivao stanje;
+    isto važi za dugme „Otvori GitHub“ i „Preuzmi“ u traci izdanja;
+  - dizajn je imao izmišljene delove, pa su spojeni sa stvarnim funkcijama:
+    „AI model / OpenAI Whisper“ → whisper modeli, „Kontaktirajte podršku“ →
+    GitHub, prsten „Tipovi sadržaja“ → podela po jeziku, „Prikaži sve“ →
+    osam stvarnih pitanja;
+  - Statistika dobija izbor perioda (7/14/30 dana), poređenje sa prethodnim
+    periodom u procentima, stubove po danima, liniju brzine (dani bez diktata
+    se preskaču, a prazan dan je siva crta umesto plavog stuba), prsten po
+    jeziku i trake po modelu — sve po izabranom periodu, pa se brojevi na
+    strani slažu; dodatne funkcije u `Statistika.swift` su `StatistickiPeriod`,
+    `period(dana:pomak:)`, `promena(sada:pre:)`, `najaktivnijiDan`,
+    `najduziDiktat`, `poJeziku(dana:)`, `poModelu(dana:)`, `vremeKratko`,
+    `oznakaDana`, `nazivDana` i `dugDatum` (srpski lokal `sr_Latn_RS`);
+  - traka o novom izdanju je premeštena na dno prozora (iznad trake sa
+    porukama) da ne pomera naslov strane; ima „Šta je novo“, „Preuzmi“ i
+    zatvaranje, a detalji ostaju u Podešavanjima → Ažuriranja;
+  - prečica `Fn + Space` se ispisuje rečima jer znak „␣“ nema u sistemskom
+    fontu pa se u znački isecao (videlo se „Fn …“);
+  - ikonica je obojena u plavu (bio ljubičasti gradijent) u
+    `napravi-ikonu.swift`, pa su `AppIcon.icns` i `AppIcon-1024.png` ponovo
+    napravljeni kroz `app/napravi-ikonu.sh`.
+  Provereno: `node --check diktator.js lib/*.js`, `npm test` (11/11),
+  `bash app/build.sh`, `--dozvole`, `--test-whisper` (pipeline radi),
+  `--slika` je nacrtao svih pet strana i traku izdanja, a `docs/*.png` su
+  zamenjeni snimcima iz novog izgleda (širina 1640). Aplikacija je
+  instalirana u `/Applications/Diktator.app` i pokrenuta. Verzija je i dalje
+  `0.9.3` (15) — podizanje verzije i release čekaju korisnikovu odluku.
 - Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
   izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
   tastaturi koja ga ima, po potrebi brisanje modela koje korisnik ne želi
