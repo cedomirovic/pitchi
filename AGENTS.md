@@ -557,8 +557,14 @@ današnje ime aplikacije.)*
   stavki), `node --check`, `npm test` (11/11), `--slika` je ponovo nacrtao
   snimke (u podnožju piše 1.0.1) i `docs/*.png` su zamenjeni. Verzija je
   `1.0.1` (17), `package.json` `1.0.1`; aplikacija je instalirana u
-  `/Applications/Diktator.app`. Release još nije objavljen — čeka potvrdu
-  da su popravke u redu.
+  `/Applications/Diktator.app`. Korisnik je potvrdio da sve tri popravke rade,
+  pa je objavljen release `v1.0.1` sa `Diktator-1.0.1-macOS-arm64.zip`
+  (2.851.512 bajtova, SHA-256
+  `ae9bec7bd840ee1a1b9cdc28a3bfce1eccf878d70c1c744d2260463108f47b6e`);
+  paket napravljen sa `ditto -c -k --norsrc --noextattr --keepParent` i
+  proveren posle raspakivanja (`codesign --verify --deep --strict`, verzija
+  1.0.1/17, bez `__MACOSX`). `--test-obavestenje` protiv stvarnog izdanja
+  čita 3 stavke iz opisa; tag `v1.0.1` je na `17f08b4`.
 - Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
   izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
   tastaturi koja ga ima, po potrebi brisanje modela koje korisnik ne želi
