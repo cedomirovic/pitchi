@@ -436,6 +436,13 @@ današnje ime aplikacije.)*
   „whisper.cpp“. Verzija je `0.9.2` (build 14), `package.json` `0.9.2`;
   aplikacija je instalirana u `/Applications/Diktator.app`. Release se
   objavljuje posle korisnikove probe.
+- **29.10.2026. (uputstvo za instalaciju)** — README sada objašnjava kako se
+  otključava nenotarizovana aplikacija **kroz System Settings, bez terminala**:
+  Done u prozoru upozorenja, Privacy & Security → Security → **Open Anyway**,
+  potvrda lozinkom ili Touch ID-jem, pa ponovno pokretanje i Open Anyway.
+  `xattr` je ostao samo kao napredna alternativa. Dodato je i da je **najduži
+  snimak 5 minuta** i da se snimanje tada samo završi i tekst prepiše. Usput je
+  iz uputstva uklonjeno ime stare verzije paketa (0.8.0), sada piše „najnoviji“.
 - Sledeći korak: korisnik proba novi rečnik (brojač i upozorenje) pa se
   objavljuje `v0.9.2`; zatim probni diktat sa stvarnim Gemini API ključem (ili
   drugim izabranim servisom), fizički probati `Fn + Space` i desni modifikator

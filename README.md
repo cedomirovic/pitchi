@@ -27,6 +27,8 @@ direktno iz aplikacije.
 - **Srpski i engleski** — jezik se prepoznaje automatski; srpski izlaz ide u
   latinicu.
 - **Rečnik** — imena i pojmovi koje model pogrešno piše.
+- **Najduži snimak 5 minuta** — snimanje se samo završi na pet minuta i tekst se
+  prepiše; tako memorija ne raste neograničeno pri dugom držanju prečice.
 - **Istorija** — zadnjih 200 prepisa, pretraga i kopiranje.
 - **Statistika** — koliko si reči izdiktirao, koliko diktata imaš, ušteđeno
   vreme u odnosu na kucanje, serija dana zaredom i aktivnost po danima;
@@ -52,14 +54,36 @@ direktno iz aplikacije.
 
 ### Gotova aplikacija
 
-1. Preuzmi `Diktator-0.8.0-macOS-arm64.zip` sa
+1. Preuzmi najnoviji `Diktator-…-macOS-arm64.zip` sa
    [Releases](https://github.com/cedomirovic/pitchi/releases/latest).
 2. Otpakuj i prevuci `Diktator.app` u `/Applications`.
-3. Prvi put: desni klik na aplikaciju → **Open** → **Open** ponovo. Aplikacija
-   nije notarizovana, pa je macOS inače blokira. Alternativa:
-   `xattr -dr com.apple.quarantine /Applications/Diktator.app`.
+3. Aplikacija nije notarizovana, pa je macOS pri prvom pokretanju blokira. Ako
+   se to desi, vidi **Ako macOS blokira aplikaciju** ispod — sve ide kroz
+   System Settings, bez terminala.
 
 Potreban je Apple Silicon i macOS 13 ili noviji.
+
+### Ako macOS blokira aplikaciju
+
+Kada se aplikacija ne otvori zato što nije notarizovana („Apple could not
+verify…“), otključaj je kroz System Settings:
+
+1. U prozoru koji iskoči klikni **Done**. Ne klikći „Move to Bin“.
+2. Otvori **System Settings** → **Privacy & Security**.
+3. Skroluj skroz dole do sekcije **Security**. Tamo piše nešto kao
+   „Diktator“ was blocked to protect your Mac, a pored je dugme **Open Anyway**.
+   Klikni ga.
+4. Potvrdi lozinkom ili Touch ID-jem.
+5. Ponovo pokreni Diktator. Kada iskoči isti prozor, izaberi **Open Anyway**.
+
+Ako dugme **Open Anyway** ne postoji, proveri da je `Diktator.app` u
+`/Applications` (ne u Downloads) i pokreni ga jednom iz tog foldera.
+
+Napredna alternativa, ako baš želiš terminal:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Diktator.app
+```
 
 ### Iz izvornog koda
 
