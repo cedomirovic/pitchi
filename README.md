@@ -276,6 +276,8 @@ Diktator pri pokretanju i najviše jednom dnevno pita GitHub za najnovije izdanj
 novija od instalirane:
 
 - prikaže sistemsko obaveštenje (prvi put traži dozvolu za obaveštenja),
+- u obaveštenju, traci i Podešavanjima napiše **šta je novo** — stavke iz opisa
+  izdanja na GitHub-u, bez markdown oznaka,
 - prikaže traku u prozoru sa dugmetom **Preuzmi**,
 - u menu baru stavi **Ažuriranje X…**.
 

@@ -443,6 +443,23 @@ današnje ime aplikacije.)*
   `xattr` je ostao samo kao napredna alternativa. Dodato je i da je **najduži
   snimak 5 minuta** i da se snimanje tada samo završi i tekst prepiše. Usput je
   iz uputstva uklonjeno ime stare verzije paketa (0.8.0), sada piše „najnoviji“.
+- **29.10.2026. (šta je novo u obaveštenju)** — obaveštenje o novom izdanju
+  sada kaže **šta je novo**, umesto samo broja verzije. Odluke:
+  - `Izdanje` dobija `body` (opis izdanja sa GitHub-a) i `novine`, a
+    `Napomene` pretvara markdown u kratke stavke: preskače naslove, tabele,
+    slike i blokove koda, skida `**`, backtick i linkove, i stavlja veliko
+    prvo slovo; ako izdanje ima spisak, koristi njega, a ne uvodne rečenice;
+  - obaveštenje ima naslov „Dostupno je ažuriranje Diktatora X“ i telo
+    „Šta je novo“ sa do tri skraćene stavke;
+  - traka u prozoru prikazuje do tri stavke, a Podešavanja → Ažuriranja do
+    šest, u kutiji iznad dugmadi;
+  - opis se pamti u `diktator.azuriranja.napomena`, pa „šta je novo“ ostaje i
+    posle pokretanja, dok dnevna provera ne stigne sa svežim podacima.
+  Provereno: parser na stvarnim opisima `v0.9.0` i `v0.9.1`; lažni GitHub
+  server je vratio izdanje `1.0.0` sa opisom, a aplikacija je upisala
+  `napomena`, `zadnjaVerzija` i `obavestenaVerzija`; `--slika` je nacrtala
+  traku i karticu sa stavkama. Verzija je `0.9.3` (build 15), `package.json`
+  `0.9.3`; instalirano u `/Applications/Diktator.app`. Release posle probe.
 - Sledeći korak: korisnik proba novi rečnik (brojač i upozorenje) pa se
   objavljuje `v0.9.2`; zatim probni diktat sa stvarnim Gemini API ključem (ili
   drugim izabranim servisom), fizički probati `Fn + Space` i desni modifikator

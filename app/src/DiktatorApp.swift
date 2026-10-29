@@ -78,6 +78,13 @@ struct DiktatorMain {
             stanje.azuriranje = Izdanje(
                 tag_name: "v1.0.0",
                 name: "Diktator 1.0.0",
+                body: """
+                ## Rečnik
+
+                - Rečnik se sada seče između pojmova, bez pola reči.
+                - Brojač znakova i upozorenje kada spisak pređe 600 znakova.
+                - Tačka više ne razdvaja „whisper.cpp“ i slične pojmove.
+                """,
                 html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v1.0.0")!,
                 assets: [
                     Izdanje.Fajl(

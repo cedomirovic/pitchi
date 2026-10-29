@@ -970,6 +970,7 @@ final class AppStanje: NSObject, ObservableObject {
         azuriranje = Izdanje(
             tag_name: "v\(verzija)",
             name: nil,
+            body: SkladisteAzuriranja.zadnjaNapomena,
             html_url: stranica,
             assets: []
         )
@@ -1025,6 +1026,7 @@ final class AppStanje: NSObject, ObservableObject {
         let sada = Date()
         SkladisteAzuriranja.zadnjaProvera = sada
         SkladisteAzuriranja.zadnjaVerzija = izdanje.verzija
+        SkladisteAzuriranja.zadnjaNapomena = izdanje.body
         zadnjaProveraAzuriranja = sada
 
         let novija = Verzija.jeNovija(izdanje.verzija, od: trenutnaVerzija)
@@ -1037,7 +1039,8 @@ final class AppStanje: NSObject, ObservableObject {
                 SkladisteAzuriranja.obavestenaVerzija = izdanje.verzija
                 ObavestenjaAzuriranja.prikazi(
                     verzija: izdanje.verzija,
-                    adresa: izdanje.bezbednaAdresaPreuzimanja
+                    adresa: izdanje.bezbednaAdresaPreuzimanja,
+                    novine: izdanje.novine
                 )
             }
             if rucno {

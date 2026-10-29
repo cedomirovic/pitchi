@@ -672,15 +672,24 @@ struct PogledPodesavanja: View {
                         .font(.callout.weight(.semibold))
                         .foregroundStyle(Izgled.akcenat)
 
-                    if let napomena = izdanje.name?.trimmingCharacters(in: .whitespacesAndNewlines),
-                       !napomena.isEmpty,
-                       napomena != izdanje.verzija,
-                       napomena != "v\(izdanje.verzija)" {
-                        Text(napomena)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(3)
-                            .fixedSize(horizontal: false, vertical: true)
+                    if !izdanje.novine.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Šta je novo")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                            ForEach(Array(izdanje.novine.enumerated()), id: \.offset) { _, stavka in
+                                Text("• \(stavka)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(Color.primary.opacity(0.04))
+                        )
                     }
 
                     HStack(spacing: 8) {

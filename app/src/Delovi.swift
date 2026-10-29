@@ -188,34 +188,52 @@ struct GreskaKartica: View {
 struct AzuriranjeTraka: View {
     let verzija: String
     let trenutna: String
+    let stavke: [String]
     let preuzmi: () -> Void
     let kasnije: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             Image(systemName: "arrow.down.circle.fill")
                 .font(.system(size: 20))
                 .foregroundStyle(Izgled.akcenat)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("Dostupna je verzija \(verzija)")
                     .font(.callout.weight(.semibold))
                 Text("Imaš \(trenutna). Preuzmi novo izdanje sa GitHub-a.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+
+                if !stavke.isEmpty {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Šta je novo:")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                        ForEach(Array(stavke.prefix(3).enumerated()), id: \.offset) { _, stavka in
+                            Text("• \(stavka)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .padding(.top, 2)
+                }
             }
 
-            Spacer()
+            Spacer(minLength: 8)
 
-            Button("Preuzmi", action: preuzmi)
-                .buttonStyle(.borderedProminent)
-                .tint(Izgled.akcenat)
-                .controlSize(.small)
+            VStack(alignment: .trailing, spacing: 6) {
+                Button("Preuzmi", action: preuzmi)
+                    .buttonStyle(.borderedProminent)
+                    .tint(Izgled.akcenat)
+                    .controlSize(.small)
 
-            Button("Kasnije", action: kasnije)
-                .buttonStyle(.borderless)
-                .controlSize(.small)
-                .foregroundStyle(.secondary)
+                Button("Kasnije", action: kasnije)
+                    .buttonStyle(.borderless)
+                    .controlSize(.small)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 12).fill(Izgled.akcenat.opacity(0.09)))

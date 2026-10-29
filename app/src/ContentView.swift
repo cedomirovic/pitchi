@@ -31,6 +31,7 @@ struct ContentView: View {
                 AzuriranjeTraka(
                     verzija: izdanje.verzija,
                     trenutna: app.trenutnaVerzija,
+                    stavke: izdanje.novine,
                     preuzmi: { app.otvoriAzuriranje() },
                     kasnije: { app.kasnijeAzuriranje() }
                 )

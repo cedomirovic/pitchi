@@ -15,8 +15,15 @@ struct Izdanje: Decodable, Equatable {
 
     let tag_name: String
     let name: String?
+    /// Opis izdanja sa GitHub-a (markdown) — „šta je novo“.
+    let body: String?
     let html_url: URL
     let assets: [Fajl]
+
+    /// Kratke stavke iz opisa izdanja, spremne za prikaz.
+    var novine: [String] {
+        Napomene.stavke(body)
+    }
 
     /// Verzija bez početnog „v“ (npr. `v0.4.0` → `0.4.0`).
     var verzija: String {
@@ -44,6 +51,83 @@ struct Izdanje: Decodable, Equatable {
 
     var bezbednaStranicaIzdanja: URL {
         Azuriranja.jeBezbednaAdresa(html_url) ? html_url : Azuriranja.stranicaIzdanja
+    }
+}
+
+// MARK: - Napomene izdanja
+
+/// Pretvara GitHub markdown iz opisa izdanja u kratke, čitljive stavke.
+/// Iste stavke idu u sistemsko obaveštenje, traku u prozoru i Podešavanja.
+enum Napomene {
+    static func stavke(_ tekst: String?, najvise: Int = 6) -> [String] {
+        guard let tekst, !tekst.isEmpty else { return [] }
+
+        var obicne: [String] = []
+        var nabrojane: [String] = []
+        var uKodu = false
+
+        for sirova in tekst.components(separatedBy: .newlines) {
+            let linija = sirova.trimmingCharacters(in: .whitespaces)
+            if linija.hasPrefix("```") {
+                uKodu.toggle()
+                continue
+            }
+            if uKodu || linija.isEmpty { continue }
+            // Naslovi, tabele, slike i horizontalne linije nisu stavke.
+            if linija.hasPrefix("#") || linija.hasPrefix("|")
+                || linija.hasPrefix("---") || linija.hasPrefix("![") { continue }
+
+            var ociscena = linija
+            var jeStavka = false
+            for oznaka in ["- ", "* ", "+ "] where ociscena.hasPrefix(oznaka) {
+                ociscena.removeFirst(oznaka.count)
+                jeStavka = true
+            }
+            ociscena = bezMarkdowna(ociscena)
+            guard !ociscena.isEmpty else { continue }
+            ociscena = velikoPrvoSlovo(ociscena)
+
+            // Ako izdanje ima spisak, on je najkorisniji za „šta je novo“;
+            // uvodne rečenice i podnaslove tada preskačemo.
+            if jeStavka {
+                nabrojane.append(ociscena)
+            } else {
+                obicne.append(ociscena)
+            }
+        }
+
+        let izvor = nabrojane.isEmpty ? obicne : nabrojane
+        return Array(izvor.prefix(najvise))
+    }
+
+    /// Skida markdown oznake: linkove, podebljanja, kod i HTML.
+    static func bezMarkdowna(_ tekst: String) -> String {
+        var t = tekst
+        t = t.replacingOccurrences(
+            of: "\\[([^\\]]+)\\]\\([^)]*\\)",
+            with: "$1",
+            options: .regularExpression
+        )
+        t = t.replacingOccurrences(of: "[`*_]", with: "", options: .regularExpression)
+        t = t.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        t = t.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+        return t.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Stavka spiska je rečenica, pa počinje velikim slovom.
+    static func velikoPrvoSlovo(_ tekst: String) -> String {
+        guard let prvo = tekst.first else { return tekst }
+        return prvo.uppercased() + tekst.dropFirst()
+    }
+
+    /// Skraćuje stavku za obaveštenje, na celoj reči kada može.
+    static func skraceno(_ tekst: String, do granica: Int = 100) -> String {
+        guard tekst.count > granica else { return tekst }
+        let isecak = String(tekst.prefix(granica))
+        if let razmak = isecak.lastIndex(of: " ") {
+            return String(isecak[..<razmak]) + "…"
+        }
+        return isecak + "…"
     }
 }
 
@@ -184,6 +268,7 @@ enum Azuriranja {
 enum SkladisteAzuriranja {
     private static let zadnjaProveraKljuc = "diktator.azuriranja.zadnjaProvera"
     private static let zadnjaVerzijaKljuc = "diktator.azuriranja.zadnjaVerzija"
+    private static let napomenaKljuc = "diktator.azuriranja.napomena"
     private static let obavestenaVerzijaKljuc = "diktator.azuriranja.obavestenaVerzija"
     private static let preskocenaVerzijaKljuc = "diktator.azuriranja.preskocenaVerzija"
 
@@ -202,6 +287,12 @@ enum SkladisteAzuriranja {
     static var obavestenaVerzija: String? {
         get { defaults.string(forKey: obavestenaVerzijaKljuc) }
         set { defaults.set(newValue, forKey: obavestenaVerzijaKljuc) }
+    }
+
+    /// Opis zadnjeg viđenog izdanja, da „šta je novo“ ostane i posle pokretanja.
+    static var zadnjaNapomena: String? {
+        get { defaults.string(forKey: napomenaKljuc) }
+        set { defaults.set(newValue, forKey: napomenaKljuc) }
     }
 
     static var preskocenaVerzija: String? {
@@ -223,27 +314,38 @@ enum ObavestenjaAzuriranja {
 
     /// Prvo pita za dozvolu, pa prikaže obaveštenje. Ako je korisnik
     /// isključio obaveštenja, traka u aplikaciji i dalje radi.
-    static func prikazi(verzija: String, adresa: URL) {
+    static func prikazi(verzija: String, adresa: URL, novine: [String] = []) {
         let centar = UNUserNotificationCenter.current()
         centar.getNotificationSettings { podesavanja in
             switch podesavanja.authorizationStatus {
             case .notDetermined:
                 centar.requestAuthorization(options: [.alert, .sound]) { dozvoljeno, _ in
                     guard dozvoljeno else { return }
-                    posalji(centar, verzija: verzija, adresa: adresa)
+                    posalji(centar, verzija: verzija, adresa: adresa, novine: novine)
                 }
             case .authorized, .provisional, .ephemeral:
-                posalji(centar, verzija: verzija, adresa: adresa)
+                posalji(centar, verzija: verzija, adresa: adresa, novine: novine)
             default:
                 break
             }
         }
     }
 
-    private static func posalji(_ centar: UNUserNotificationCenter, verzija: String, adresa: URL) {
+    private static func posalji(
+        _ centar: UNUserNotificationCenter,
+        verzija: String,
+        adresa: URL,
+        novine: [String]
+    ) {
         let sadrzaj = UNMutableNotificationContent()
-        sadrzaj.title = "Dostupno je ažuriranje Diktatora"
-        sadrzaj.body = "Verzija \(verzija) je spremna. Klikni da otvoriš preuzimanje."
+        sadrzaj.title = "Dostupno je ažuriranje Diktatora \(verzija)"
+
+        let stavke = novine.prefix(3).map { "• " + Napomene.skraceno($0) }
+        if stavke.isEmpty {
+            sadrzaj.body = "Klikni da otvoriš preuzimanje."
+        } else {
+            sadrzaj.body = "Šta je novo:\n" + stavke.joined(separator: "\n")
+        }
         sadrzaj.sound = .default
         sadrzaj.userInfo = ["adresa": adresa.absoluteString]
 
