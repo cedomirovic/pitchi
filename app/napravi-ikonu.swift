@@ -14,8 +14,9 @@ ceo.fill()
 let okvir = ceo.insetBy(dx: 62, dy: 62)
 let podloga = NSBezierPath(roundedRect: okvir, xRadius: 210, yRadius: 210)
 
-let gornja = NSColor(calibratedRed: 0.46, green: 0.36, blue: 0.98, alpha: 1)
-let donja = NSColor(calibratedRed: 0.27, green: 0.20, blue: 0.78, alpha: 1)
+// Plava iz dizajna (#0A84FF): svetlija gore, dublja dole.
+let gornja = NSColor(calibratedRed: 0.20, green: 0.62, blue: 1.00, alpha: 1)
+let donja = NSColor(calibratedRed: 0.00, green: 0.40, blue: 0.88, alpha: 1)
 NSGradient(starting: gornja, ending: donja)?.draw(in: podloga, angle: -70)
 
 // Blagi sjaj u gornjem delu.

@@ -6,11 +6,11 @@ zalepi u aplikaciju u kojoj pišeš. Može i kao prekidač: pritisni `Fn + Space
 početak, ponovo za kraj. Jezik se prepoznaje automatski, pa srpski i engleski
 mogu da se smenjuju bez podešavanja. Snimak ne napušta Mac.
 
-Aplikacija ima prozor sa stanjem, istorijom, rečnikom i podešavanjima, ikonu u
-Docku i u menu baru. Model se učitava samo tokom diktiranja i oslobađa posle
-izabranog vremena mirovanja (podrazumevano 5 minuta), pa i 8 GB Mac ostaje
-upotrebljiv. Koji model se koristi biraš sam, a lakši modeli se preuzimaju
-direktno iz aplikacije.
+Aplikacija ima prozor sa levom navigacijom (Pregled, Istorija, Statistika,
+Podešavanja, Pomoć), ikonu u Docku i u menu baru. Model se učitava samo tokom
+diktiranja i oslobađa posle izabranog vremena mirovanja (podrazumevano 5
+minuta), pa i 8 GB Mac ostaje upotrebljiv. Koji model se koristi biraš sam, a
+lakši modeli se preuzimaju direktno iz aplikacije.
 
 | Početak | Statistika | Podešavanja |
 |---|---|---|
@@ -34,9 +34,10 @@ direktno iz aplikacije.
 - **Najduži snimak 5 minuta** — snimanje se samo završi na pet minuta i tekst se
   prepiše; tako memorija ne raste neograničeno pri dugom držanju prečice.
 - **Istorija** — zadnjih 200 prepisa, pretraga i kopiranje.
-- **Statistika** — koliko si reči izdiktirao, koliko diktata imaš, ušteđeno
-  vreme u odnosu na kucanje, serija dana zaredom i aktivnost po danima;
-  računa se samo iz brojeva o diktatima, nikada iz teksta.
+- **Statistika** — reči, trajanje, brzina govora i ušteđeno vreme za poslednjih
+  7, 14 ili 30 dana, uz poređenje sa prethodnim periodom; dnevni stubovi, linija
+  brzine, podela po jeziku i modelu, najaktivniji dan i najduža sesija. Računa se
+  samo iz brojeva o diktatima, nikada iz teksta.
 - **Izbor modela** — Tiny, Base, Small, Large v3 Turbo i Large v3; lakši modeli
   se preuzimaju iz same aplikacije, bez terminala.
 - **Brzi režim** — Turbo model, 30 minuta u RAM-u i učitavanje odmah po
@@ -49,7 +50,7 @@ direktno iz aplikacije.
 - **Dock i menu bar** — ikonica je vidljiva na oba mesta; klik na Dock ponovo
   otvara prozor.
 - **Ažuriranja** — jednom dnevno proveri GitHub; kada postoji novije izdanje,
-  prikaže obaveštenje i traku sa dugmetom za preuzimanje.
+  prikaže obaveštenje i traku na dnu prozora sa dugmetom za preuzimanje.
 - **Opciono doterivanje teksta** — izaberi DeepSeek, OpenAI, Anthropic Claude,
   Google Gemini, lokalni Ollama ili drugi OpenAI-kompatibilni servis; popravlja
   interpunkciju i imena. Isključeno po defaultu, šalje se samo tekst, nikada zvuk.
