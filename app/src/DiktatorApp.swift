@@ -64,6 +64,22 @@ struct DiktatorMain {
     @MainActor
     private static func nacrtajSlike() {
         let stanje = AppStanje()
+        stanje.demoStanje = true
+
+        // Demo podešavanja: Fn + Space, Turbo i brzi režim, sve uključeno —
+        // tako slike prikazuju preporučeno stanje, a ne stanje ove mašine.
+        var demo = Podesavanja()
+        demo.precica = Precica.fnSpace.rawValue
+        demo.model = Modeli.brzi.id
+        demo.brziRezim = true
+        demo.oslobadjanjeModela = OslobadjanjeModela.trideset.rawValue
+        demo.unapredUcitajModel = true
+        stanje.podesavanja = demo
+        stanje.osveziModel()
+        stanje.prijavaUkljucena = true
+        stanje.recnik = "Nemanja Čedomirović, Tamara Pandža, Diktator, whisper.cpp, SwiftUI, GitHub, Beograd"
+        stanje.zadnjaProveraAzuriranja = Date().addingTimeInterval(-7200)
+
         stanje.poslednjiTekst = "Danas je lepo vreme u Beogradu. Sastanak je u pet sati, u kancelariji."
         stanje.istorija = [
             Zapis(tekst: "Pošalji Nemanji ponudu do petka, pa da vidimo.", datum: Date().addingTimeInterval(-3600), trajanje: 4.2),
@@ -108,7 +124,7 @@ struct DiktatorMain {
 
         for tab in 0...4 {
             stanje.izabranTab = tab
-            RunLoop.main.run(until: Date().addingTimeInterval(0.5))
+            RunLoop.main.run(until: Date().addingTimeInterval(0.8))
             guard let pogled = prozor.contentView else { continue }
             pogled.layoutSubtreeIfNeeded()
             guard let rep = pogled.bitmapImageRepForCachingDisplay(in: pogled.bounds) else { continue }

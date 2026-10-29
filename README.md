@@ -16,6 +16,10 @@ direktno iz aplikacije.
 |---|---|---|
 | ![Početak](docs/pocetak.png) | ![Statistika](docs/statistika.png) | ![Podešavanja](docs/podesavanja.png) |
 
+| Istorija | Pomoć | Novo izdanje |
+|---|---|---|
+| ![Istorija](docs/istorija.png) | ![Pomoć](docs/pomoc.png) | ![Ažuriranje](docs/azuriranje.png) |
+
 ## Šta radi
 
 - **Izbor prečice** — podrazumevano `Fn` (drži i govori); možeš izabrati i

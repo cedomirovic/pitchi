@@ -32,6 +32,10 @@ final class AppStanje: NSObject, ObservableObject {
     @Published var zadnjaProveraAzuriranja: Date?
     @Published var statistika: Statistika
 
+    /// Razvojna pomoć: `--slika` crta demo stanje, pa se stvarne dozvole i
+    /// podešavanja ne smeju pregaziti pri otvaranju prozora.
+    var demoStanje = false
+
     let snimac = Snimac()
     let prepisivac = Prepisivac()
     let preuzimac = Preuzimac()
@@ -114,6 +118,7 @@ final class AppStanje: NSObject, ObservableObject {
     // MARK: - Dozvole
 
     func osveziDozvole() {
+        guard !demoStanje else { return }
         dozvole = Dozvole(
             mikrofon: AVCaptureDevice.authorizationStatus(for: .audio) == .authorized,
             pristupacnost: Lepak.dozvola,
