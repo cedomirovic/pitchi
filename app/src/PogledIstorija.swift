@@ -86,7 +86,7 @@ struct PogledIstorija: View {
     }
 
     private var tabela: some View {
-        VStack(spacing: 0) {
+        LazyVStack(spacing: 0) {
             zaglavljeTabele
 
             Rectangle()

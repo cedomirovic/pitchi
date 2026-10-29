@@ -67,6 +67,82 @@ struct DiktatorMain {
         app.run()
     }
 
+    /// Razvojna pomoć: izmeri koliko traje otvaranje svake strane — građenje
+    /// (telo i raspored) i stvarni prelaz u živom prozoru. Služi za poređenje
+    /// pre i posle optimizacije, bez oslanjanja na osećaj.
+    @MainActor
+    static func izmeriBrzinu(stanje: AppStanje, prozor: NSWindow?) {
+        print("istorija: \(stanje.istorija.count) prepisa")
+        print("statistika: \(stanje.statistika.zapisi.count) zapisa")
+
+        let strane: [(String, () -> AnyView)] = [
+            ("Pregled", { AnyView(PogledPregled().environmentObject(stanje)) }),
+            ("Istorija", { AnyView(PogledIstorija().environmentObject(stanje)) }),
+            ("Statistika", { AnyView(PogledStatistika().environmentObject(stanje)) }),
+            ("Podešavanja", { AnyView(PogledPodesavanja().environmentObject(stanje)) }),
+            ("Pomoć", { AnyView(PogledPomoc().environmentObject(stanje)) }),
+        ]
+
+        print("")
+        print("građenje strane — telo i raspored")
+        for (naziv, napravi) in strane {
+            var vremena: [Double] = []
+            for _ in 0..<5 {
+                let hosting = NSHostingView(rootView: napravi())
+                let pocetak = CFAbsoluteTimeGetCurrent()
+                hosting.frame = NSRect(x: 0, y: 0, width: 912, height: 680)
+                hosting.layoutSubtreeIfNeeded()
+                vremena.append((CFAbsoluteTimeGetCurrent() - pocetak) * 1000)
+            }
+            let ostala = vremena.dropFirst().sorted()
+            print(
+                naziv.padding(toLength: 12, withPad: " ", startingAt: 0)
+                    + String(
+                        format: "prvi: %6.2f ms   medijana: %6.2f ms",
+                        vremena[0], ostala[ostala.count / 2]
+                    )
+            )
+        }
+
+        // Pravi prozor aplikacije: koliko glavna nit bude blokirana posle klika.
+        prozor?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        RunLoop.main.run(until: Date().addingTimeInterval(0.5))
+
+        print("")
+        print("prelaz na stranu u živom prozoru — najduži blok glavne niti")
+        print("    prazan hod".padding(toLength: 16, withPad: " ", startingAt: 0)
+            + String(format: "%6.2f ms", najduziBlok {}))
+        // Uvek se dolazi sa druge strane, pa je svaka izmerena promena stvarna.
+        for (tab, naziv) in strane.map(\.0).enumerated() {
+            let sa = (tab + 2) % 5
+            var blokovi: [Double] = []
+            for _ in 0..<5 {
+                stanje.izabranTab = sa
+                RunLoop.main.run(until: Date().addingTimeInterval(0.25))
+                blokovi.append(najduziBlok { stanje.izabranTab = tab })
+            }
+            print("    " + naziv.padding(toLength: 12, withPad: " ", startingAt: 0)
+                + String(format: "%6.2f ms", blokovi.sorted()[blokovi.count / 2]))
+        }
+    }
+
+    /// Najduži blok glavne niti posle akcije — ono što se oseti kao zastoj.
+    /// Meri se u fiksnom prozoru vremena, da se ne bi propustilo odloženo
+    /// crtanje (kratak izlazak iz petlje ume da ga preskoči).
+    @MainActor
+    static func najduziBlok(sekundi: Double = 0.4, _ akcija: () -> Void) -> Double {
+        let kraj = Date().addingTimeInterval(sekundi)
+        akcija()
+        var najduzi = 0.0
+        while Date() < kraj {
+            let pocetak = CFAbsoluteTimeGetCurrent()
+            RunLoop.main.run(until: Date(timeIntervalSinceNow: 0.001))
+            najduzi = max(najduzi, max(0, CFAbsoluteTimeGetCurrent() - pocetak - 0.001))
+        }
+        return najduzi * 1000
+    }
+
     /// Pomoćna opcija za razvoj: nacrta sve tabove u PNG bez snimanja ekrana.
     @MainActor
     private static func nacrtajSlike() {
@@ -307,6 +383,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         prikaziProzor()
         // Brzi režim može unapred da učita model; ako je isključen, ovo ne radi ništa.
         stanje.pripremiModel()
+
+        // Razvojna pomoć: izmeri brzinu strana u pravom prozoru, pa izađi.
+        if CommandLine.arguments.contains("--test-brzina") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [self] in
+                DiktatorMain.izmeriBrzinu(stanje: stanje, prozor: window)
+                exit(0)
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

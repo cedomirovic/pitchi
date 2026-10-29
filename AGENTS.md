@@ -565,6 +565,42 @@ današnje ime aplikacije.)*
   proveren posle raspakivanja (`codesign --verify --deep --strict`, verzija
   1.0.1/17, bez `__MACOSX`). `--test-obavestenje` protiv stvarnog izdanja
   čita 3 stavke iz opisa; tag `v1.0.1` je na `17f08b4`.
+- **29.10.2026. (brzina strana)** — korisnik je prijavio da prebacivanje
+  strana „deluje sporo“, pa je prvo izmereno, a onda optimizovano. Odluke:
+  - nova razvojna zastavica `--test-brzina`: aplikacija se pokrene normalno,
+    pa posle 2,5 s izmeri građenje svake strane (odvojen `NSHostingView`) i
+    stvarni prelaz u pravom prozoru, i izađe. Meri se **najduži blok glavne
+    niti** u fiksnom prozoru od 400 ms — to je ono što se oseti kao zastoj.
+  - dve zamke pri merenju: (1) petlja koja izađe posle tri kratka prolaza
+    propušta odloženo crtanje i pripisuje ga sledećoj izmeri — tako je nastalo
+    lažnih „stalnih 90 ms“; (2) prozor van ekrana ne raspoređuje sadržaj i daje
+    lažnu nulu, pa se meri samo pravi, vidljivi prozor. Zato `probni` prozori i
+    prekidači (`DIKTATOR_BEZ_NAV` i sl.) više nisu u kodu.
+  - izmereno pre optimizacija (medijane, 46 prepisa / 16 zapisa): građenje
+    Istorija 70–74 ms, Podešavanja 76–97 ms, ostale 8–15 ms; blok pri prelazu
+    Pregled 117, Istorija 161–224, Statistika 128–137, Podešavanja 213–215,
+    Pomoć 100 ms, prazan hod 0,5 ms.
+  - optimizacije: `LazyVStack` umesto `VStack` u tabeli Istorije i u
+    Podešavanjima (grade se samo vidljive sekcije); `dnevnaAktivnost` sabira u
+    jednom prolazu kroz zapise umesto `isDate(inSameDayAs:)` za svaki dan;
+    `Statistika.broj` grupiše hiljade bez `NumberFormatter`-a (pravio se pri
+    svakom broju); `Putanje.podrska` i `Putanje.modeli` su sada `static let`,
+    pa `PonudaModela.preuzet` više ne radi `mkdir`/`chmod` pri svakom crtanju.
+  - izmereno posle: građenje Istorija 70 → 23 ms, Podešavanja 76 → 49 ms
+    (prvi put 117–167 → 69–90 ms); blok pri prelazu Pregled 117 → 91, Istorija
+    218 → 88, Statistika 133 → 112, Podešavanja 214 → 129, Pomoć 100 → 87 ms.
+  - probano i odbačeno: držanje svih strana u `ZStack`-u sa `opacity` (prelaz
+    jeftiniji, ali svaka promena stanja košta 40 ms jer svih pet strana prati
+    `AppStanje` — loše za snimanje); `.drawingGroup()` (kvari polja za unos, a
+    na tri strane je bilo sporije); providna podloga navigacije nije uzrok.
+  - ostaje: preostalih ~90–130 ms je SwiftUI raspored i crtanje nove strane u
+    prozoru 1120×780; dalje bi značilo smanjivati broj elemenata u stranama.
+  Provereno: `node --check diktator.js lib/*.js`, `node diktator.js --help`,
+  `npm test` (11/11), `bash app/build.sh`, `--dozvole`, `--test-brzina` (tri
+  pokretanja, isti red veličina), `--slika` (svih pet strana se ispravno crta
+  sa `LazyVStack`), `--test-whisper` (radi). Verzija je `1.0.2` (build 18),
+  `package.json` `1.0.2`; instalirano u `/Applications/Diktator.app` (stara
+  kopija u `Diktator.app.bak`). Release se objavljuje posle korisnikove probe.
 - Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
   izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
   tastaturi koja ga ima, po potrebi brisanje modela koje korisnik ne želi

@@ -8,7 +8,7 @@ struct PogledPodesavanja: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            LazyVStack(alignment: .leading, spacing: 18) {
                 ZaglavljeStrane(
                     naslov: "Podešavanja",
                     detalj: "Prilagodi Diktator svojim potrebama."

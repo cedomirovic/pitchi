@@ -122,14 +122,34 @@ struct Statistika: Codable, Equatable {
     /// Poslednjih `dana` dana, od najstarijeg ka današnjem.
     func dnevnaAktivnost(dana: Int = 14) -> [StatisticniDan] {
         let danas = kalendar.startOfDay(for: Date())
-        return stride(from: dana - 1, through: 0, by: -1).compactMap { pomeraj -> StatisticniDan? in
-            guard let dan = kalendar.date(byAdding: .day, value: -pomeraj, to: danas) else { return nil }
-            let zaDan = uspesni.filter { kalendar.isDate($0.datum, inSameDayAs: dan) }
+        guard let prvi = kalendar.date(byAdding: .day, value: -(dana - 1), to: danas) else {
+            return []
+        }
+
+        // Jedan prolaz kroz zapise uz sabiranje po danu; ranije se za svaki
+        // dan prolazilo kroz sve zapise sa `isDate(inSameDayAs:)`.
+        var poDanu: [Date: (reci: Int, diktati: Int, trajanje: Double)] = [:]
+        for zapis in uspesni where zapis.datum >= prvi {
+            let dan = kalendar.startOfDay(for: zapis.datum)
+            var zbir = poDanu[dan] ?? (0, 0, 0)
+            zbir.reci += zapis.reci
+            zbir.diktati += 1
+            zbir.trajanje += zapis.trajanje
+            poDanu[dan] = zbir
+        }
+
+        return (0..<dana).compactMap { pomeraj -> StatisticniDan? in
+            guard let dan = kalendar.date(
+                byAdding: .day,
+                value: -(dana - 1 - pomeraj),
+                to: danas
+            ) else { return nil }
+            let zbir = poDanu[dan] ?? (0, 0, 0)
             return StatisticniDan(
                 datum: dan,
-                reci: zaDan.reduce(0) { $0 + $1.reci },
-                diktati: zaDan.count,
-                trajanje: zaDan.reduce(0) { $0 + $1.trajanje }
+                reci: zbir.reci,
+                diktati: zbir.diktati,
+                trajanje: zbir.trajanje
             )
         }
     }
@@ -265,12 +285,16 @@ struct Statistika: Codable, Equatable {
 
     // MARK: - Prikaz
 
+    /// Broj sa tačkom između hiljada (1.460). Računa se bez `NumberFormatter`-a,
+    /// jer se pravljenje formatera pri svakom broju vidi na strani Statistika.
     static func broj(_ vrednost: Int) -> String {
-        let formater = NumberFormatter()
-        formater.numberStyle = .decimal
-        formater.groupingSeparator = "."
-        formater.maximumFractionDigits = 0
-        return formater.string(from: NSNumber(value: vrednost)) ?? "\(vrednost)"
+        var cifre = Array(String(vrednost.magnitude))
+        var rezultat = ""
+        while cifre.count > 3 {
+            rezultat = "." + String(cifre.suffix(3)) + rezultat
+            cifre.removeLast(3)
+        }
+        return (vrednost < 0 ? "-" : "") + String(cifre) + rezultat
     }
 
     static func vreme(_ sekunde: Double) -> String {

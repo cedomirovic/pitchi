@@ -1,6 +1,6 @@
 {
   "name": "diktator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "Diktator — lokalni alat za diktiranje: snimi govor, pretvori u tekst i zalepi ga gde treba.",

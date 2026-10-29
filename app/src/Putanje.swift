@@ -17,7 +17,11 @@ enum Putanje {
         )
     }
 
-    static var podrska: URL {
+    /// Računa se jednom: pravljenje foldera i `chmod` na svaki poziv su
+    /// nepotrebni (a `PonudaModela.preuzet` ih zove za svaki model pri crtanju).
+    static let podrska: URL = napraviPodrsku()
+
+    private static func napraviPodrsku() -> URL {
         let baza = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let dir = baza.appendingPathComponent("Diktator", isDirectory: true)
 
@@ -42,7 +46,9 @@ enum Putanje {
         return dir
     }
 
-    static var modeli: URL {
+    static let modeli: URL = napraviFoldere()
+
+    private static func napraviFoldere() -> URL {
         let dir = podrska.appendingPathComponent("models", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         zastitiFolder(dir)
