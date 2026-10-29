@@ -831,14 +831,23 @@ final class AppStanje: NSObject, ObservableObject {
         }
 
         let nas = Bundle.main.bundleIdentifier
+        let prednja = NSWorkspace.shared.frontmostApplication
         var cilj: NSRunningApplication?
-        if let prednja = NSWorkspace.shared.frontmostApplication, prednja.bundleIdentifier != nas {
+
+        if let prednja, prihvataTekst(prednja, osim: nas) {
             cilj = prednja
-        } else if let pre = aplikacijaPreSnimanja, pre.bundleIdentifier != nas, !pre.isTerminated {
+        } else if prednja?.bundleIdentifier == nas,
+                  let pre = aplikacijaPreSnimanja,
+                  prihvataTekst(pre, osim: nas) {
+            // Diktator je u prvom planu (korisnik gleda prozor), pa tekst ide
+            // aplikaciji u kojoj je bio pre snimanja — ali samo ako ona ume
+            // da primi tekst.
             cilj = pre
         }
 
         guard let cilj else {
+            // Diktator ili radna površina su u prvom planu: nikoga ne
+            // aktiviramo, da se prozor ne bi izgubio u pozadini.
             postaviInfo("Tekst je u klipbordu. Zalepi ga sa Cmd+V.")
             return
         }
@@ -847,6 +856,18 @@ final class AppStanje: NSObject, ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             Lepak.zalepi()
         }
+    }
+
+    /// Aplikacija koja ume da primi tekst. Diktator sam i Finder (radna
+    /// površina) nemaju polje za unos, pa bi njihovo aktiviranje samo odnelo
+    /// fokus i sakrilo prozor Diktatora u pozadinu.
+    private func prihvataTekst(_ aplikacija: NSRunningApplication, osim nas: String?) -> Bool {
+        guard !aplikacija.isTerminated, let identifikator = aplikacija.bundleIdentifier else {
+            return false
+        }
+        if identifikator == nas { return false }
+        if identifikator == "com.apple.finder" { return false }
+        return true
     }
 
     func kopiraj(_ tekst: String) {

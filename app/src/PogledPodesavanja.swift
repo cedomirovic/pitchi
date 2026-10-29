@@ -515,7 +515,7 @@ struct PogledPodesavanja: View {
     private var recnikKartica: some View {
         SekcijaPodesavanja(naslov: "Rečnik") {
             VStack(alignment: .leading, spacing: 9) {
-                Text("Imena, prezimena, firme i stručni pojmovi koje whisper pogrešno piše. Obične reči ne pomažu jer ih model već zna. Jedan pojam po redu, najvažniji prvi.")
+                Text("Imena, prezimena, firme i stručni pojmovi koje whisper pogrešno piše. Obične reči ne pomažu jer ih model već zna. Jedan pojam po redu ili odvojeno zarezom — najvažniji prvi.")
                     .font(.system(size: 11.5))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

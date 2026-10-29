@@ -177,8 +177,9 @@ Rečnik je spisak imena, prezimena, firmi, proizvoda i stručnih pojmova koje
 Whisper pogrešno piše. Model ga dobija kao **nagoveštaj**, ne kao tekst koji
 izgovara.
 
-- **Jedan pojam po redu**, latinicom i sa dijakriticima onako kako želiš da
-  izađe („Čedomirović“, ne „Cedomirovic“).
+- **Jedan pojam po redu ili odvojeno zarezom** — oba oblika rade isto;
+  latinicom i sa dijakriticima onako kako želiš da izađe („Čedomirović“, ne
+  „Cedomirovic“).
 - **Najvažnije na početak** — u prompt staje 600 znakova, a sve posle toga se
   ne šalje modelu. Aplikacija prikazuje koliko je znakova zauzeto i upozori
   kada se pređe limit.

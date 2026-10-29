@@ -340,7 +340,10 @@ enum ObavestenjaAzuriranja {
         let sadrzaj = UNMutableNotificationContent()
         sadrzaj.title = "Dostupno je ažuriranje Diktatora \(verzija)"
 
-        let stavke = novine.prefix(3).map { "• " + Napomene.skraceno($0) }
+        // Ako svež opis izdanja nije stigao, koristi zadnji zapamćeni, da
+        // obaveštenje ne ostane bez spiska novina.
+        let izvor = novine.isEmpty ? Napomene.stavke(SkladisteAzuriranja.zadnjaNapomena) : novine
+        let stavke = izvor.prefix(3).map { "• " + Napomene.skraceno($0) }
         if stavke.isEmpty {
             sadrzaj.body = "Klikni da otvoriš preuzimanje."
         } else {

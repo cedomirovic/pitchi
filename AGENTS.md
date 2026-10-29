@@ -531,6 +531,34 @@ današnje ime aplikacije.)*
   raspakivanja (`codesign --verify --deep --strict`, verzija 1.0.0/16, bez
   `__MACOSX`). Korisnik je odlučio da se Tiny, Base i Small modeli **ne
   brišu**.
+- **29.10.2026. (popravke posle 1.0.0)** — tri prijave korisnika posle novog
+  izgleda. Odluke:
+  - **fokus posle diktata**: `isporuci` više ne aktivira bilo koju aplikaciju,
+    nego samo onu koja ume da primi tekst (`prihvataTekst`); Finder (radna
+    površina) i sam Diktator su izuzeti, jer nemaju polje za unos pa je
+    njihovo aktiviranje samo odnosilo fokus i ostavljalo prozor u pozadini.
+    Rezervni cilj (`aplikacijaPreSnimanja`) koristi se samo kada je Diktator
+    u prvom planu, pa se tekst i dalje lepi u aplikaciju u kojoj je korisnik
+    bio, ali se na radnoj površini ništa ne aktivira — tekst ostaje u
+    klipbordu uz poruku;
+  - **rečnik**: `Recnik.pojmovi` sada deli i po zarezu, ne samo po novom
+    redu, pa spisak u jednom redu („A, B, C“) daje tačan brojač; ranije je
+    isti spisak brojan kao jedan pojam iako je prompt bio ispravan. Uputstvo
+    u Podešavanjima i README kažu da su oba oblika ravnopravna;
+  - **obaveštenje o izdanju**: provereno stvarnim GitHub izdanjem — parser
+    `Napomene.stavke` ispravno čita 6 stavki iz opisa `v1.0.0`. Dodate su dve
+    zaštite: ako svež opis ne stigne, obaveštenje uzima zadnji zapamćeni
+    (`SkladisteAzuriranja.zadnjaNapomena`), a traka na dnu, kada stavki nema,
+    piše „Detalji su u Podešavanjima → Ažuriranja“ umesto praznog reda;
+  - nova razvojna zastavica `--test-obavestenje` proveri GitHub, ispiše
+    „šta je novo“ i pošalje obaveštenje bez otvaranja prozora (kao
+    `--dozvole`, `--test-whisper` i `--slika`).
+  Provereno: `bash app/build.sh`, `--test-obavestenje` (najnovija 1.0.0, 6
+  stavki), `node --check`, `npm test` (11/11), `--slika` je ponovo nacrtao
+  snimke (u podnožju piše 1.0.1) i `docs/*.png` su zamenjeni. Verzija je
+  `1.0.1` (17), `package.json` `1.0.1`; aplikacija je instalirana u
+  `/Applications/Diktator.app`. Release još nije objavljen — čeka potvrdu
+  da su popravke u redu.
 - Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
   izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
   tastaturi koja ga ima, po potrebi brisanje modela koje korisnik ne želi

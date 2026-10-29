@@ -419,6 +419,10 @@ struct AzuriranjeTraka: View {
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .truncationMode(.tail)
+                } else {
+                    Text("Detalji su u Podešavanjima → Ažuriranja.")
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(.secondary)
                 }
             }
 

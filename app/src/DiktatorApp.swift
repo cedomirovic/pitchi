@@ -39,6 +39,13 @@ struct DiktatorMain {
             exit(0)
         }
 
+        // Razvojna pomoć: proveri GitHub i ispiši „šta je novo“ bez prozora.
+        if CommandLine.arguments.contains("--test-obavestenje") {
+            app.setActivationPolicy(.accessory)
+            proveriObavestenje()
+            exit(0)
+        }
+
         // Razvojna pomoć: uključi pokretanje pri prijavi bez otvaranja prozora.
         if CommandLine.arguments.contains("--prijava") {
             app.setActivationPolicy(.prohibited)
@@ -169,6 +176,41 @@ struct DiktatorMain {
             print(putanja)
         }
         prozor.orderOut(nil)
+    }
+
+    /// Pomoćna opcija za razvoj: proveri GitHub i ispiši stavke koje bi
+    /// otišle u obaveštenje, pa pošalji i samo obaveštenje.
+    private static func proveriObavestenje() {
+        UNUserNotificationCenter.current().delegate = DelegateObavestenja.zajednicki
+        let grupa = DispatchGroup()
+        grupa.enter()
+
+        Azuriranja.proveri { rezultat in
+            switch rezultat {
+            case .success(let izdanje):
+                print("trenutna: \(Azuriranja.trenutnaVerzija)")
+                print("najnovija: \(izdanje.verzija)")
+                print("stavke: \(izdanje.novine.count)")
+                for stavka in izdanje.novine {
+                    print("  • \(stavka)")
+                }
+                if izdanje.novine.isEmpty {
+                    print("GRESKA: opis izdanja nema nijednu stavku")
+                }
+                ObavestenjaAzuriranja.prikazi(
+                    verzija: izdanje.verzija,
+                    adresa: izdanje.bezbednaAdresaPreuzimanja,
+                    novine: izdanje.novine
+                )
+            case .failure(let greska):
+                print("GRESKA: \(greska.localizedDescription)")
+            }
+            grupa.leave()
+        }
+
+        // Sačekaj mrežu i prikaz obaveštenja, pa izađi.
+        _ = grupa.wait(timeout: .now() + 25)
+        RunLoop.main.run(until: Date().addingTimeInterval(2))
     }
 
     /// Pomoćna opcija za razvoj: prepiše /tmp/sr.wav kroz isti kod koji koristi aplikacija.

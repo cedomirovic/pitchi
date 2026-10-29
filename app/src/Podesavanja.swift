@@ -111,10 +111,11 @@ enum Recnik {
     /// Koliko znakova recnika whisper prima kao pocetni tekst (prompt).
     static let granica = 600
 
-    /// Pojmovi iz recnika, bez praznih redova.
+    /// Pojmovi iz recnika. Mogu biti jedan po redu ili odvojeni zarezom,
+    /// jer se tako najcesce i kucaju; oba oblika daju isti prompt.
     static func pojmovi(_ tekst: String) -> [String] {
         tekst
-            .components(separatedBy: .newlines)
+            .components(separatedBy: CharacterSet(charactersIn: ",\n\r"))
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
     }
