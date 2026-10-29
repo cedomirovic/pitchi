@@ -600,7 +600,14 @@ današnje ime aplikacije.)*
   pokretanja, isti red veličina), `--slika` (svih pet strana se ispravno crta
   sa `LazyVStack`), `--test-whisper` (radi). Verzija je `1.0.2` (build 18),
   `package.json` `1.0.2`; instalirano u `/Applications/Diktator.app` (stara
-  kopija u `Diktator.app.bak`). Release se objavljuje posle korisnikove probe.
+  kopija u `Diktator.app.bak`). Korisnik je potvrdio da prebacivanje strana
+  radi brže, pa je objavljen release `v1.0.2` sa
+  `Diktator-1.0.2-macOS-arm64.zip` (2.864.627 bajtova, SHA-256
+  `5adef30667da5936e7a7f36bd5ac85de3e41d5c9a8ed4adac0d1ba4a288476e1`);
+  paket napravljen sa `ditto -c -k --norsrc --noextattr --keepParent` i
+  proveren posle raspakivanja (`codesign --verify --deep --strict`, verzija
+  1.0.2/18, bez `__MACOSX`), a `--test-obavestenje` protiv stvarnog izdanja
+  čita svih 5 stavki iz opisa; tag `v1.0.2` je na `abd2860`.
 - Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
   izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
   tastaturi koja ga ima, po potrebi brisanje modela koje korisnik ne želi
