@@ -126,20 +126,20 @@ struct DiktatorMain {
         // Razvojna provera: nacrtaj traku i karticu ažuriranja bez mreže.
         if ProcessInfo.processInfo.environment["DIKTATOR_SLIKA_AZURIRANJE"] != nil {
             stanje.azuriranje = Izdanje(
-                tag_name: "v1.0.0",
-                name: "Diktator 1.0.0",
+                tag_name: "v1.1.0",
+                name: "Diktator 1.1.0",
                 body: """
-                ## Rečnik
+                ## Novi izgled
 
-                - Rečnik se sada seče između pojmova, bez pola reči.
-                - Brojač znakova i upozorenje kada spisak pređe 600 znakova.
-                - Tačka više ne razdvaja „whisper.cpp“ i slične pojmove.
+                - Leva navigacija i bele kartice na svim stranama.
+                - Statistika sa izborom perioda od 7, 14 ili 30 dana.
+                - Traka o novom izdanju je sada na dnu prozora.
                 """,
-                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v1.0.0")!,
+                html_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/tag/v1.1.0")!,
                 assets: [
                     Izdanje.Fajl(
-                        name: "Diktator-1.0.0-macOS-arm64.zip",
-                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v1.0.0/Diktator-1.0.0-macOS-arm64.zip")!
+                        name: "Diktator-1.1.0-macOS-arm64.zip",
+                        browser_download_url: URL(string: "https://github.com/cedomirovic/pitchi/releases/download/v1.1.0/Diktator-1.1.0-macOS-arm64.zip")!
                     )
                 ]
             )
