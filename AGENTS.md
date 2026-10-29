@@ -520,8 +520,17 @@ današnje ime aplikacije.)*
   `bash app/build.sh`, `--dozvole`, `--test-whisper` (pipeline radi),
   `--slika` je nacrtao svih pet strana i traku izdanja, a `docs/*.png` su
   zamenjeni snimcima iz novog izgleda (širina 1640). Aplikacija je
-  instalirana u `/Applications/Diktator.app` i pokrenuta. Verzija je i dalje
-  `0.9.3` (15) — podizanje verzije i release čekaju korisnikovu odluku.
+  instalirana u `/Applications/Diktator.app` i pokrenuta.
+  Zbog novog izgleda verzija je podignuta na **`1.0.0`** (build 16),
+  `package.json` na `1.0.0`, a lažno izdanje za `--slika` je sada `1.1.0`
+  (traka u snimku kaže „imaš 1.0.0“, a opis izdanja govori o novom izgledu).
+  Objavljen je release `v1.0.0` sa `Diktator-1.0.0-macOS-arm64.zip`
+  (2.849.391 bajt, SHA-256
+  `7f1fba5b41591e8475723f9a5863dabbc877adb86d7e12335e1888043765144e`);
+  paket napravljen sa `ditto -c -k --norsrc --noextattr`, proveren posle
+  raspakivanja (`codesign --verify --deep --strict`, verzija 1.0.0/16, bez
+  `__MACOSX`). Korisnik je odlučio da se Tiny, Base i Small modeli **ne
+  brišu**.
 - Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
   izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
   tastaturi koja ga ima, po potrebi brisanje modela koje korisnik ne želi
