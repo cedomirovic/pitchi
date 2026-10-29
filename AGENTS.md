@@ -460,8 +460,31 @@ današnje ime aplikacije.)*
   `napomena`, `zadnjaVerzija` i `obavestenaVerzija`; `--slika` je nacrtala
   traku i karticu sa stavkama. Verzija je `0.9.3` (build 15), `package.json`
   `0.9.3`; instalirano u `/Applications/Diktator.app`. Release posle probe.
-- Sledeći korak: korisnik proba novi rečnik (brojač i upozorenje) pa se
-  objavljuje `v0.9.2`; zatim probni diktat sa stvarnim Gemini API ključem (ili
-  drugim izabranim servisom), fizički probati `Fn + Space` i desni modifikator
-  na tastaturi koja ga ima, po potrebi brisanje modela koje korisnik ne želi i
-  eventualni prelazak `diktator` repoa na ovu aplikaciju.
+- **29.10.2026. (snimci ekrana, objava `v0.9.3`)** — osveženi su snimci
+  ekrana i objavljeno izdanje sa svim promenama od `v0.9.1`.
+  - Opcija `--slika` sada crta **demo stanje** (`AppStanje.demoStanje`): Turbo,
+    brzi režim sa 30 minuta, sve tri dozvole, rečnik sa imenima i primer
+    istorije i statistike; stvarna podešavanja mašine više ne utiču na slike
+    (`osveziDozvole` preskače osvežavanje u demo režimu, jer `ContentView`
+    poziva `osveziDozvole` na `onAppear` i pregazio bi ih).
+  - Korisnik je u međuvremenu sam objavio tri snimka (`02e25c6`, „Novi
+    skrisotovi“) — oni su zadržani, a dodata su tri nova iz iste generacije
+    (`istorija.png`, `pomoc.png`, `azuriranje.png`) u svetloj temi; README ih
+    prikazuje u dve tabele, pa traka „Šta je novo“ sada ima svoju sliku.
+  - Napomena za sledeće snimke: na macOS-u 26 prekidači (`.switch`) u
+    neaktivnom prozoru izgledaju sivi, a `CGWindowListCreateImage` je u
+    SDK-u označen kao nedostupan (radi samo uz stariji cilj); zato `--slika`
+    ostaje na `cacheDisplay`.
+  - Korisnik je potvrdio da su rečnik, brojač i „šta je novo“ u redu, pa je
+    objavljen release `v0.9.3` sa `Diktator-0.9.3-macOS-arm64.zip`
+    (3.295.863 bajta, SHA-256
+    `b731d8bb3d6905fab39d366fa2bb2ef22a62dc58fe050500c372adf91b778c0a`);
+    paket napravljen sa `ditto -c -k --norsrc --noextattr` (bez `__MACOSX`),
+    proveren posle raspakivanja (`codesign --verify --deep --strict`,
+    verzija 0.9.3/15). Opis izdanja je napisan sa spiskom, pa ga nova
+    aplikacija prikazuje kao „šta je novo“.
+- Sledeći korak: probni diktat sa stvarnim Gemini API ključem (ili drugim
+  izabranim servisom), fizički probati `Fn + Space` i desni modifikator na
+  tastaturi koja ga ima, po potrebi brisanje modela koje korisnik ne želi
+  (Tiny/Base/Small, ~713 MB) i eventualni prelazak `diktator` repoa na ovu
+  aplikaciju.
