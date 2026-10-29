@@ -7,52 +7,43 @@ struct PogledIstorija: View {
     @State private var potvrdiBrisanje = false
 
     private var filtrirano: [Zapis] {
-        guard !pretraga.trimmingCharacters(in: .whitespaces).isEmpty else { return app.istorija }
-        return app.istorija.filter { $0.tekst.localizedCaseInsensitiveContains(pretraga) }
+        let upit = pretraga.trimmingCharacters(in: .whitespaces)
+        guard !upit.isEmpty else { return app.istorija }
+        return app.istorija.filter { $0.tekst.localizedCaseInsensitiveContains(upit) }
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                NaslovSekcije("Istorija", detalj: "\(app.istorija.count) prepisa, čuvaju se samo na ovom Macu")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                ZaglavljeStrane(
+                    naslov: "Istorija",
+                    detalj: "\(app.istorija.count) prepisa, čuvaju se samo na ovom Macu."
+                ) {
+                    HStack(spacing: 8) {
+                        poljePretrage
 
-                Spacer()
-
-                poljePretrage
-
-                if !app.istorija.isEmpty {
-                    Button {
-                        potvrdiBrisanje = true
-                    } label: {
-                        Image(systemName: "trash")
+                        if !app.istorija.isEmpty {
+                            Button {
+                                potvrdiBrisanje = true
+                            } label: {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 12))
+                            }
+                            .buttonStyle(.bordered)
+                            .help("Obriši celu istoriju")
+                        }
                     }
-                    .buttonStyle(.bordered)
-                    .help("Obriši celu istoriju")
+                }
+
+                if app.istorija.isEmpty {
+                    prazno
+                } else {
+                    tabela
                 }
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 12)
-
-            if app.istorija.isEmpty {
-                prazno
-            } else if filtrirano.isEmpty {
-                VStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass").font(.system(size: 26))
-                        .foregroundStyle(.secondary)
-                    Text("Nema rezultata za „\(pretraga)”").foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 10) {
-                        ForEach(filtrirano) { zapis in
-                            red(zapis)
-                        }
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 24)
-                }
-            }
+            .padding(.top, 20)
+            .padding(.bottom, 24)
         }
         .alert("Obrisati celu istoriju?", isPresented: $potvrdiBrisanje) {
             Button("Obriši", role: .destructive) { app.obrisiIstoriju() }
@@ -65,15 +56,18 @@ struct PogledIstorija: View {
     private var poljePretrage: some View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
+                .font(.system(size: 11))
                 .foregroundStyle(.secondary)
-            TextField("Traži u istoriji", text: $pretraga)
+            TextField("Pretraži prepise…", text: $pretraga)
                 .textFieldStyle(.plain)
-                .frame(width: 180)
+                .font(.system(size: 12))
+                .frame(width: 175)
             if !pretraga.isEmpty {
                 Button {
                     pretraga = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.borderless)
@@ -81,91 +75,204 @@ struct PogledIstorija: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.06)))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.primary.opacity(0.1), lineWidth: 1))
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Izgled.kartica)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .stroke(Izgled.ivica, lineWidth: 1)
+        )
     }
 
-    private var prazno: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "text.bubble")
-                .font(.system(size: 42, weight: .light))
-                .foregroundStyle(Izgled.akcenat.opacity(0.7))
-            Text("Još nema prepisa")
-                .font(.title3.weight(.semibold))
-            Text(app.izabranaPrecica.jePrekidac
-                ? "Pritisni \(app.nazivPrecice), izgovori prvu rečenicu i pritisni ponovo — ovde će se pojaviti."
-                : "Drži \(app.nazivPrecice) i izgovori prvu rečenicu — ovde će se pojaviti.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
+    private var tabela: some View {
+        VStack(spacing: 0) {
+            zaglavljeTabele
+
+            Rectangle()
+                .fill(Izgled.ivica)
+                .frame(height: 1)
+
+            if filtrirano.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 24))
+                        .foregroundStyle(.secondary)
+                    Text("Nema rezultata za „\(pretraga)”")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 50)
+            } else {
+                ForEach(Array(filtrirano.enumerated()), id: \.element.id) { indeks, zapis in
+                    red(zapis)
+
+                    if indeks < filtrirano.count - 1 {
+                        Rectangle()
+                            .fill(Izgled.ivica)
+                            .frame(height: 1)
+                            .padding(.leading, 52)
+                    }
+                }
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: Izgled.ugaoKartice, style: .continuous)
+                .fill(Izgled.kartica)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Izgled.ugaoKartice, style: .continuous)
+                .stroke(Izgled.ivica, lineWidth: 1)
+        )
+    }
+
+    private var zaglavljeTabele: some View {
+        HStack(spacing: 12) {
+            Text("Naslov / Snipet")
+                .padding(.leading, 38)
+            Spacer(minLength: 8)
+            Text("Datum i vreme")
+                .frame(width: 128, alignment: .leading)
+            Text("Trajanje")
+                .frame(width: 64, alignment: .leading)
+            Color.clear.frame(width: 22)
+        }
+        .font(.system(size: 10.5, weight: .medium))
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 9)
     }
 
     private func red(_ zapis: Zapis) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(zapis.tekst)
-                    .font(.body)
-                    .textSelection(.enabled)
-                    .fixedSize(horizontal: false, vertical: true)
+        let delovi = razdeljak(zapis.tekst)
 
-                HStack(spacing: 6) {
-                    Text(zapis.datum.formatted(date: .abbreviated, time: .shortened))
-                    Text("·")
-                    Text(trajanje(zapis.trajanje))
-                    Text("·")
-                    Text(jezik(zapis.jezik))
-                }
-                .font(.caption2)
+        return HStack(alignment: .center, spacing: 12) {
+            Image(systemName: "doc.text")
+                .font(.system(size: 11))
                 .foregroundStyle(.secondary)
+                .frame(width: 26, height: 26)
+                .background(
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(Color.primary.opacity(0.05))
+                )
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(delovi.naslov)
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .lineLimit(1)
+                Text(delovi.snipet)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .textSelection(.enabled)
 
-            Spacer(minLength: 0)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(datumPrvi(zapis.datum))
+                    .font(.system(size: 11))
+                Text(datumDrugi(zapis.datum))
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(width: 128, alignment: .leading)
 
-            HStack(spacing: 4) {
-                Button {
+            Text(Statistika.vremeKratko(zapis.trajanje))
+                .font(.system(size: 10.5, weight: .medium, design: .monospaced))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Capsule().fill(Color.primary.opacity(0.06)))
+                .frame(width: 64, alignment: .leading)
+
+            Menu {
+                Button("Kopiraj") { app.kopiraj(zapis.tekst) }
+                Button("Zalepi u aktivnu aplikaciju") {
                     app.kopiraj(zapis.tekst)
-                } label: {
-                    Image(systemName: "doc.on.doc")
+                    app.zalepiPoslednji()
                 }
-                .buttonStyle(.borderless)
-                .help("Kopiraj")
-
-                Button {
-                    app.obrisi(zapis)
-                } label: {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.borderless)
-                .foregroundStyle(.secondary)
-                .help("Obriši")
+                Divider()
+                Button("Obriši", role: .destructive) { app.obrisi(zapis) }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 22, height: 22)
+                    .contentShape(Rectangle())
             }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .frame(width: 22)
+            .help("Više radnji")
         }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.6))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.primary.opacity(0.06), lineWidth: 1)
-        )
+        .padding(.horizontal, 14)
+        .padding(.vertical, 9)
+        .contentShape(Rectangle())
         .contextMenu {
             Button("Kopiraj") { app.kopiraj(zapis.tekst) }
             Button("Obriši", role: .destructive) { app.obrisi(zapis) }
         }
     }
 
-    private func trajanje(_ sekunde: Double) -> String {
-        if sekunde < 1 { return "kratko" }
-        return String(format: "%.0f s", sekunde)
+    private var prazno: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "text.bubble")
+                .font(.system(size: 40, weight: .light))
+                .foregroundStyle(Izgled.akcenat.opacity(0.7))
+            Text("Još nema prepisa")
+                .font(.system(size: 16, weight: .semibold))
+            Text(app.izabranaPrecica.jePrekidac
+                ? "Pritisni \(app.nazivPrecice), izgovori prvu rečenicu i pritisni ponovo — ovde će se pojaviti."
+                : "Drži \(app.nazivPrecice) i izgovori prvu rečenicu — ovde će se pojaviti.")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 70)
     }
 
-    private func jezik(_ kod: String) -> String {
-        switch kod {
-        case "sr", "hr", "bs": return "srpski"
-        case "en": return "engleski"
-        default: return "automatski"
-        }
+    // MARK: - Delovi zapisa
+
+    /// Prvi deo teksta je naslov, ostatak je snipet. Naslov seče na reči.
+    private func razdeljak(_ tekst: String) -> (naslov: String, snipet: String) {
+        let ocisceno = tekst
+            .replacingOccurrences(of: "\n", with: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard ocisceno.count > 40 else { return (ocisceno, ocisceno) }
+
+        let granica = ocisceno.index(ocisceno.startIndex, offsetBy: 40)
+        let rez = ocisceno[..<granica].lastIndex(of: " ") ?? granica
+        let naslov = ocisceno[..<rez]
+            .trimmingCharacters(in: CharacterSet(charactersIn: " ,.;:!?"))
+        let snipet = ocisceno[rez...]
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return (naslov.isEmpty ? ocisceno : naslov, snipet.isEmpty ? ocisceno : snipet)
     }
+
+    private func datumPrvi(_ datum: Date) -> String {
+        let kalendar = Calendar.current
+        let vreme = datum.formatted(date: .omitted, time: .shortened)
+        if kalendar.isDateInToday(datum) { return "Danas, \(vreme)" }
+        if kalendar.isDateInYesterday(datum) { return "Juče, \(vreme)" }
+        return PogledIstorija.danMesecGodina.string(from: datum)
+    }
+
+    /// Za starije zapise prvi red već nosi datum, pa drugi red pokazuje dan.
+    private func datumDrugi(_ datum: Date) -> String {
+        let kalendar = Calendar.current
+        if kalendar.isDateInToday(datum) || kalendar.isDateInYesterday(datum) {
+            return PogledIstorija.danMesecGodina.string(from: datum)
+        }
+        return Statistika.nazivDana(datum)
+    }
+
+    private static let danMesecGodina: DateFormatter = {
+        let formater = DateFormatter()
+        formater.locale = Statistika.srpskiLokal
+        formater.setLocalizedDateFormatFromTemplate("d MMM yyyy")
+        return formater
+    }()
 }

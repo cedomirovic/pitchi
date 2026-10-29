@@ -105,7 +105,9 @@ enum Precica: String, CaseIterable, Identifiable {
     var simbol: String {
         switch self {
         case .fn: return "Fn"
-        case .fnSpace: return "Fn ␣"
+        // Znak „␣“ nema u sistemskom fontu pa se u uskoj znački iseče,
+        // zato se kombinacija ispisuje rečima.
+        case .fnSpace: return "Fn + Space"
         case .desniOption: return "⌥"
         case .desniCommand: return "⌘"
         case .desniControl: return "⌃"

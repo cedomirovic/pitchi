@@ -20,8 +20,25 @@ struct StatisticniDan: Identifiable, Equatable {
     let datum: Date
     let reci: Int
     let diktati: Int
+    let trajanje: Double
 
     var id: Date { datum }
+
+    /// Prosečna brzina govora tog dana, u rečima u minuti.
+    var brzina: Double {
+        trajanje <= 0 ? 0 : Double(reci) / trajanje * 60
+    }
+}
+
+/// Zbir za izabrani period — za kartice i poređenje sa prethodnim periodom.
+struct StatistickiPeriod: Equatable {
+    var reci = 0
+    var diktati = 0
+    var trajanje: Double = 0
+
+    var reciPoMinuti: Double {
+        trajanje <= 0 ? 0 : Double(reci) / trajanje * 60
+    }
 }
 
 /// Sve statistike zajedno. Vrednosni tip, pa promena automatski osveži UI.
@@ -111,9 +128,49 @@ struct Statistika: Codable, Equatable {
             return StatisticniDan(
                 datum: dan,
                 reci: zaDan.reduce(0) { $0 + $1.reci },
-                diktati: zaDan.count
+                diktati: zaDan.count,
+                trajanje: zaDan.reduce(0) { $0 + $1.trajanje }
             )
         }
+    }
+
+    // MARK: - Periodi i poređenje
+
+    /// Zbir za `dana` dana unazad. `pomak` 0 je tekući period, 1 prethodni.
+    func period(dana: Int, pomak: Int = 0) -> StatistickiPeriod {
+        let danas = kalendar.startOfDay(for: Date())
+        guard let kraj = kalendar.date(byAdding: .day, value: 1 - pomak * dana, to: danas),
+              let pocetak = kalendar.date(byAdding: .day, value: -dana, to: kraj) else {
+            return StatistickiPeriod()
+        }
+        let uPeriodu = uspesni.filter { $0.datum >= pocetak && $0.datum < kraj }
+        return StatistickiPeriod(
+            reci: uPeriodu.reduce(0) { $0 + $1.reci },
+            diktati: uPeriodu.count,
+            trajanje: uPeriodu.reduce(0) { $0 + $1.trajanje }
+        )
+    }
+
+    /// Promena u procentima; `nil` kada u prethodnom periodu nije bilo ničega.
+    static func promena(sada: Double, pre: Double) -> Double? {
+        guard pre > 0, sada > 0 else { return nil }
+        return (sada - pre) / pre * 100
+    }
+
+    /// Dan sa najviše reči u poslednjih `dana` dana.
+    func najaktivnijiDan(dana: Int) -> StatisticniDan? {
+        dnevnaAktivnost(dana: dana)
+            .filter { $0.reci > 0 }
+            .max { $0.reci < $1.reci }
+    }
+
+    /// Najduži pojedinačni diktat u poslednjih `dana` dana.
+    func najduziDiktat(dana: Int) -> StatistickiZapis? {
+        let danas = kalendar.startOfDay(for: Date())
+        guard let pocetak = kalendar.date(byAdding: .day, value: -dana, to: danas) else { return nil }
+        return uspesni
+            .filter { $0.datum >= pocetak && $0.trajanje > 0 }
+            .max { $0.trajanje < $1.trajanje }
     }
 
     // MARK: - Podela po jeziku i modelu
@@ -128,14 +185,34 @@ struct Statistika: Codable, Equatable {
     }
 
     var poJeziku: [(naziv: String, reci: Int)] {
-        Statistika.podela(uspesni) { Statistika.nazivJezika($0.jezik) }
+        poJeziku(dana: nil)
+    }
+
+    /// Podela po jeziku za poslednjih `dana` dana; `nil` znači sve vreme.
+    func poJeziku(dana: Int?) -> [(naziv: String, reci: Int)] {
+        Statistika.podela(uPeriodu(dana: dana)) { Statistika.nazivJezika($0.jezik) }
     }
 
     var poModelu: [(naziv: String, reci: Int)] {
-        Statistika.podela(uspesni) { zapis in
+        poModelu(dana: nil)
+    }
+
+    /// Podela po modelu za poslednjih `dana` dana; `nil` znači sve vreme.
+    func poModelu(dana: Int?) -> [(naziv: String, reci: Int)] {
+        Statistika.podela(uPeriodu(dana: dana)) { zapis in
             let ocisceno = zapis.model.trimmingCharacters(in: .whitespaces)
             return ocisceno.isEmpty ? "nepoznat model" : ocisceno
         }
+    }
+
+    /// Uspešni zapisi u poslednjih `dana` dana (uključujući danas).
+    private func uPeriodu(dana: Int?) -> [StatistickiZapis] {
+        guard let dana else { return uspesni }
+        let danas = kalendar.startOfDay(for: Date())
+        guard let pocetak = kalendar.date(byAdding: .day, value: -dana, to: danas) else {
+            return uspesni
+        }
+        return uspesni.filter { $0.datum >= pocetak }
     }
 
     private static func podela(
@@ -206,25 +283,70 @@ struct Statistika: Codable, Equatable {
         return ostatak == 0 ? "\(sati) h" : "\(sati) h \(ostatak) min"
     }
 
+    /// Trajanje kao na satu: 01:32.
+    static func vremeKratko(_ sekunde: Double) -> String {
+        let ukupno = max(0, Int(sekunde.rounded()))
+        return String(format: "%02d:%02d", ukupno / 60, ukupno % 60)
+    }
+
+    static let srpskiLokal = Locale(identifier: "sr_Latn_RS")
+
+    private static let kratakDan: DateFormatter = {
+        let formater = DateFormatter()
+        formater.locale = Statistika.srpskiLokal
+        formater.setLocalizedDateFormatFromTemplate("EEE")
+        return formater
+    }()
+
+    private static let punDan: DateFormatter = {
+        let formater = DateFormatter()
+        formater.locale = Statistika.srpskiLokal
+        formater.setLocalizedDateFormatFromTemplate("EEEE")
+        return formater
+    }()
+
+    private static let dugacakDatum: DateFormatter = {
+        let formater = DateFormatter()
+        formater.locale = Statistika.srpskiLokal
+        formater.dateStyle = .long
+        formater.timeStyle = .short
+        return formater
+    }()
+
+    /// „Pon“, „Uto“… za osu grafikona.
+    static func oznakaDana(_ datum: Date) -> String {
+        kratakDan.string(from: datum).capitalized
+    }
+
+    /// „Sreda“ za karticu najaktivnijeg dana.
+    static func nazivDana(_ datum: Date) -> String {
+        punDan.string(from: datum).capitalized
+    }
+
+    /// „12. mart 2025. u 14:32“.
+    static func dugDatum(_ datum: Date) -> String {
+        dugacakDatum.string(from: datum)
+    }
+
     /// Primer podataka za crtanje slika i brzu proveru izgleda.
     static func primer() -> Statistika {
         var statistika = Statistika()
         let kalendar = Calendar.current
-        let uzorci: [(Int, Int, Double, String)] = [
-            (0, 148, 62, "sr"),
-            (0, 96, 41, "en"),
-            (1, 212, 88, "sr"),
-            (2, 34, 15, "sr"),
-            (3, 176, 71, "sr"),
-            (4, 128, 54, "en"),
-            (5, 0, 0, "sr"),
-            (6, 92, 38, "sr"),
-            (8, 240, 96, "sr"),
-            (9, 64, 27, "en"),
-            (11, 118, 49, "sr"),
-            (12, 152, 63, "sr"),
+        let uzorci: [(Int, Int, Double, String, String)] = [
+            (0, 148, 62, "sr", "Large v3 Turbo"),
+            (0, 96, 41, "en", "Large v3 Turbo"),
+            (1, 212, 88, "sr", "Large v3 Turbo"),
+            (2, 34, 15, "sr", "Large v3"),
+            (3, 176, 71, "sr", "Large v3 Turbo"),
+            (4, 128, 54, "en", "Large v3"),
+            (5, 0, 0, "sr", "Large v3"),
+            (6, 92, 38, "sr", "Large v3 Turbo"),
+            (8, 240, 96, "sr", "Large v3 Turbo"),
+            (9, 64, 27, "en", "Large v3 Turbo"),
+            (11, 118, 49, "sr", "Small"),
+            (12, 152, 63, "sr", "Large v3 Turbo"),
         ]
-        for (dana, reci, trajanje, jezik) in uzorci where reci > 0 {
+        for (dana, reci, trajanje, jezik, model) in uzorci where reci > 0 {
             guard let datum = kalendar.date(byAdding: .day, value: -dana, to: Date()) else { continue }
             statistika.zapisi.append(
                 StatistickiZapis(
@@ -232,7 +354,7 @@ struct Statistika: Codable, Equatable {
                     reci: reci,
                     trajanje: trajanje,
                     jezik: jezik,
-                    model: "Large v3",
+                    model: model,
                     uspeh: true
                 )
             )

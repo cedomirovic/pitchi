@@ -82,8 +82,42 @@ struct DiktatorMain {
 
         stanje.poslednjiTekst = "Danas je lepo vreme u Beogradu. Sastanak je u pet sati, u kancelariji."
         stanje.istorija = [
-            Zapis(tekst: "Pošalji Nemanji ponudu do petka, pa da vidimo.", datum: Date().addingTimeInterval(-3600), trajanje: 4.2),
-            Zapis(tekst: "Podseti me da zovem Tamaru u vezi ugovora.", datum: Date().addingTimeInterval(-7200), trajanje: 3.1),
+            Zapis(
+                tekst: "Pošalji Nemanji ponudu do petka, pa da vidimo.",
+                datum: Date().addingTimeInterval(-3600),
+                trajanje: 4.2,
+                jezik: "sr"
+            ),
+            Zapis(
+                tekst: "Podseti me da zovem Tamaru u vezi ugovora.",
+                datum: Date().addingTimeInterval(-7200),
+                trajanje: 3.1,
+                jezik: "sr"
+            ),
+            Zapis(
+                tekst: "Sastanak je pomeren na četvrtak u deset, javi timu.",
+                datum: Calendar.current.date(byAdding: .hour, value: -26, to: Date()) ?? Date(),
+                trajanje: 5.4,
+                jezik: "sr"
+            ),
+            Zapis(
+                tekst: "The new build is ready for review, please take a look.",
+                datum: Calendar.current.date(byAdding: .hour, value: -30, to: Date()) ?? Date(),
+                trajanje: 6.8,
+                jezik: "en"
+            ),
+            Zapis(
+                tekst: "Dodaj u rečnik imena Nemanja Čedomirović i Tamara Pandža.",
+                datum: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(),
+                trajanje: 5.9,
+                jezik: "sr"
+            ),
+            Zapis(
+                tekst: "Podsetnik: uplatiti rate za stan do 15. u mesecu.",
+                datum: Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(),
+                trajanje: 4.6,
+                jezik: "sr"
+            ),
         ]
         stanje.dozvole = Dozvole(mikrofon: true, pristupacnost: true, nadzorUnosa: true)
         stanje.precicaRadi = true
@@ -113,7 +147,7 @@ struct DiktatorMain {
         }
 
         let prozor = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 820, height: 700),
+            contentRect: NSRect(x: 0, y: 0, width: 1120, height: 780),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
@@ -404,7 +438,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if window == nil {
             let pogled = ContentView().environmentObject(stanje)
             let prozor = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 820, height: 740),
+                contentRect: NSRect(x: 0, y: 0, width: 1120, height: 780),
                 styleMask: [.titled, .closable, .miniaturizable, .resizable],
                 backing: .buffered,
                 defer: false
@@ -413,7 +447,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             prozor.titlebarAppearsTransparent = true
             prozor.titleVisibility = .hidden
             prozor.contentView = NSHostingView(rootView: pogled)
-            prozor.contentMinSize = NSSize(width: 760, height: 640)
+            prozor.contentMinSize = NSSize(width: 900, height: 640)
             prozor.isReleasedWhenClosed = false
             prozor.tabbingMode = .disallowed
             prozor.center()
